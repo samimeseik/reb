@@ -149,3 +149,10 @@ def test_ledger_round_trip(ledger):
     again = Ledger.load(ledger.workspace)
     assert again.data.sources.keys() == ledger.data.sources.keys()
     assert (ledger.workspace / ".reb" / ".gitignore").exists()
+
+
+def test_quoted_warranty_words_are_reported_speech(ledger):
+    c = ledger.record_claim(statement='The site states a policy of "no guarantees" on returns.', layer="strategy")
+    assert c.status.value == "conjecture"
+    with pytest.raises(RebError):
+        ledger.record_claim(statement="Returns are guaranteed by the developer.", layer="strategy")

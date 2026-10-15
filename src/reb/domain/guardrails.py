@@ -155,8 +155,14 @@ BANNED_TERMS = [
 _BANNED_RE = re.compile("|".join(BANNED_TERMS), re.IGNORECASE)
 
 
+# Quoted words are reported speech ('the site says "no guarantees"'), not a warranty
+# made by the analyst, so text inside quotation marks is not checked.
+_QUOTED_RE = re.compile(r'"[^"]*"|“[^”]*”|«[^»]*»|„[^“”]*[“”]')
+
+
 def find_banned_terms(text: str) -> list[str]:
-    return sorted({m.group(0) for m in _BANNED_RE.finditer(text)})
+    unquoted = _QUOTED_RE.sub(" ", text)
+    return sorted({m.group(0) for m in _BANNED_RE.finditer(unquoted)})
 
 
 def check_vocabulary(text: str) -> None:
