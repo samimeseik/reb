@@ -1,0 +1,42 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "reb-agents"
+version = "0.1.0"
+description = "REB: Reverse Engineer any Business. Evidence-graded analysis of how an organization actually works, for AI agents (MCP) and the terminal."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [{ name = "REB contributors" }]
+keywords = ["mcp", "business-analysis", "process-mining", "due-diligence", "evidence", "agents"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Topic :: Office/Business",
+]
+dependencies = [
+  "pydantic>=2.6",
+  "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.2,<3"]
+excel = ["openpyxl>=3.1"]
+pdf = ["pypdf>=4.0"]
+ocr = ["pytesseract>=0.3.10", "Pillow>=10.0"]
+audio = ["faster-whisper>=1.0"]
+process = ["pm4py>=2.7"]
+all = ["reb-agents[mcp,excel,pdf,ocr,audio,process]"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+reb = "reb.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/reb"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

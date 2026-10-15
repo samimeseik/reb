@@ -1,0 +1,39 @@
+id: desk-scan
+name: Public desk scan
+name_ar: مسح مكتبي من المصادر العامة
+description: >
+  What public records and public signals show about an organization. The output
+  is observations and questions, never a reconstruction of its internals and
+  never judgements about it. No interviews, no internal documents, no pretexting.
+allowed_modes: [public]
+items:
+  - id: pub.legal-entity
+    layer: regulation
+    question: Legal entity, registration date, capital and registered changes?
+    question_ar: الكيان القانوني وتاريخ التسجيل ورأس المال والتغييرات المسجّلة؟
+    required_grade: B
+  - id: pub.offering
+    layer: strategy
+    question: What does it publicly offer, to whom, at what listed prices?
+    question_ar: ماذا تعرض علناً ولمن وبأي أسعار معلنة؟
+    required_grade: D
+  - id: pub.hiring-signals
+    layer: people
+    question: What do public job ads show about roles, tools and growth?
+    question_ar: ماذا تُظهر إعلانات التوظيف العامة عن الأدوار والأدوات والنمو؟
+    required_grade: D
+  - id: pub.footprint
+    layer: systems
+    question: What does the public web footprint show (site technology, channels)?
+    question_ar: ماذا يُظهر الحضور الرقمي العام (تقنيات الموقع، القنوات)؟
+    required_grade: D
+  - id: pub.certifications
+    layer: regulation
+    question: Which certifications or approvals appear in public registries?
+    question_ar: ما الشهادات أو الموافقات الظاهرة في السجلات العامة؟
+    required_grade: B
+  - id: pub.questions
+    layer: strategy
+    question: Which questions would need the organization's own evidence to answer?
+    question_ar: ما الأسئلة التي تحتاج أدلة المنشأة نفسها للإجابة عنها؟
+    required_grade: E

@@ -1,0 +1,33 @@
+id: it-systems
+name: Systems & data map
+name_ar: خريطة الأنظمة والبيانات
+description: >
+  Which systems (ERP, accounting, POS, spreadsheets, paper, messaging) hold which
+  data, how information moves between them, and where it is re-typed by hand.
+  Software internals can be handed to REA (Reverse Engineer Anything).
+allowed_modes: [self, engaged]
+items:
+  - id: sys.inventory
+    layer: systems
+    question: Which systems are in use, by whom, for what?
+    question_ar: ما الأنظمة المستخدمة، ومن يستخدمها، ولأي غرض؟
+    required_grade: B
+    obligation: true
+    cases: [happy_path]
+  - id: sys.flows
+    layer: systems
+    question: How does data flow between systems, and where are the manual hand-offs?
+    question_ar: كيف تنتقل البيانات بين الأنظمة وأين النقل اليدوي؟
+    required_grade: B
+    obligation: true
+    cases: [happy_path, exception_rework]
+  - id: sys.master-data
+    layer: systems
+    question: Where is the master data (customers, products, prices) and is it consistent?
+    question_ar: أين البيانات الرئيسية (العملاء، المنتجات، الأسعار) وهل هي متسقة؟
+    required_grade: B
+  - id: sys.access
+    layer: systems
+    question: Who has access to what, and who can change prices or approve payments?
+    question_ar: من يملك صلاحية الوصول لماذا، ومن يستطيع تغيير الأسعار أو اعتماد المدفوعات؟
+    required_grade: B

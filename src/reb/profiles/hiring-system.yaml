@@ -1,0 +1,38 @@
+id: hiring-system
+name: Hiring & people system
+name_ar: نظام التوظيف والموارد البشرية
+description: How the organization finds, selects, onboards, trains, pays and keeps people.
+allowed_modes: [self, engaged]
+items:
+  - id: hire.funnel
+    layer: people
+    question: What is the hiring funnel (sources, stages, conversion, time-to-fill)?
+    question_ar: ما مسار التوظيف (المصادر، المراحل، التحويل، مدة الشغل)؟
+    required_grade: B
+    obligation: true
+    cases: [happy_path, peak_load]
+    hints: [ATS or spreadsheet export as event log]
+  - id: hire.selection
+    layer: people
+    question: How are candidates assessed and who decides?
+    question_ar: كيف يُقيَّم المرشحون ومن يقرر؟
+    required_grade: C
+    obligation: true
+    cases: [happy_path]
+  - id: hire.onboarding
+    layer: people
+    question: How long until a new hire is productive, and what makes them so?
+    question_ar: كم يحتاج الموظف الجديد ليصبح منتجاً وما الذي يوصله لذلك؟
+    required_grade: C
+    obligation: true
+    cases: [happy_path, staff_absence]
+  - id: hire.pay
+    layer: finance
+    question: How is pay structured (base, bonus, commission) and what behaviour does it drive?
+    question_ar: كيف يُبنى الأجر (أساسي، مكافأة، عمولة) وأي سلوك يحفّز؟
+    required_grade: B
+  - id: hire.retention
+    layer: people
+    question: Tenure, turnover and why people leave?
+    question_ar: مدة البقاء ودوران الموظفين ولماذا يغادرون؟
+    required_grade: B

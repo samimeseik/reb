@@ -1,0 +1,40 @@
+id: factory-capacity
+name: Factory capacity check (before placing orders)
+name_ar: التحقق من طاقة مصنع (قبل التعاقد)
+description: >
+  Can this factory make what it claims, at the volume and quality claimed?
+  Compares stated capacity with equipment ratings, shifts, utilities and output records.
+allowed_modes: [engaged, self]
+items:
+  - id: equip.lines
+    layer: equipment
+    question: Which production lines and machines exist, with rated speeds?
+    question_ar: ما خطوط الإنتاج والمكائن الموجودة وسرعاتها الاسمية؟
+    required_grade: A
+    hints: [nameplates, manuals, site walk]
+  - id: ops.shifts
+    layer: operations
+    question: How many shifts and operators actually run?
+    question_ar: كم وردية ومشغّلاً يعملون فعلاً؟
+    required_grade: B
+  - id: ops.oee
+    layer: operations
+    question: What is actual output versus rated capacity (OEE = availability x performance x quality)?
+    question_ar: ما الإنتاج الفعلي مقارنة بالطاقة الاسمية (OEE)؟
+    required_grade: B
+    hints: [production records, downtime log, scrap records]
+  - id: ops.utilities
+    layer: finance
+    question: Does electricity/gas use support the claimed output?
+    question_ar: هل يدعم استهلاك الكهرباء والغاز الإنتاج المُدّعى؟
+    required_grade: A
+  - id: quality.certs
+    layer: regulation
+    question: Which quality / food-safety certificates are current, and what is their scope?
+    question_ar: ما شهادات الجودة وسلامة الغذاء السارية وما نطاقها؟
+    required_grade: A
+  - id: supply.inputs
+    layer: supply
+    question: Can raw-material supply sustain the requested volume?
+    question_ar: هل يكفي توريد المواد الخام للحجم المطلوب؟
+    required_grade: B

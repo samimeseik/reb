@@ -1,0 +1,23 @@
+{
+  "order": [
+    "sipariş alındı"
+  ],
+  "measure": [
+    "ölçü alındı"
+  ],
+  "cut": [
+    "kesim başladı"
+  ],
+  "edge": [
+    "kenar bantlama"
+  ],
+  "assembly": [
+    "montaj tamam"
+  ],
+  "paint": [
+    "boyaya girdi"
+  ],
+  "deliver": [
+    "teslim edildi"
+  ]
+}

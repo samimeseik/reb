@@ -1,0 +1,179 @@
+[01/07/2026, 12:00:00] Selin Ofis: #1001 sipariş alındı – TV ünitesi
+[02/07/2026, 12:00:00] Ahmet Usta: #1001 ölçü alındı ✅
+[04/07/2026, 00:00:00] Selin Ofis: #1002 sipariş alındı – mutfak dolabı
+[05/07/2026, 11:00:00] Ahmet Usta: #1002 ölçü alındı ✅
+[06/07/2026, 09:00:00] Selin Ofis: #1003 sipariş alındı – mutfak dolabı
+[06/07/2026, 14:00:00] Mehmet CNC: #1001 kesim başladı
+[06/07/2026, 23:00:00] Mehmet CNC: #1001 kenar bantlama bitti
+[07/07/2026, 04:00:00] Mehmet CNC: #1002 kesim başladı
+[07/07/2026, 07:00:00] Ahmet Usta: #1003 ölçü alındı ✅
+[08/07/2026, 03:00:00] Mehmet CNC: #1002 kenar bantlama bitti
+[08/07/2026, 08:00:00] Ahmet Usta: #1001 montaj tamam
+[09/07/2026, 01:00:00] Selin Ofis: #1004 sipariş alındı – gardırop
+[09/07/2026, 16:00:00] Ahmet Usta: #1002 montaj tamam
+[10/07/2026, 20:00:00] Ahmet Usta: #1004 ölçü alındı ✅
+[11/07/2026, 10:00:00] Yusuf Boya: #1001 boyaya girdi
+[11/07/2026, 12:00:00] Mehmet CNC: #1003 kesim başladı
+[11/07/2026, 12:00:00] Selin Ofis: #1005 sipariş alındı – banyo dolabı
+[11/07/2026, 22:00:00] Mehmet CNC: #1003 kenar bantlama bitti
+[12/07/2026, 14:00:00] Mehmet CNC: #1004 kesim başladı
+[12/07/2026, 19:00:00] Yusuf Boya: #1002 boyaya girdi
+[12/07/2026, 23:00:00] Selin Ofis: #1001 teslim edildi, müşteri memnun
+[13/07/2026, 02:00:00] Ahmet Usta: #1003 montaj tamam
+[13/07/2026, 07:00:00] Ahmet Usta: #1005 ölçü alındı ✅
+[13/07/2026, 13:00:00] Mehmet CNC: #1004 kenar bantlama bitti
+[13/07/2026, 23:00:00] Selin Ofis: #1006 sipariş alındı – TV ünitesi
+[14/07/2026, 02:00:00] Selin Ofis: #1002 teslim edildi, müşteri memnun
+[14/07/2026, 03:00:00] Ahmet Usta: #1004 montaj tamam
+[14/07/2026, 11:05:00] Ahmet Usta: Kenar bant makinesini 2mm PVC için sadece Mehmet ayarlayabiliyor
+[15/07/2026, 02:00:00] Ahmet Usta: #1006 ölçü alındı ✅
+[16/07/2026, 03:00:00] Mehmet CNC: #1005 kesim başladı
+[16/07/2026, 11:00:00] Selin Ofis: #1007 sipariş alındı – mutfak dolabı
+[16/07/2026, 16:00:00] Mehmet CNC: #1005 kenar bantlama bitti
+[17/07/2026, 06:00:00] Yusuf Boya: #1004 boyaya girdi
+[17/07/2026, 13:00:00] Ahmet Usta: #1005 montaj tamam
+[18/07/2026, 21:00:00] Ahmet Usta: #1007 ölçü alındı ✅
+[19/07/2026, 01:00:00] Mehmet CNC: #1006 kesim başladı
+[19/07/2026, 02:00:00] Selin Ofis: #1008 sipariş alındı – mutfak dolabı
+[19/07/2026, 13:00:00] Selin Ofis: #1004 teslim edildi, müşteri memnun
+[19/07/2026, 20:00:00] Mehmet CNC: #1006 kenar bantlama bitti
+[20/07/2026, 01:00:00] Yusuf Boya: #1003 boyaya girdi
+[20/07/2026, 16:00:00] Ahmet Usta: #1006 montaj tamam
+[21/07/2026, 08:00:00] Yusuf Boya: #1003 renk tutmadı, tekrar boyaya girdi
+[21/07/2026, 10:00:00] Ahmet Usta: #1008 ölçü alındı ✅
+[21/07/2026, 10:00:00] Selin Ofis: #1009 sipariş alındı – banyo dolabı
+[22/07/2026, 15:00:00] Yusuf Boya: #1005 boyaya girdi
+[22/07/2026, 18:00:00] Mehmet CNC: #1007 kesim başladı
+[23/07/2026, 13:00:00] Ahmet Usta: #1009 ölçü alındı ✅
+[23/07/2026, 18:00:00] Mehmet CNC: #1007 kenar bantlama bitti
+[23/07/2026, 20:00:00] Selin Ofis: #1003 teslim edildi, müşteri memnun
+[23/07/2026, 22:00:00] Selin Ofis: #1010 sipariş alındı – banyo dolabı
+[24/07/2026, 10:00:00] Yusuf Boya: #1005 renk tutmadı, tekrar boyaya girdi
+[25/07/2026, 02:00:00] Mehmet CNC: #1009 kesim başladı
+[25/07/2026, 09:00:00] Ahmet Usta: #1007 montaj tamam
+[25/07/2026, 14:00:00] Mehmet CNC: #1009 kenar bantlama bitti
+[25/07/2026, 19:00:00] Ahmet Usta: #1010 ölçü alındı ✅
+[26/07/2026, 07:00:00] Mehmet CNC: #1008 kesim başladı
+[26/07/2026, 10:00:00] Selin Ofis: #1011 sipariş alındı – TV ünitesi
+[26/07/2026, 18:00:00] Ahmet Usta: #1009 montaj tamam
+[26/07/2026, 19:00:00] Selin Ofis: #1005 teslim edildi, müşteri memnun
+[26/07/2026, 19:00:00] Yusuf Boya: #1006 boyaya girdi
+[27/07/2026, 03:00:00] Mehmet CNC: #1008 kenar bantlama bitti
+[27/07/2026, 11:00:00] Ahmet Usta: #1011 ölçü alındı ✅
+[28/07/2026, 07:00:00] Ahmet Usta: #1008 montaj tamam
+[28/07/2026, 14:00:00] Yusuf Boya: #1007 boyaya girdi
+[29/07/2026, 00:00:00] Selin Ofis: #1012 sipariş alındı – mutfak dolabı
+[29/07/2026, 02:00:00] Yusuf Boya: #1006 renk tutmadı, tekrar boyaya girdi
+[29/07/2026, 15:00:00] Mehmet CNC: #1011 kesim başladı
+[29/07/2026, 23:00:00] Mehmet CNC: #1010 kesim başladı
+[30/07/2026, 01:00:00] Mehmet CNC: #1011 kenar bantlama bitti
+[30/07/2026, 07:00:00] Selin Ofis: #1007 teslim edildi, müşteri memnun
+[30/07/2026, 13:00:00] Mehmet CNC: #1010 kenar bantlama bitti
+[30/07/2026, 15:00:00] Yusuf Boya: #1009 boyaya girdi
+[31/07/2026, 01:00:00] Ahmet Usta: #1011 montaj tamam
+[31/07/2026, 04:00:00] Selin Ofis: #1006 teslim edildi, müşteri memnun
+[31/07/2026, 07:00:00] Ahmet Usta: #1010 montaj tamam
+[31/07/2026, 11:00:00] Ahmet Usta: #1012 ölçü alındı ✅
+[31/07/2026, 12:00:00] Selin Ofis: #1013 sipariş alındı – banyo dolabı
+[01/08/2026, 16:00:00] Selin Ofis: #1009 teslim edildi, müşteri memnun
+[02/08/2026, 09:00:00] Ahmet Usta: #1013 ölçü alındı ✅
+[02/08/2026, 16:40:00] Selin Ofis: Tedarikçi Kaya Kereste yeni numara: 0532 111 22 33
+[03/08/2026, 01:00:00] Selin Ofis: #1014 sipariş alındı – mutfak dolabı
+[03/08/2026, 21:00:00] Yusuf Boya: #1008 boyaya girdi
+[04/08/2026, 03:00:00] Ahmet Usta: #1014 ölçü alındı ✅
+[04/08/2026, 04:00:00] Mehmet CNC: #1013 kesim başladı
+[04/08/2026, 17:00:00] Mehmet CNC: #1012 kesim başladı
+[05/08/2026, 00:00:00] Yusuf Boya: #1011 boyaya girdi
+[05/08/2026, 01:00:00] Mehmet CNC: #1013 kenar bantlama bitti
+[05/08/2026, 09:00:00] Mehmet CNC: #1012 kenar bantlama bitti
+[05/08/2026, 09:00:00] Mehmet CNC: #1014 kesim başladı
+[05/08/2026, 13:00:00] Selin Ofis: #1015 sipariş alındı – mutfak dolabı
+[05/08/2026, 19:00:00] Selin Ofis: #1008 teslim edildi, müşteri memnun
+[06/08/2026, 03:00:00] Ahmet Usta: #1012 montaj tamam
+[06/08/2026, 09:00:00] Mehmet CNC: #1014 kenar bantlama bitti
+[06/08/2026, 11:00:00] Yusuf Boya: #1011 renk tutmadı, tekrar boyaya girdi
+[06/08/2026, 12:00:00] Ahmet Usta: #1013 montaj tamam
+[06/08/2026, 18:00:00] Ahmet Usta: #1015 ölçü alındı ✅
+[07/08/2026, 04:00:00] Ahmet Usta: #1014 montaj tamam
+[07/08/2026, 09:00:00] Yusuf Boya: #1010 boyaya girdi
+[08/08/2026, 00:00:00] Selin Ofis: #1016 sipariş alındı – banyo dolabı
+[08/08/2026, 03:00:00] Selin Ofis: #1011 teslim edildi, müşteri memnun
+[09/08/2026, 01:00:00] Ahmet Usta: #1016 ölçü alındı ✅
+[09/08/2026, 02:00:00] Selin Ofis: #1010 teslim edildi, müşteri memnun
+[09/08/2026, 15:00:00] Yusuf Boya: #1013 boyaya girdi
+[10/08/2026, 13:00:00] Selin Ofis: #1017 sipariş alındı – mutfak dolabı
+[11/08/2026, 01:00:00] Mehmet CNC: #1016 kesim başladı
+[11/08/2026, 04:00:00] Yusuf Boya: #1013 renk tutmadı, tekrar boyaya girdi
+[11/08/2026, 09:00:00] Mehmet CNC: #1015 kesim başladı
+[11/08/2026, 10:00:00] Mehmet CNC: #1016 kenar bantlama bitti
+[11/08/2026, 18:00:00] Ahmet Usta: #1017 ölçü alındı ✅
+[11/08/2026, 23:00:00] Mehmet CNC: #1015 kenar bantlama bitti
+[12/08/2026, 17:00:00] Ahmet Usta: #1016 montaj tamam
+[12/08/2026, 22:00:00] Selin Ofis: #1018 sipariş alındı – TV ünitesi
+[13/08/2026, 07:00:00] Ahmet Usta: #1015 montaj tamam
+[13/08/2026, 08:00:00] Selin Ofis: #1013 teslim edildi, müşteri memnun
+[14/08/2026, 02:00:00] Yusuf Boya: #1012 boyaya girdi
+[14/08/2026, 08:00:00] Ahmet Usta: #1018 ölçü alındı ✅
+[15/08/2026, 09:00:00] Yusuf Boya: #1014 boyaya girdi
+[15/08/2026, 14:00:00] Selin Ofis: #1019 sipariş alındı – gardırop
+[16/08/2026, 16:00:00] Mehmet CNC: #1017 kesim başladı
+[16/08/2026, 19:00:00] Selin Ofis: #1012 teslim edildi, müşteri memnun
+[16/08/2026, 22:00:00] Ahmet Usta: #1019 ölçü alındı ✅
+[17/08/2026, 08:00:00] Yusuf Boya: #1014 renk tutmadı, tekrar boyaya girdi
+[17/08/2026, 15:00:00] Mehmet CNC: #1017 kenar bantlama bitti
+[18/08/2026, 00:00:00] Yusuf Boya: #1016 boyaya girdi
+[18/08/2026, 02:00:00] Ahmet Usta: #1017 montaj tamam
+[18/08/2026, 02:00:00] Selin Ofis: #1020 sipariş alındı – TV ünitesi
+[18/08/2026, 10:00:00] Mehmet CNC: #1018 kesim başladı
+[19/08/2026, 09:00:00] Mehmet CNC: #1018 kenar bantlama bitti
+[19/08/2026, 16:00:00] Yusuf Boya: #1015 boyaya girdi
+[19/08/2026, 23:00:00] Selin Ofis: #1014 teslim edildi, müşteri memnun
+[20/08/2026, 02:00:00] Ahmet Usta: #1020 ölçü alındı ✅
+[20/08/2026, 13:00:00] Selin Ofis: #1021 sipariş alındı – gardırop
+[20/08/2026, 20:00:00] Selin Ofis: #1016 teslim edildi, müşteri memnun
+[20/08/2026, 22:00:00] Mehmet CNC: #1019 kesim başladı
+[20/08/2026, 23:00:00] Selin Ofis: #1015 teslim edildi, müşteri memnun
+[21/08/2026, 03:00:00] Ahmet Usta: #1018 montaj tamam
+[21/08/2026, 19:00:00] Mehmet CNC: #1019 kenar bantlama bitti
+[22/08/2026, 15:00:00] Ahmet Usta: #1021 ölçü alındı ✅
+[23/08/2026, 00:00:00] Selin Ofis: #1022 sipariş alındı – banyo dolabı
+[23/08/2026, 03:00:00] Ahmet Usta: #1019 montaj tamam
+[23/08/2026, 04:00:00] Mehmet CNC: #1020 kesim başladı
+[23/08/2026, 21:00:00] Mehmet CNC: #1020 kenar bantlama bitti
+[24/08/2026, 01:00:00] Ahmet Usta: #1022 ölçü alındı ✅
+[24/08/2026, 12:00:00] Ahmet Usta: #1020 montaj tamam
+[25/08/2026, 13:00:00] Selin Ofis: #1023 sipariş alındı – mutfak dolabı
+[25/08/2026, 22:00:00] Yusuf Boya: #1019 boyaya girdi
+[26/08/2026, 05:00:00] Yusuf Boya: #1017 boyaya girdi
+[26/08/2026, 18:00:00] Ahmet Usta: #1023 ölçü alındı ✅
+[27/08/2026, 03:00:00] Yusuf Boya: #1018 boyaya girdi
+[27/08/2026, 08:00:00] Mehmet CNC: #1021 kesim başladı
+[27/08/2026, 09:00:00] Mehmet CNC: #1022 kesim başladı
+[27/08/2026, 15:00:00] Selin Ofis: #1019 teslim edildi, müşteri memnun
+[28/08/2026, 01:00:00] Mehmet CNC: #1021 kenar bantlama bitti
+[28/08/2026, 01:00:00] Selin Ofis: #1024 sipariş alındı – mutfak dolabı
+[28/08/2026, 05:00:00] Mehmet CNC: #1022 kenar bantlama bitti
+[28/08/2026, 16:00:00] Ahmet Usta: #1021 montaj tamam
+[28/08/2026, 22:00:00] Selin Ofis: #1017 teslim edildi, müşteri memnun
+[29/08/2026, 08:00:00] Yusuf Boya: #1020 boyaya girdi
+[29/08/2026, 16:00:00] Ahmet Usta: #1022 montaj tamam
+[29/08/2026, 18:00:00] Selin Ofis: #1018 teslim edildi, müşteri memnun
+[30/08/2026, 00:00:00] Ahmet Usta: #1024 ölçü alındı ✅
+[31/08/2026, 06:00:00] Mehmet CNC: #1023 kesim başladı
+[31/08/2026, 14:00:00] Yusuf Boya: #1020 renk tutmadı, tekrar boyaya girdi
+[01/09/2026, 06:00:00] Mehmet CNC: #1024 kesim başladı
+[01/09/2026, 07:00:00] Mehmet CNC: #1023 kenar bantlama bitti
+[01/09/2026, 10:00:00] Yusuf Boya: #1021 boyaya girdi
+[01/09/2026, 18:00:00] Mehmet CNC: #1024 kenar bantlama bitti
+[02/09/2026, 01:00:00] Yusuf Boya: #1022 boyaya girdi
+[02/09/2026, 02:00:00] Selin Ofis: #1020 teslim edildi, müşteri memnun
+[02/09/2026, 05:00:00] Ahmet Usta: #1024 montaj tamam
+[02/09/2026, 23:00:00] Ahmet Usta: #1023 montaj tamam
+[03/09/2026, 11:00:00] Selin Ofis: #1022 teslim edildi, müşteri memnun
+[04/09/2026, 07:00:00] Selin Ofis: #1021 teslim edildi, müşteri memnun
+[07/09/2026, 09:00:00] Yusuf Boya: #1024 boyaya girdi
+[09/09/2026, 04:00:00] Yusuf Boya: #1023 boyaya girdi
+[09/09/2026, 17:00:00] Yusuf Boya: #1024 renk tutmadı, tekrar boyaya girdi
+[11/09/2026, 08:00:00] Selin Ofis: #1024 teslim edildi, müşteri memnun
+[11/09/2026, 15:00:00] Yusuf Boya: #1023 renk tutmadı, tekrar boyaya girdi
+[12/09/2026, 23:00:00] Selin Ofis: #1023 teslim edildi, müşteri memnun

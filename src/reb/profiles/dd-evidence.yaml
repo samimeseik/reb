@@ -1,0 +1,93 @@
+id: dd-evidence
+name: Due-diligence evidence file (before buying or partnering)
+name_ar: ملف أدلة قبل الشراء أو الشراكة
+description: >
+  Evidence-graded answers to what a buyer or partner must know about an
+  organization, with the organization's written consent. No valuation opinion
+  and no opinion on financial statements: each item states what the evidence
+  shows, its grade and what is still unknown. Refusals are recorded as findings.
+allowed_modes: [engaged, self]
+items:
+  - id: legal.ownership
+    layer: regulation
+    question: Who legally owns and controls the company (shareholders, directors, signatories)?
+    question_ar: من يملك الشركة ويتحكم بها قانونياً (المساهمون، المديرون، المفوّضون بالتوقيع)؟
+    required_grade: A
+    hints: [trade registry (MERSIS / Ticaret Sicil Gazetesi), articles of association]
+  - id: legal.tax-debt
+    layer: finance
+    question: Does the company have overdue tax debt?
+    question_ar: هل على الشركة ديون ضريبية متأخرة؟
+    required_grade: A
+    hints: [tax-debt certificate with e-Devlet barcode check]
+  - id: legal.social-security
+    layer: people
+    question: Social-security debt and the registered headcount?
+    question_ar: ديون التأمينات الاجتماعية وعدد الموظفين المسجلين؟
+    required_grade: A
+    hints: [SGK debt letter, SGK headcount list pulled live]
+  - id: legal.liens-litigation
+    layer: regulation
+    question: Liens, seizures and pending litigation against the company or its key assets?
+    question_ar: الرهون والحجوزات والقضايا المرفوعة على الشركة أو أصولها الرئيسية؟
+    required_grade: A
+    hints: [court/enforcement search by a lawyer, land-registry annotations]
+  - id: legal.premises
+    layer: regulation
+    question: Who owns the premises and on what terms are they used?
+    question_ar: من يملك المقر وبأي شروط يُستخدم؟
+    required_grade: B
+    hints: [title deed, lease contract]
+  - id: rev.concentration
+    layer: revenue
+    question: How concentrated is revenue across customers over the last 12 months?
+    question_ar: ما مدى تركّز الإيراد على العملاء خلال آخر 12 شهراً؟
+    required_grade: A
+    hints: [12 months of sales e-invoices pulled live from the e-invoice portal]
+  - id: rev.customer-confirmation
+    layer: customer
+    question: Do the largest customers confirm the relationship and recent invoices?
+    question_ar: هل يؤكد أكبر العملاء العلاقة والفواتير الأخيرة؟
+    required_grade: A
+    hints: [contact found independently via invoice tax id → registry, not supplied by the seller]
+  - id: fin.cash
+    layer: finance
+    question: Do bank movements match invoiced revenue?
+    question_ar: هل تتطابق حركات البنك مع الإيراد المفوتر؟
+    required_grade: A
+    hints: [bank statements pulled live by the owner on their own device]
+  - id: equip.assets-exist
+    layer: equipment
+    question: Do the claimed machines exist, belong to the company and are they unencumbered?
+    question_ar: هل المكائن المُدّعاة موجودة ومملوكة للشركة وغير مرهونة؟
+    required_grade: A
+    hints: [serial numbers on site vs purchase invoices / import declarations / leasing contracts]
+  - id: ops.unannounced-visit
+    layer: operations
+    question: What does an unannounced visit show versus the planned visit?
+    question_ar: ماذا تُظهر الزيارة المفاجئة مقارنة بالزيارة المرتّبة؟
+    required_grade: A
+  - id: people.key-person
+    layer: people
+    question: How dependent is the business on the founder or a few individuals?
+    question_ar: ما مدى اعتماد المنشأة على المؤسس أو أفراد بعينهم؟
+    required_grade: C
+    hints: [who holds supplier/customer relationships, who can run machines, signatory powers]
+  - id: ops.capacity-check
+    layer: equipment
+    question: Is claimed capacity consistent with electricity use and machine hours?
+    question_ar: هل الطاقة الإنتاجية المُدّعاة متسقة مع استهلاك الكهرباء وساعات المكائن؟
+    required_grade: B
+    hints: [12 months of utility bills, rated kW from nameplates, shift pattern]
+  - id: people.turnover
+    layer: people
+    question: Staff tenure and turnover?
+    question_ar: مدة بقاء الموظفين ومعدل دورانهم؟
+    required_grade: B
+    hints: [social-security hire/exit records]
+  - id: supply.dependency
+    layer: supply
+    question: How dependent is the business on single suppliers?
+    question_ar: ما مدى الاعتماد على موردين منفردين؟
+    required_grade: B
+    hints: [purchase e-invoices concentration]

@@ -1,0 +1,94 @@
+id: sop-replication
+name: Operating system capture (document your own business)
+name_ar: توثيق نظام التشغيل (لتوسيع منشأتك أو بيعها أو منحها امتيازاً)
+description: >
+  Reconstruct how your own organization actually runs — processes, roles,
+  equipment, suppliers, unit economics and tacit knowledge — so it can be
+  scaled, franchised, handed over or sold. Each item is a reconstruction
+  obligation that closes only with a passing verifier.
+allowed_modes: [self, engaged]
+items:
+  - id: ops.core-process
+    layer: operations
+    question: What is the end-to-end core process (order to delivery) as actually enacted, including exceptions?
+    question_ar: ما العملية الأساسية من الطلب إلى التسليم كما تُنفَّذ فعلاً، بما فيها الاستثناءات؟
+    required_grade: B
+    obligation: true
+    cases: [happy_path, exception_rework, peak_load, staff_absence, supplier_failure]
+    hints: [order book or WhatsApp order group as event log, site walk, ERP export]
+  - id: ops.bottleneck
+    layer: operations
+    question: Which step limits throughput, and by how much?
+    question_ar: أي خطوة تحدّ من الطاقة الإنتاجية، وبكم؟
+    required_grade: B
+    obligation: true
+    cases: [happy_path, peak_load]
+    hints: [time study, cycle times from event log, WIP piles on site]
+  - id: equip.register
+    layer: equipment
+    question: Which machines exist, their rated capacity, condition and who can operate them?
+    question_ar: ما المكائن الموجودة وطاقتها الاسمية وحالتها ومن يستطيع تشغيلها؟
+    required_grade: B
+    obligation: true
+    cases: [happy_path, staff_absence]
+    hints: [nameplate photos, manuals, maintenance log]
+  - id: people.roles
+    layer: people
+    question: What does each role actually do, who decides what (RACI), and who is a single point of failure?
+    question_ar: ماذا يفعل كل دور فعلياً، ومن يقرر ماذا، ومن هو نقطة الفشل الوحيدة؟
+    required_grade: C
+    obligation: true
+    cases: [happy_path, staff_absence]
+    hints: [interviews with 2+ people per role, approval trails, payroll roster]
+  - id: people.hiring
+    layer: people
+    question: How are people recruited, onboarded, trained and paid?
+    question_ar: كيف يتم التوظيف والتهيئة والتدريب والدفع؟
+    required_grade: C
+    obligation: true
+    cases: [happy_path]
+  - id: supply.suppliers
+    layer: supply
+    question: Who are the critical suppliers, lead times and alternatives?
+    question_ar: من الموردون الحرجون وما مُدد التوريد والبدائل؟
+    required_grade: B
+    obligation: true
+    cases: [happy_path, supplier_failure]
+    hints: [purchase e-invoices, supplier WhatsApp chats]
+  - id: econ.unit-cost
+    layer: finance
+    question: What does one unit / job cost (materials, labour minutes x rate, overhead) and what margin does it earn?
+    question_ar: كم تكلفة الوحدة أو الطلب الواحد (مواد، دقائق عمل × أجر، مصاريف عامة) وكم هامشها؟
+    required_grade: B
+    obligation: true
+    cases: [happy_path, exception_rework]
+    hints: [sales and purchase e-invoices, cutting lists, payroll, utility bills]
+  - id: revenue.customers
+    layer: revenue
+    question: Where does revenue come from (customers, channels, concentration) and how is price set?
+    question_ar: من أين يأتي الإيراد (العملاء، القنوات، التركّز) وكيف يُحدَّد السعر؟
+    required_grade: B
+    obligation: false
+  - id: systems.map
+    layer: systems
+    question: Which tools and systems hold the data (incl. paper, WhatsApp, Excel) and how does information move?
+    question_ar: ما الأدوات والأنظمة التي تحفظ البيانات (بما فيها الورق وواتساب وإكسل) وكيف تنتقل المعلومات؟
+    required_grade: C
+    obligation: true
+    cases: [happy_path]
+  - id: reg.licences
+    layer: regulation
+    question: Which licences, permits and registrations are required and current?
+    question_ar: ما التراخيص والتصاريح والتسجيلات المطلوبة وهل هي سارية؟
+    required_grade: B
+    obligation: false
+  - id: culture.tacit
+    layer: culture
+    question: What know-how lives only in people's heads, and with whom?
+    question_ar: ما المعرفة الموجودة فقط في رؤوس الناس، وعند من؟
+    required_grade: C
+    obligation: true
+    cases: [staff_absence]
+    hints:
+      - "ask: what goes wrong when X is away?"
+      - observe setup and troubleshooting
