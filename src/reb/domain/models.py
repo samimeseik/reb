@@ -144,6 +144,10 @@ class Engagement(BaseModel):
     name: str
     subject: str  # organization name or pseudonym
     mode: Mode
+    # other names and web domains the subject publishes under; sources from any of
+    # them are the subject's own and share its controller
+    aliases: list[str] = Field(default_factory=list)
+    domains: list[str] = Field(default_factory=list)
     authorization: str | None = None  # mandate / ownership basis; required unless public
     profile: str | None = None
     analyst: str | None = None

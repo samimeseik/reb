@@ -7,7 +7,7 @@ On failure a tool returns `{"error": "<code>", "message": "<remedy>"}`.
 | MCP tool | CLI | Shape | Purpose |
 |---|---|---|---|
 | `list_profiles` | `reb profiles` | list | Built-in checklists and their allowed modes |
-| `open_engagement` | `reb init` | setup | Organization, mode, authorization, profile, language |
+| `open_engagement` | `reb init` | setup | Organization, its aliases and web domains, mode, authorization, profile, language |
 | `ingest_source` | `reb ingest PATH` | inspect | Hash, check admissibility, extract, pseudonymize, record inventory evidence |
 | `read_source` | `reb read SRC` | inspect | Stored text with line numbers, for quoting |
 | `record_observation` | `reb observe` | observe | Site walk, time study or nameplate reading as direct observation |

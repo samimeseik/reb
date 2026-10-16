@@ -34,6 +34,7 @@ from .guardrails import (
     check_source_admissible,
     check_vocabulary,
     normalize_controller,
+    normalize_domain,
 )
 from .models import (
     Authority,
@@ -111,6 +112,8 @@ class Ledger:
         profile: str | None = None,
         analyst: str | None = None,
         language: str = "ar",
+        aliases: list[str] | None = None,
+        domains: list[str] | None = None,
     ) -> "Ledger":
         workspace = Path(workspace)
         if (workspace / REB_DIR / "ledger.json").exists():
@@ -126,6 +129,8 @@ class Ledger:
             name=name,
             subject=subject,
             mode=mode,
+            aliases=[a.strip() for a in aliases or [] if a.strip()],
+            domains=[d for d in (normalize_domain(x) for x in domains or []) if d],
             authorization=authorization,
             profile=profile,
             analyst=analyst,

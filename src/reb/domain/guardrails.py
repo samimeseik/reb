@@ -76,14 +76,53 @@ def check_authority(source: Source, authority: Authority) -> None:
         )
 
 
+def normalize_domain(value: str) -> str:
+    """'https://www.Example.org/about' -> 'example.org'; '' when there is no host."""
+    host = value.strip().lower()
+    host = re.sub(r"^[a-z][a-z0-9+.-]*://", "", host)
+    host = re.split(r"[/?#\s]", host, maxsplit=1)[0].rsplit("@", 1)[-1].split(":", 1)[0].rstrip(".")
+    if host.startswith("www."):
+        host = host[4:]
+    return host if "." in host else ""
+
+
+def _fold(value: str) -> str:
+    return " ".join(value.casefold().split())
+
+
+def is_subject_party(engagement: Engagement, value: str | None) -> bool:
+    """True when `value` (an origin party, controller or URL) names the engagement
+    subject: its name or a declared alias (case-folded), or a declared domain."""
+    if not value or not value.strip():
+        return False
+    folded = _fold(value)
+    if folded.startswith("subject:"):
+        return True
+    if folded in {_fold(n) for n in [engagement.subject, *engagement.aliases] if n.strip()}:
+        return True
+    return on_subject_domain(engagement, value)
+
+
+def on_subject_domain(engagement: Engagement, value: str | None) -> bool:
+    """True when `value` is a host or URL on one of the subject's declared domains."""
+    host = normalize_domain(value or "")
+    return bool(host) and any(host == d or host.endswith("." + d) for d in engagement.domains)
+
+
 def normalize_controller(engagement: Engagement, source: Source) -> None:
-    """The organization's owner, staff, documents and systems share ONE controller.
-    Only third parties, observers and public sources can be independent of it."""
-    if engagement.mode == Mode.PUBLIC:
-        return
-    if source.custody in (Custody.SUBJECT_HELD,) or (
-        source.kind == SourceKind.INTERVIEW and source.custody != Custody.THIRD_PARTY
-    ):
+    """The organization's owner, staff, documents, systems, website and press share ONE
+    controller. Only third parties, observers and other public sources can be independent
+    of it. Applies in every mode: the subject's own website is not independent of the
+    subject's own report, nor of its own press release."""
+    own = (
+        is_subject_party(engagement, source.origin_party)
+        or is_subject_party(engagement, source.controller)
+        or (source.custody == Custody.PUBLIC and on_subject_domain(engagement, source.legal_basis))
+    )
+    if own or (engagement.mode != Mode.PUBLIC and (
+        source.custody == Custody.SUBJECT_HELD
+        or (source.kind == SourceKind.INTERVIEW and source.custody != Custody.THIRD_PARTY)
+    )):
         source.controller = f"subject:{engagement.subject}"
 
 

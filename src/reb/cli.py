@@ -72,6 +72,8 @@ def run(args: argparse.Namespace) -> Any:
             profile=args.profile,
             analyst=args.analyst,
             language=args.language,
+            aliases=args.alias,
+            domains=args.domain,
         )
         return led.engagement.model_dump(mode="json")
 
@@ -255,6 +257,10 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("init", help="open an engagement in the workspace")
     s.add_argument("--name", required=True)
     s.add_argument("--subject", required=True, help="organization name or pseudonym")
+    s.add_argument("--alias", action="append", default=[],
+                   help="another name the subject goes by (repeatable); its sources share the subject's controller")
+    s.add_argument("--domain", action="append", default=[],
+                   help="a web domain the subject owns, e.g. example.org (repeatable); pages on it are the subject's own")
     s.add_argument("--mode", required=True, choices=["self", "engaged", "public"])
     s.add_argument("--authorization", help="ownership or written-mandate reference (required unless public)")
     s.add_argument("--profile")

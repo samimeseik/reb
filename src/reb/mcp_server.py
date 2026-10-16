@@ -73,15 +73,20 @@ def build_server():
     def open_engagement(
         name: str, subject: str, mode: str, authorization: str | None = None,
         profile: str | None = None, language: str = "ar", workspace: str | None = None,
+        aliases: list[str] | None = None, domains: list[str] | None = None,
     ) -> dict:
         """Open an engagement. mode: self (you own/run it), engaged (written mandate from the
-        organization), public (public sources only). authorization is required unless public."""
+        organization), public (public sources only). authorization is required unless public.
+        aliases: other names the subject goes by; domains: web domains it owns (e.g. example.org).
+        Any source from the subject, an alias or one of its domains shares the subject's
+        controller in every mode, so its website and press never count as independent of it."""
         if profile:
             prof = load_profile(profile)
             if mode not in [m.value for m in prof.allowed_modes]:
                 raise RebError("mode_not_allowed", f"Profile '{prof.id}' allows {[m.value for m in prof.allowed_modes]}.")
         led = Ledger.init(_ws(workspace), name=name, subject=subject, mode=mode,
-                          authorization=authorization, profile=profile, language=language)
+                          authorization=authorization, profile=profile, language=language,
+                          aliases=aliases, domains=domains)
         return _dump(led.engagement)
 
     @server.tool()

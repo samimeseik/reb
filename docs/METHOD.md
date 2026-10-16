@@ -74,6 +74,27 @@ Two sources are independent only when **all three** conditions hold:
 2. No source in either ancestry shares a `controller` with the other. **An organization's owner, staff, documents and systems share one controller.** Interviewing three employees gives you three testimonies from the same controller. It is not triangulation.
 3. If both declare an observation period, the periods overlap.
 
+**The subject is one controller in every mode, whatever the custody.** The
+engine rewrites a source's controller to `subject:<name>` when any of these is
+true:
+
+- its `origin_party` or `controller` is the subject's name or a declared alias.
+  The match ignores case and extra spaces.
+- its `origin_party` or `controller` is a host on one of the subject's declared domains.
+- it is a `public` source whose URL in `legal_basis` is on one of those domains.
+
+This applies in `public` mode too. So the organization's website, press releases
+and annual report never corroborate its handed-over documents or each other. In
+`self` and `engaged` mode, every `subject_held` source and every interview that is
+not `third_party` also gets this controller.
+
+Declare the other names and domains when you open the engagement:
+`reb init --alias "HB Relief" --domain hopebridge.org`, or `aliases`/`domains` in
+MCP `open_engagement`. Subdomains count (`blog.hopebridge.org`), and `www.` and
+the URL scheme are stripped. The match is exact, not fuzzy: a name or domain you
+leave undeclared is treated as independent. Read the source list and declare what
+you miss.
+
 ## Stated vs enacted
 
 Record what documents and people *say* as `kind=stated` claims, and what
