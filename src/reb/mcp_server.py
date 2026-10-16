@@ -122,15 +122,19 @@ def build_server():
     def record_observation(
         title: str, note: str, observer_role: str, legal_basis: str | None = None, site: str | None = None, when: str | None = None,
         shift: str | None = None, facts: list[dict] | None = None, public_premises: bool = False,
-        workspace: str | None = None,
+        artifact_ids: list[str] | None = None, workspace: str | None = None,
     ) -> dict:
         """Record what you directly observed on site (site walk, time study, nameplate reading).
         facts: [{"fact": "...", "layer": "...", "entity": "...", "location": "..."}].
-        Observing staff needs legal_basis (e.g. staff notice), unless public_premises=true."""
+        Observing staff needs legal_basis (e.g. staff notice), unless public_premises=true.
+        artifact_ids: ingested sources backing the note (photo, count sheet). Without one the
+        note is capped at grade B and triangulates only with a session on another day.
+        when: start with YYYY-MM-DD to date the session."""
         with Ledger.open(_ws(workspace), write=True) as led:
             return ingest.record_observation(
                 led, title=title, note=note, observer_role=observer_role, legal_basis=legal_basis,
                 site=site, when=when, shift=shift, facts=facts, public_premises=public_premises,
+                artifact_ids=artifact_ids,
             )
 
     @server.tool()
@@ -265,14 +269,35 @@ def build_server():
     @_safe
     def record_obligation(
         item: str, owner: str | None = None, case_evidence: dict[str, list[str]] | None = None,
-        verifier: dict | None = None, profile: str | None = None, workspace: str | None = None,
+        verifier: dict | None = None, reuse_justification: str | None = None, profile: str | None = None,
+        workspace: str | None = None,
     ) -> dict:
         """Attach owner, per-case evidence or a verifier
         ({"kind": "desk_review|reconciliation|conformance|prediction|pilot", "passed": bool,
-        "evidence_ids": [...]}) to a reconstruction obligation."""
+        "evidence_ids": [...]}) to a reconstruction obligation. Each required case needs its own
+        evidence unless reuse_justification says why one item covers several. A passed flag alone
+        does not make an obligation ready: record the check's result with record_verification."""
         with Ledger.open(_ws(workspace), write=True) as led:
-            return _dump(coverage.record_obligation(led, item=item, owner=owner,
-                                                    case_evidence=case_evidence, verifier=verifier, profile=profile))
+            return _dump(coverage.record_obligation(led, item=item, owner=owner, case_evidence=case_evidence,
+                                                    verifier=verifier, reuse_justification=reuse_justification,
+                                                    profile=profile))
+
+    @server.tool()
+    @_safe
+    def record_verification(
+        item: str, kind: str, passed: bool, source_id: str, fact: str, authority: str,
+        quote: str | None = None, location: str | None = None, profile: str | None = None,
+        workspace: str | None = None,
+    ) -> dict:
+        """Record the result of a verification run (kind: desk_review|reconciliation|conformance|
+        prediction|pilot) as evidence from an ingested source (reconciliation workbook, pilot log,
+        site walk) and attach it to the obligation's verifier. The source should be independent
+        of the case evidence."""
+        with Ledger.open(_ws(workspace), write=True) as led:
+            return coverage.record_verification(
+                led, item=item, kind=kind, passed=passed, source_id=source_id, fact=fact, authority=authority,
+                quote=quote, location=location, profile=profile,
+            )
 
     @server.tool()
     @_safe

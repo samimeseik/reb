@@ -20,6 +20,7 @@ On failure a tool returns `{"error": "<code>", "message": "<remedy>"}`.
 | `compare_stated_vs_enacted` | `reb compare` | compare | Opens contradicted unknowns for gaps beyond the tolerance |
 | `inspect_coverage` | `reb coverage` | workflow | Coverage per layer and per profile item |
 | `record_obligation` | `reb obligation` | record | Owner, case evidence and verifier for an obligation |
+| `record_verification` | `reb verify` | record | A verifier's result as evidence (operation `verify:<item>`), needed for `ready` |
 | `build_obligation_ledger` | `reb ledger` | workflow | Status (`ready` / `open` / `failed` / `unknown`) with reasons |
 | `render_report` | `reb report` | workflow | Markdown report in Arabic (RTL) or English |
 
@@ -31,5 +32,5 @@ On failure a tool returns `{"error": "<code>", "message": "<remedy>"}`.
 4. `record_claim`: one claim per finding, `kind=stated` or `kind=enacted` when a number is involved.
 5. `compare_stated_vs_enacted` for each metric that has both kinds.
 6. `inspect_coverage`. For each `not_covered` or `below_required` item, `record_unknown` with a probe.
-7. `record_obligation` as owners, cases and verifiers become available.
+7. `record_obligation` as owners and cases become available; `record_verification` once a check has run.
 8. `render_report`.

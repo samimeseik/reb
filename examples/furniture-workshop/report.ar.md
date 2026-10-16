@@ -6,7 +6,7 @@
 - **وضع التحليل:** self
 - **أساس التفويض:** owner (synthetic example)
 - **ملف التشغيل:** sop-replication
-- **تاريخ الإصدار:** 2026-10-15
+- **تاريخ الإصدار:** 2026-10-16
 
 > يعرض هذا الملف ما تُظهره الأدلة المسجّلة، مع درجة لكل نتيجة. وهو ليس تدقيقاً ولا تقييماً ولا استشارة قانونية ولا ضماناً. كل ما لم يُغطَّ أدناه مجهول، وليس غير موجود.
 
@@ -25,7 +25,7 @@
 | الاستراتيجية | 0 | — (لا أدلة) | 0 |
 | الإيراد والتسعير | 2 | C | 0 |
 | رحلة العميل | 0 | — (لا أدلة) | 0 |
-| العمليات | 3 | A | 1 |
+| العمليات | 3 | B | 1 |
 | المكائن وخطوط الإنتاج | 0 | — (لا أدلة) | 0 |
 | الأنظمة والبيانات | 0 | — (لا أدلة) | 0 |
 | الناس والتوظيف | 0 | — (لا أدلة) | 0 |
@@ -39,7 +39,7 @@
 | البند | المطلوب | أفضل درجة | الحالة |
 |---|---|---|---|
 | ما العملية الأساسية من الطلب إلى التسليم كما تُنفَّذ فعلاً، بما فيها الاستثناءات؟ | B | C | متعارض |
-| أي خطوة تحدّ من الطاقة الإنتاجية، وبكم؟ | B | A | مستوفى |
+| أي خطوة تحدّ من الطاقة الإنتاجية، وبكم؟ | B | B | مستوفى |
 | ما المكائن الموجودة وطاقتها الاسمية وحالتها ومن يستطيع تشغيلها؟ | B | — | غير مغطّى |
 | ماذا يفعل كل دور فعلياً، ومن يقرر ماذا، ومن هو نقطة الفشل الوحيدة؟ | C | — | غير مغطّى |
 | كيف يتم التوظيف والتهيئة والتدريب والدفع؟ | C | — | غير مغطّى |
@@ -58,7 +58,7 @@
 
 ### العمليات
 
-- **[A]** The spray booth is the bottleneck: the longest wait in the process is before or in painting. — مثلَّث (مصدران مستقلان أو أكثر) · `ev_4df8e4bba69b`, `ev_be6db0c90b5f`, `ev_b03afcb70334`
+- **[B]** The spray booth is the bottleneck: the longest wait in the process is before or in painting. — مصدر واحد (أو مصادر تحت جهة واحدة) · `ev_4df8e4bba69b`, `ev_be6db0c90b5f`, `ev_b03afcb70334`
 - **[C]** The written procedure and the usta state a lead time of about 10 days. — مصدر واحد (أو مصادر تحت جهة واحدة) · `ev_1b9f9e9922ad`, `ev_4fa429b9c6c4`
 - **[C]** Order-to-delivery takes a median of 14.9 days in the orders group (p90 18.4 days). — مصدر واحد (أو مصادر تحت جهة واحدة) · `ev_4df8e4bba69b`
 
@@ -98,7 +98,7 @@
 **open** · {'open': 3, 'unknown': 6}
 
 - `ops.core-process` — **open** — missing owner (accountable role); missing case evidence: happy_path, exception_rework, peak_load, staff_absence, supplier_failure; missing passing verifier; open unknowns on this item
-- `ops.bottleneck` — **open** — case evidence below grade B: happy_path, peak_load
+- `ops.bottleneck` — **open** — case evidence below grade B: happy_path, peak_load; contradicted or blocked unknowns on layer operations: unk_0b07fd610764
 - `equip.register` — **unknown** — no evidence recorded for this item
 - `people.roles` — **unknown** — no evidence recorded for this item
 - `people.hiring` — **unknown** — no evidence recorded for this item
@@ -113,7 +113,7 @@
 - `ev_4df8e4bba69b` **[C]** Process discovered from 24 cases / 177 events: median cycle time 357.0h (p90 441.0h); most common path order → measure → cut → edge → assembly → paint → deliver (15 cases); 9 cases with rework. — المصدر: WhatsApp Chat - Siparisler.txt (الحيازة: subject_held), system_record · القيود: Events reconstructed from message keywords: steps never mentioned in this chat are missing.; Activity mapping was supplied by the analyst; different keywords give a different process.
 - `ev_4fa429b9c6c4` **[D]** The usta says a typical order takes about ten days. — المصدر: interview-usta.txt (الحيازة: captured_live), testimony · الموضع: line 4
 - `ev_67129ffc8cf8` **[D]** A chat message says only one person can set up the edge-bander for 2 mm PVC. — المصدر: WhatsApp Chat - Siparisler.txt (الحيازة: subject_held), testimony · الموضع: chat
-- `ev_b03afcb70334` **[A]** Nine assembled carcasses were waiting in front of the single spray booth. — المصدر: Site walk 2026-10-10 (الحيازة: captured_live), direct_observation · الموضع: workshop floor · القيود: Observed workers may behave differently while observed (Hawthorne effect).
+- `ev_b03afcb70334` **[B]** Nine assembled carcasses were waiting in front of the single spray booth. — المصدر: Site walk 2026-10-10 (الحيازة: captured_live), direct_observation · الموضع: workshop floor · القيود: Observed workers may behave differently while observed (Hawthorne effect).; No artifact (photo, count sheet, log) attached: grade capped at B; triangulates only with an observation session on another day.
 - `ev_b18517dfe1b9` **[C]** 8 sales invoices, 4 counterparties, total 351600.0 TRY; largest counterparty share 0.355; HHI 3014. — المصدر: invoice-001.xml (الحيازة: subject_held), system_record · القيود: Covers only the invoices ingested; missing months or off-book sales are not represented.; Counterparties are identified by tax id. Check related parties separately.
 - `ev_b3dde0d62d97` **[D]** Only one operator can set up the edge-bander for 2 mm PVC. — المصدر: interview-usta.txt (الحيازة: captured_live), testimony · الموضع: line 7
 - `ev_be6db0c90b5f` **[D]** The usta names the single spray booth as where orders get stuck. — المصدر: interview-usta.txt (الحيازة: captured_live), testimony · الموضع: line 10

@@ -252,6 +252,7 @@ class Obligation(BaseModel):
     required_cases: list[str] = Field(default_factory=list)
     required_grade: Grade = Grade.C
     case_evidence: dict[str, list[str]] = Field(default_factory=dict)
+    case_reuse_justification: str | None = None  # why one piece of evidence may cover several cases
     verifier: Verifier | None = None
     status: ObligationStatus = ObligationStatus.UNKNOWN
     reasons: list[str] = Field(default_factory=list)

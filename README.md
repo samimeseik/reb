@@ -27,7 +27,7 @@ REB exists to stop that:
 - **Missing coverage is unknown, not absent.** Gaps become explicit Unknowns with the cheapest probe that would close them.
 - **What people say is kept apart from what records show** (*stated vs enacted*). Gaps between the two are recorded as contradictions instead of being averaged away.
 - **Quotes are checked.** Evidence that quotes a source must match the source text verbatim.
-- **Reconstructions close only when proven.** A rebuilt process or SOP item is `ready` only with an owner, evidence for every required case, and a strong enough verifier. These are REA's reconstruction obligation ledgers, applied to organizations.
+- **Reconstructions close only on recorded evidence.** A rebuilt process or SOP item is `ready` only with an owner, its own evidence for every required case, a recorded verification result from an independent source, and no contradicted or blocked unknown on its layer. `ready` means the record is complete, not that the process will work. These are REA's reconstruction obligation ledgers, applied to organizations.
 - **Copying has limits.** Each finding can be tagged as codifiable, needs a capability, needs an asset, or non-transferable (relationships, licences, location, timing, founder).
 
 ## Three modes, enforced by the engine

@@ -56,16 +56,34 @@ EXTENSION_KINDS: dict[str, SourceKind] = {
 }
 
 
+# Container and media formats whose bytes are never a plain-text chat. Every other
+# file is sniffed, whatever its extension.
+BINARY_SUFFIXES = {
+    ".pdf", ".docx", ".xlsx", ".xls", ".zip", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".heic",
+    ".mp3", ".m4a", ".wav", ".ogg", ".opus", ".mp4", ".mov",
+}
+
+
+def _text_head(path: Path, size: int = 8000) -> str | None:
+    with path.open("rb") as fh:
+        raw = fh.read(size)
+    if b"\x00" in raw:
+        return None
+    return raw.decode("utf-8", errors="replace")
+
+
 def detect_kind(path: Path) -> SourceKind:
-    """Detect by content first for text files, so a renamed chat export is still a
-    chat export (and still needs a legal basis)."""
-    if path.suffix.lower() in (".txt", ""):
+    """Detect by content first for every text-like file, so a chat export renamed or
+    re-saved as .csv/.md/.log/.json is still a chat export (it still needs a legal
+    basis, and its senders are still pseudonymized)."""
+    suffix = path.suffix.lower()
+    if suffix not in BINARY_SUFFIXES:
         from .whatsapp import looks_like_chat
 
-        head = path.read_text(encoding="utf-8", errors="replace")[:8000]
-        if looks_like_chat(head):
+        head = _text_head(path)
+        if head is not None and looks_like_chat(head):
             return SourceKind.CHAT_EXPORT
-    return EXTENSION_KINDS.get(path.suffix.lower(), SourceKind.OTHER)
+    return EXTENSION_KINDS.get(suffix, SourceKind.OTHER)
 
 
 def default_authority(kind: SourceKind, custody: Custody) -> Authority:

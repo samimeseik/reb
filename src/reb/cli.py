@@ -107,6 +107,7 @@ def _run_engagement(led: Ledger, args: argparse.Namespace) -> Any:
         return ingest.record_observation(
             led, title=args.title, note=args.note, observer_role=args.role, legal_basis=args.legal_basis, site=args.site,
             when=args.when, shift=args.shift, facts=facts, public_premises=args.public_premises,
+            artifact_ids=args.artifact,
         )
     if cmd == "evidence":
         ev = led.add_evidence(
@@ -165,9 +166,15 @@ def _run_engagement(led: Ledger, args: argparse.Namespace) -> Any:
                 "note": args.note,
             }
         ob = coverage.record_obligation(
-            led, item=args.item, owner=args.owner, case_evidence=_case_pairs(args.case), verifier=verifier, profile=args.profile
+            led, item=args.item, owner=args.owner, case_evidence=_case_pairs(args.case), verifier=verifier,
+            reuse_justification=args.reuse_justification, profile=args.profile,
         )
         return ob.model_dump(mode="json")
+    if cmd == "verify":
+        return coverage.record_verification(
+            led, item=args.item, kind=args.kind, passed=not args.failed, source_id=args.source, fact=args.fact,
+            authority=args.authority, quote=args.quote, location=args.location, profile=args.profile,
+        )
     if cmd == "ledger":
         return coverage.obligation_ledger(led, args.profile)
     if cmd == "report":
@@ -290,8 +297,9 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--role", required=True, help="observer role")
     s.add_argument("--legal-basis", help="staff notice / consent reference (not needed with --public-premises)")
     s.add_argument("--site")
-    s.add_argument("--when")
+    s.add_argument("--when", help="start with YYYY-MM-DD to date the session")
     s.add_argument("--shift")
+    s.add_argument("--artifact", action="append", help="source id of a photo / count sheet backing the note")
     s.add_argument("--fact", action="append", help='fact text or JSON {"fact":..,"layer":..,"entity":..}')
     s.add_argument("--public-premises", action="store_true")
 
@@ -375,7 +383,21 @@ def build_parser() -> argparse.ArgumentParser:
     g.add_argument("--passed", action="store_true")
     g.add_argument("--failed", action="store_true")
     s.add_argument("--verifier-evidence", action="append")
+    s.add_argument("--reuse-justification", help="why one piece of evidence may cover several cases")
     s.add_argument("--note")
+    s.add_argument("--profile")
+
+    s = sub.add_parser("verify", help="record a verification result as evidence and attach it to an obligation")
+    s.add_argument("--item", required=True)
+    s.add_argument("--kind", required=True, choices=["desk_review", "reconciliation", "conformance", "prediction", "pilot"])
+    g = s.add_mutually_exclusive_group(required=True)
+    g.add_argument("--passed", action="store_true")
+    g.add_argument("--failed", action="store_true")
+    s.add_argument("--source", required=True, help="ingested source holding the check (workbook, pilot log, walk)")
+    s.add_argument("--authority", required=True)
+    s.add_argument("--fact", required=True, help="what the check compared and found")
+    s.add_argument("--quote")
+    s.add_argument("--location")
     s.add_argument("--profile")
 
     s = sub.add_parser("ledger", help="reconstruction obligation ledger")

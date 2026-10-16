@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import re
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -116,13 +118,23 @@ def record_observation(
     shift: str | None = None,
     facts: list[dict[str, Any]] | None = None,
     public_premises: bool = False,
+    artifact_ids: list[str] | None = None,
 ) -> dict[str, Any]:
     """A structured site-walk / time-study entry captured by the analyst in person.
-    Observing staff needs a legal basis (e.g. staff notice); public premises need the place."""
+    Observing staff needs a legal basis (e.g. staff notice); public premises need the place.
+    artifact_ids: ingested sources that back the note (photo, count sheet, timestamped log).
+    Without one the note is capped at grade B, and it triangulates a claim only together
+    with an observation session on another day. `when` starting with YYYY-MM-DD dates the session."""
     facts = facts or [{"fact": note}]
     for text in [note, *(f.get("fact", "") for f in facts)]:
         check_vocabulary(text)
+    artifact_ids = list(dict.fromkeys(artifact_ids or []))
+    for sid in artifact_ids:
+        ledger.source(sid)
+    day = _session_day(when)
     payload = {"title": title, "note": note, "site": site, "when": when, "shift": shift, "facts": facts}
+    if artifact_ids:
+        payload["artifacts"] = artifact_ids
     content = json.dumps(payload, ensure_ascii=False, sort_keys=True).encode("utf-8")
     if public_premises and not legal_basis:
         legal_basis = f"public premises: {site or title}"
@@ -135,11 +147,18 @@ def record_observation(
         controller=f"observer:{observer_role}",
         legal_basis=legal_basis,
         sensitivity="public" if public_premises else "internal",
-        context={"site": site, "shift": shift, "note": when},
+        context={"site": site, "shift": shift, "note": when, "period_start": day, "period_end": day},
+        verification_ids=artifact_ids,
         text=note + "\n" + "\n".join(f.get("fact", "") for f in facts),
     )
     evidence = []
     for f in facts:
+        limitations = ["Observed workers may behave differently while observed (Hawthorne effect)."]
+        if not artifact_ids:
+            limitations.append(
+                "No artifact (photo, count sheet, log) attached: grade capped at B; triangulates only "
+                "with an observation session on another day."
+            )
         ev = ledger.add_evidence(
             source_id=source.id,
             fact=f["fact"],
@@ -150,11 +169,21 @@ def record_observation(
             entity=f.get("entity"),
             layer=f.get("layer"),
             normalized={k: v for k, v in f.items() if k not in {"fact", "location", "entity", "layer"}},
-            limitations=["Observed workers may behave differently while observed (Hawthorne effect)."],
+            limitations=limitations,
             as_of=when,
         )
         evidence.append(ev.model_dump(mode="json"))
     return {"source": source.model_dump(mode="json"), "evidence": evidence}
+
+
+def _session_day(when: str | None) -> str | None:
+    match = re.match(r"\s*(\d{4}-\d{2}-\d{2})", when or "")
+    if not match:
+        return None
+    try:
+        return date.fromisoformat(match.group(1)).isoformat()
+    except ValueError:
+        return None
 
 
 def read_source(ledger: Ledger, source_id: str, *, start_line: int = 1, max_lines: int = 200) -> dict[str, Any]:

@@ -36,6 +36,9 @@ def _matches(text: str) -> list[tuple[int, re.Match[str] | None, str]]:
     out: list[tuple[int, re.Match[str] | None, str]] = []
     for number, raw in enumerate(text.splitlines(), start=1):
         line = _INVISIBLE.sub("", raw).strip()
+        if len(line) > 1 and line[0] == line[-1] == '"':
+            # A chat re-saved as CSV by a spreadsheet: each line becomes one quoted cell.
+            line = line[1:-1].replace('""', '"').strip()
         if line:
             out.append((number, _IOS.match(line) or _ANDROID.match(line), line))
     return out

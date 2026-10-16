@@ -65,11 +65,12 @@ INT_PAINT=$(r evidence --source "$INTERVIEW" --authority testimony --layer opera
   --quote "We have one spray booth and the lacquer needs a full day to cure." --location "line 10" | get 'd["id"]')
 
 echo "== 6. a site walk (direct observation)"
-OBS=$(r observe --title "Site walk 2026-10-10" --role "analyst" --site "workshop floor" --when "2026-10-10" \
+OBS_OUT=$(r observe --title "Site walk 2026-10-10" --role "analyst" --site "workshop floor" --when "2026-10-10" \
   --legal-basis "staff notice N-2026-01 (synthetic)" \
   --note "Morning walk through all stations." \
   --fact '{"fact": "Nine assembled carcasses were waiting in front of the single spray booth.", "layer": "operations", "entity": "paint"}' \
-  | get 'd["evidence"][0]["id"]')
+  | get 'd["source"]["id"] + " " + d["evidence"][0]["id"]')
+read -r OBS_SRC OBS <<< "$OBS_OUT"
 
 echo "== 7. claims (status and grade are computed)"
 r claim --statement "The written procedure and the usta state a lead time of about 10 days." --layer operations \
@@ -99,11 +100,12 @@ r unknown add --question "Which licences and permits does the workshop hold?" --
   --required-authority public_record --probe "Pull the trade registry entry and municipal licence" >/dev/null
 
 echo "== 10. one obligation progressed (owner + cases + verifier)"
-# The verifier must cite evidence beyond the case evidence: the model (from the chat)
-# predicted a queue at the spray booth; the site walk then observed it.
-r obligation --item ops.bottleneck --owner "workshop manager" --case "happy_path=$PM_EV" --case "peak_load=$INT_PAINT" \
-  --verifier prediction --passed --verifier-evidence "$OBS" \
-  --note "Process model predicted the paint queue later observed on the site walk." >/dev/null
+# The verification must come from a source beyond the case evidence and be recorded as
+# evidence: the model (from the chat) predicted a queue at the spray booth; the site walk
+# then found it. A passed flag alone would not count.
+r obligation --item ops.bottleneck --owner "workshop manager" --case "happy_path=$PM_EV" --case "peak_load=$INT_PAINT" >/dev/null
+r verify --item ops.bottleneck --kind prediction --passed --source "$OBS_SRC" --authority direct_observation \
+  --fact "The process model predicted a queue before the spray booth; the site walk found nine carcasses waiting there." >/dev/null
 
 echo "== 11. coverage and report"
 r coverage | get 'd["summary"]'

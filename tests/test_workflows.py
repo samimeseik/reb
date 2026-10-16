@@ -106,14 +106,15 @@ def test_obligation_desk_review_too_weak_for_system_records(ledger):
     log = add_text_source(ledger, "log", kind="system_export", controller="erp", custody="captured_live")
     walk = add_text_source(ledger, "walk", kind="observation", custody="captured_live", controller="analyst")
     ev = ledger.add_evidence(source_id=log.id, fact="queue", authority="system_record")
-    ev2 = ledger.add_evidence(source_id=walk.id, fact="queue seen", authority="direct_observation")
+    ev_peak = ledger.add_evidence(source_id=log.id, fact="queue on the busiest week", authority="system_record")
     ob = coverage.record_obligation(ledger, item="ops.bottleneck", owner="manager",
-                                    case_evidence={"happy_path": [ev.id], "peak_load": [ev.id]},
-                                    verifier={"kind": "desk_review", "passed": True, "evidence_ids": [ev2.id]})
-    assert ob.status.value == "open"
-    ob = coverage.record_obligation(ledger, item="ops.bottleneck",
-                                    verifier={"kind": "prediction", "passed": True, "evidence_ids": [ev2.id]})
-    assert ob.status.value == "ready"
+                                    case_evidence={"happy_path": [ev.id], "peak_load": [ev_peak.id]})
+    coverage.record_verification(ledger, item="ops.bottleneck", kind="desk_review", passed=True,
+                                 source_id=walk.id, fact="queue seen", authority="direct_observation")
+    assert ledger.data.obligations["ops.bottleneck"].status.value == "open"
+    res = coverage.record_verification(ledger, item="ops.bottleneck", kind="prediction", passed=True,
+                                       source_id=walk.id, fact="predicted queue seen", authority="direct_observation")
+    assert res["obligation"]["status"] == "ready"
 
 
 def test_report_shows_conjecture_and_unknowns(ledger):

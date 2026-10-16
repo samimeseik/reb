@@ -8,7 +8,7 @@ metadata:
 # REB: Reverse Engineer any Business
 
 REB grades every finding by its evidence, records what is unknown, and closes a
-reconstruction only when it is proven. Your job is to collect evidence and
+reconstruction only on recorded evidence. Your job is to collect evidence and
 propose claims. The engine grades them and refuses what the evidence does not
 support. Do not argue with a refusal. Get better evidence.
 
@@ -52,7 +52,9 @@ Choose authority honestly:
 - interviews → `testimony`
 - SOPs and contracts → `governing_document`
 - exports, ledgers, invoices, message timestamps → `system_record`
-- what you saw → `direct_observation` (use `record_observation`)
+- what you saw → `direct_observation` (use `record_observation`). Attach the photo or
+  count sheet with `artifact_ids` and date the session in `when` (YYYY-MM-DD). A note
+  with no artifact is capped at grade B and triangulates only with a session on another day.
 
 ## 3. Analyse
 
@@ -87,8 +89,12 @@ Missing coverage is **unknown, not absent**.
 `record_obligation` takes an owner (a role), evidence per required case, and a
 verifier: `desk_review`, `reconciliation`, `conformance`, `prediction` or `pilot`.
 
-- The verifier must cite evidence **beyond** the case evidence.
+- Give each case its own evidence; reusing one item for two cases needs `reuse_justification`.
+- Record the check itself with `record_verification` (its source, what it compared, passed
+  or failed). A `passed: true` flag alone never makes an obligation `ready`.
+- The verification must come from a source **independent** of the case evidence.
 - A desk review cannot close items grounded in records or observation.
+- A contradicted or blocked unknown on the same layer keeps the obligation open.
 
 `build_obligation_ledger` shows what is still open and why.
 

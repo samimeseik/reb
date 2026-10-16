@@ -64,7 +64,10 @@ def test_same_controller_is_not_triangulation(ledger):
 
 def test_independent_controllers_triangulate(ledger):
     a = add_text_source(ledger, "rows", controller="workshop", kind="system_export")
-    b = add_text_source(ledger, "walk", controller="observer:analyst", custody="captured_live", kind="observation")
+    photo = add_text_source(ledger, "photo of the paint queue", controller="observer:analyst",
+                            custody="captured_live", kind="image")
+    b = add_text_source(ledger, "walk", controller="observer:analyst", custody="captured_live", kind="observation",
+                        verification_ids=[photo.id])
     ea = ledger.add_evidence(source_id=a.id, fact="queue", authority="system_record")
     eb = ledger.add_evidence(source_id=b.id, fact="queue seen", authority="direct_observation")
     c = ledger.record_claim(statement="Paint is the bottleneck.", layer="operations", evidence_ids=[ea.id, eb.id])

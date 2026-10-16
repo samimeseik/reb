@@ -18,7 +18,7 @@ reconstruction counts as closed.
 ## Grades
 
 ```
-grade = worst( authority_base , custody_cap , confidence_cap )
+grade = worst( authority_base , custody_cap , confidence_cap , observation_cap )
 ```
 
 **Authority** is what kind of knowledge the evidence is:
@@ -46,6 +46,12 @@ grade = worst( authority_base , custody_cap , confidence_cap )
 
 **Confidence**: `observed` and `derived` do not cap the grade. `inferred` caps it at D.
 
+**Observation artifact**: an observation note with no attached artifact is capped
+at **B**. An artifact is another ingested source the note references through
+`artifact_ids` (stored as `verification_ids`) or `upstream_ids`: a photo, a count
+sheet, a timestamped log. A typed note alone is one walk-through, possibly on a
+staged day, and observed workers behave differently (Hawthorne effect).
+
 ### What the engine refuses, so grades cannot be talked up
 
 - **Authority is capped by source kind.**
@@ -57,13 +63,13 @@ grade = worst( authority_base , custody_cap , confidence_cap )
 - **`issuer_verifiable`** needs `verification_ids`. Ingest the issuer check itself first (for example a screenshot of the e-invoice UUID lookup), then cite it.
 - **`public`** sources need their URL or registry reference in `legal_basis`.
 - **The controller is forced** in `self` and `engaged` modes. Anything the organization handed over, and every interview with its people, gets the controller `subject:<organization>`.
-- **Consent**: interviews, chat exports and non-public observations need a `legal_basis`. A renamed chat export is still detected from its content.
+- **Consent**: interviews, chat exports and non-public observations need a `legal_basis`. Every text-like file (`.txt`, `.csv`, `.tsv`, `.md`, `.log`, `.json`, no extension, …) is sniffed for chat content, so a chat renamed or re-saved under another extension is still a chat export: it needs a `legal_basis`, cannot be relabelled as another kind, and its senders are pseudonymized.
 
 ## Claim status
 
 - `conjecture`: no supporting evidence. It is rendered only in a separate, clearly marked section.
 - `single_source`: the evidence comes from one source, or from several sources under one controller.
-- `triangulated`: the claim has evidence from at least two **independent** sources, and at least one of them is not testimony, a public signal or an inference. Several people saying the same thing is still testimony.
+- `triangulated`: the claim has evidence from at least two **independent** sources, and at least one of them is not testimony, a public signal or an inference. Several people saying the same thing is still testimony. An observation note without an artifact counts toward triangulation only when the claim also cites an observation session on a **different day** (the day comes from `when` = `YYYY-MM-DD…`, else the day it was recorded).
 - `contradicted`: the claim has contradicting evidence attached.
 
 ### Independence
@@ -103,12 +109,16 @@ A profile item marked `obligation: true` becomes an obligation. Its status is
 `ready` only when every one of these holds:
 
 1. It has an owner: the accountable role in the rebuilt or documented organization.
-2. Each required case (`happy_path`, `exception_rework`, `peak_load`, `staff_absence`, `supplier_failure`) has at least one piece of evidence at or above the item's required grade.
+2. Each required case (`happy_path`, `exception_rework`, `peak_load`, `staff_absence`, `supplier_failure`) has at least one piece of evidence at or above the item's required grade. Each case needs its **own** evidence: one row cited for two cases keeps the item `open` unless a `reuse_justification` says why it covers both.
 3. It has a passing verifier, strong enough for the evidence it checks. Verifiers from weakest to strongest: `desk_review` < `reconciliation` < `conformance` < `prediction` < `pilot`. A desk review cannot close an item whose case evidence includes system records or direct observation.
-4. The verifier cites evidence from a source **independent** of every case source. Re-citing the case evidence, or evidence from the same source, only checks the model against itself.
-5. The item has no contradicted claims and no open unknowns.
+4. The verifier's result is **recorded as evidence**: `record_verification` (CLI `reb verify`) takes the check from an ingested source (reconciliation workbook, pilot log, site walk) and stores it with operation `verify:<item>` and its result. A `passed: true` flag alone does not close an obligation.
+5. The recorded verification comes from a source **independent** of every case source. Re-citing the case evidence, or evidence from the same source, only checks the model against itself.
+6. The item has no contradicted claims and no open unknowns, and its layer has no `contradicted` or `blocked` unknown, even one not tagged with the item.
 
-If the verifier failed, the status is `failed`. If no evidence exists, it is
+`ready` means the record is complete on these rules. It does not mean the
+reconstruction will work in practice; the verifier kind says how hard it was tested.
+
+If the verifier failed (its flag or any recorded result), the status is `failed`. If no evidence exists, it is
 `unknown`. Every other case is `open`, and the reasons are listed.
 
 ## Unknowns

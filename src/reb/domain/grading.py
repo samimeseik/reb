@@ -1,9 +1,11 @@
 """Evidence grading, source independence and claim status.
 
 Grades are computed, never asserted:
-  grade = worst_of(authority_base, custody_cap, confidence_cap)
+  grade = worst_of(authority_base, custody_cap, confidence_cap, observation_cap)
 A claim is `triangulated` only when two supporting pieces of evidence come from
-sources that share no controller and no derivation ancestry.
+sources that share no controller and no derivation ancestry. An observation note
+with no attached artifact triangulates only when the claim cites observation
+sessions on two or more different days.
 """
 
 from __future__ import annotations
@@ -22,6 +24,7 @@ from .models import (
     HypothesisBasis,
     HypothesisConfidence,
     Source,
+    SourceKind,
 )
 
 GRADE_ORDER = [Grade.A, Grade.B, Grade.C, Grade.D, Grade.E]
@@ -86,8 +89,31 @@ def grade_at_least(grade: Grade | None, required: Grade) -> bool:
     return grade is not None and GRADE_ORDER.index(grade) <= GRADE_ORDER.index(required)
 
 
+def has_artifact(source: Source) -> bool:
+    """An observation is backed by an artifact when it references another source
+    (photo, count sheet, timestamped log) through upstream or verification ids."""
+    return bool(source.upstream_ids or source.verification_ids)
+
+
+def bare_observation(source: Source | None) -> bool:
+    """A typed observation note with nothing attached: one walk-through, possibly on
+    a staged day, written down by the analyst."""
+    return source is not None and source.kind == SourceKind.OBSERVATION and not has_artifact(source)
+
+
+def observation_cap(source: Source) -> Grade:
+    return Grade.B if bare_observation(source) else Grade.A
+
+
 def compute_grade(authority: Authority, confidence: Confidence, source: Source) -> Grade:
-    return worst(AUTHORITY_BASE[authority], CONFIDENCE_CAP[confidence], custody_cap(source))
+    return worst(AUTHORITY_BASE[authority], CONFIDENCE_CAP[confidence], custody_cap(source), observation_cap(source))
+
+
+def observation_day(source: Source) -> str:
+    """The day an observation session took place: its declared period, else when it was recorded."""
+    if source.context.period_start:
+        return source.context.period_start.isoformat()
+    return source.captured_at[:10]
 
 
 def ancestry(source_id: str, sources: Mapping[str, Source]) -> set[str]:
@@ -141,9 +167,19 @@ def evaluate_claim(
     # Triangulation needs two independent sources, and at least one of the two pieces of
     # evidence must be a record, an observation, a document or a public record:
     # several people saying the same thing is still testimony.
+    # A bare observation note (no photo, count sheet or other artifact) counts only when
+    # the claim cites observation sessions on two or more different days.
+    observation_days = {
+        observation_day(sources[e.source_id])
+        for e in supporting
+        if e.source_id in sources and sources[e.source_id].kind == SourceKind.OBSERVATION
+    }
+    repeated = len(observation_days) >= 2
     for i, a in enumerate(supporting):
         for b in supporting[i + 1 :]:
             if a.authority in WEAK_AUTHORITIES and b.authority in WEAK_AUTHORITIES:
+                continue
+            if not repeated and (bare_observation(sources.get(a.source_id)) or bare_observation(sources.get(b.source_id))):
                 continue
             if independent(a.source_id, b.source_id, sources):
                 return ClaimStatus.TRIANGULATED, grade
