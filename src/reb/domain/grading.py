@@ -22,6 +22,7 @@ from .models import (
     HypothesisBasis,
     HypothesisConfidence,
     Source,
+    SourceKind,
 )
 
 GRADE_ORDER = [Grade.A, Grade.B, Grade.C, Grade.D, Grade.E]
@@ -86,8 +87,16 @@ def grade_at_least(grade: Grade | None, required: Grade) -> bool:
     return grade is not None and GRADE_ORDER.index(grade) <= GRADE_ORDER.index(required)
 
 
+def unbacked_observation(source: Source | None) -> bool:
+    """An observation typed by the analyst with no captured artifact (photo, count sheet)."""
+    return bool(source) and source.kind == SourceKind.OBSERVATION and not source.artifact_ids
+
+
 def compute_grade(authority: Authority, confidence: Confidence, source: Source) -> Grade:
-    return worst(AUTHORITY_BASE[authority], CONFIDENCE_CAP[confidence], custody_cap(source))
+    # A typed note of a single walk-through is not as strong as a record captured live:
+    # without an artifact it can be mistaken, staged or recalled wrongly.
+    artifact_cap = Grade.B if unbacked_observation(source) else Grade.A
+    return worst(AUTHORITY_BASE[authority], CONFIDENCE_CAP[confidence], custody_cap(source), artifact_cap)
 
 
 def ancestry(source_id: str, sources: Mapping[str, Source]) -> set[str]:
@@ -141,9 +150,18 @@ def evaluate_claim(
     # Triangulation needs two independent sources, and at least one of the two pieces of
     # evidence must be a record, an observation, a document or a public record:
     # several people saying the same thing is still testimony.
+    # An observation without an artifact can only corroborate when the claim has unbacked
+    # observations on at least two different days (one staged day is not enough).
+    unbacked_days = {
+        e.as_of or e.source_id for e in supporting if unbacked_observation(sources.get(e.source_id))
+    }
     for i, a in enumerate(supporting):
         for b in supporting[i + 1 :]:
             if a.authority in WEAK_AUTHORITIES and b.authority in WEAK_AUTHORITIES:
+                continue
+            if len(unbacked_days) < 2 and any(
+                unbacked_observation(sources.get(e.source_id)) for e in (a, b)
+            ):
                 continue
             if independent(a.source_id, b.source_id, sources):
                 return ClaimStatus.TRIANGULATED, grade

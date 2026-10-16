@@ -64,11 +64,32 @@ def test_same_controller_is_not_triangulation(ledger):
 
 def test_independent_controllers_triangulate(ledger):
     a = add_text_source(ledger, "rows", controller="workshop", kind="system_export")
-    b = add_text_source(ledger, "walk", controller="observer:analyst", custody="captured_live", kind="observation")
+    photo = add_text_source(ledger, "photo of queue", controller="observer:analyst", custody="captured_live",
+                            kind="image")
+    b = add_text_source(ledger, "walk", controller="observer:analyst", custody="captured_live", kind="observation",
+                        artifact_ids=[photo.id])
     ea = ledger.add_evidence(source_id=a.id, fact="queue", authority="system_record")
     eb = ledger.add_evidence(source_id=b.id, fact="queue seen", authority="direct_observation")
     c = ledger.record_claim(statement="Paint is the bottleneck.", layer="operations", evidence_ids=[ea.id, eb.id])
     assert c.status.value == "triangulated" and c.grade.value == "A"
+
+
+def test_typed_observation_is_capped_and_needs_a_second_day(ledger):
+    a = add_text_source(ledger, "rows", controller="workshop", kind="system_export")
+    ea = ledger.add_evidence(source_id=a.id, fact="queue", authority="system_record")
+    w1 = add_text_source(ledger, "walk 1", controller="observer:analyst", custody="captured_live", kind="observation")
+    e1 = ledger.add_evidence(source_id=w1.id, fact="queue seen", authority="direct_observation", as_of="2026-10-10")
+    assert e1.grade.value == "B"
+    c = ledger.record_claim(statement="Paint is the bottleneck.", layer="operations", evidence_ids=[ea.id, e1.id])
+    assert c.status.value == "single_source"
+    w2 = add_text_source(ledger, "walk 2", controller="observer:analyst", custody="captured_live", kind="observation")
+    e2 = ledger.add_evidence(source_id=w2.id, fact="queue seen again", authority="direct_observation",
+                             as_of="2026-10-14")
+    c = ledger.record_claim(statement="Paint is the bottleneck on most days.", layer="operations",
+                            evidence_ids=[ea.id, e1.id, e2.id])
+    assert c.status.value == "triangulated"
+    with pytest.raises(RebError):
+        add_text_source(ledger, "walk 3", custody="captured_live", kind="observation", artifact_ids=[a.id])
 
 
 def test_derived_source_is_not_independent_of_its_parent(ledger):

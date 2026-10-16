@@ -129,15 +129,18 @@ def build_server():
     def record_observation(
         title: str, note: str, observer_role: str, legal_basis: str | None = None, site: str | None = None, when: str | None = None,
         shift: str | None = None, facts: list[dict] | None = None, public_premises: bool = False,
-        workspace: str | None = None,
+        artifact_ids: list[str] | None = None, workspace: str | None = None,
     ) -> dict:
         """Record what you directly observed on site (site walk, time study, nameplate reading).
         facts: [{"fact": "...", "layer": "...", "entity": "...", "location": "..."}].
-        Observing staff needs legal_basis (e.g. staff notice), unless public_premises=true."""
+        Observing staff needs legal_basis (e.g. staff notice), unless public_premises=true.
+        artifact_ids: captured_live sources backing it (photo, count sheet). Without one the
+        grade is capped at B and it corroborates only with observations from another day."""
         with Ledger.open(_ws(workspace), write=True) as led:
             return ingest.record_observation(
                 led, title=title, note=note, observer_role=observer_role, legal_basis=legal_basis,
                 site=site, when=when, shift=shift, facts=facts, public_premises=public_premises,
+                artifact_ids=artifact_ids,
             )
 
     @server.tool()

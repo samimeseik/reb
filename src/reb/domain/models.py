@@ -165,6 +165,7 @@ class Source(BaseModel):
     controller_explicit: bool = False
     upstream_ids: list[str] = Field(default_factory=list)  # sources it was derived from
     verification_ids: list[str] = Field(default_factory=list)  # issuer checks backing issuer_verifiable
+    artifact_ids: list[str] = Field(default_factory=list)  # captured photos/count sheets backing an observation
     legal_basis: str | None = None  # consent id, mandate id or public URL
     sensitivity: Sensitivity = Sensitivity.INTERNAL
     language: str | None = None

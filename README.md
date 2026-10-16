@@ -85,7 +85,7 @@ REB is not a tool for obtaining someone else's trade secrets. Read [docs/LEGAL.m
 | WhatsApp chat exports (iOS / Android, AR/TR/EN) | `whatsapp` | Messages, participants, period. Senders are pseudonymized |
 | UBL e-invoices (Turkish e-Fatura / e-Arşiv, UBL 2.1) | `efatura` | Invoice id, UUID, parties' tax ids, totals, lines |
 | Interview audio (`[audio]`, faster-whisper) or transcripts | `whisper` | Time-stamped transcript, held as testimony |
-| Site walks and time studies | `observation` | Direct-observation evidence |
+| Site walks and time studies | `observation` | Direct-observation evidence (grade A only with a captured photo or count sheet; otherwise B) |
 
 Analyses:
 - **Process mining** from event tables or chat exports: variants, a directly-follows graph (exported as Mermaid), cycle times, rework.

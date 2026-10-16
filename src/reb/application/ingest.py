@@ -116,13 +116,17 @@ def record_observation(
     shift: str | None = None,
     facts: list[dict[str, Any]] | None = None,
     public_premises: bool = False,
+    artifact_ids: list[str] | None = None,
 ) -> dict[str, Any]:
     """A structured site-walk / time-study entry captured by the analyst in person.
-    Observing staff needs a legal basis (e.g. staff notice); public premises need the place."""
+    Observing staff needs a legal basis (e.g. staff notice); public premises need the place.
+    Without artifact_ids (captured photos, count sheets) the observation is capped at grade B
+    and only corroborates other sources when observations on two different days agree."""
     facts = facts or [{"fact": note}]
     for text in [note, *(f.get("fact", "") for f in facts)]:
         check_vocabulary(text)
-    payload = {"title": title, "note": note, "site": site, "when": when, "shift": shift, "facts": facts}
+    payload = {"title": title, "note": note, "site": site, "when": when, "shift": shift, "facts": facts,
+               "artifacts": sorted(artifact_ids or [])}
     content = json.dumps(payload, ensure_ascii=False, sort_keys=True).encode("utf-8")
     if public_premises and not legal_basis:
         legal_basis = f"public premises: {site or title}"
@@ -136,6 +140,7 @@ def record_observation(
         legal_basis=legal_basis,
         sensitivity="public" if public_premises else "internal",
         context={"site": site, "shift": shift, "note": when},
+        artifact_ids=artifact_ids,
         text=note + "\n" + "\n".join(f.get("fact", "") for f in facts),
     )
     evidence = []

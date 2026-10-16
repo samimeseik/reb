@@ -46,6 +46,10 @@ grade = worst( authority_base , custody_cap , confidence_cap )
 
 **Confidence**: `observed` and `derived` do not cap the grade. `inferred` caps it at D.
 
+**Artifact**: an observation is a note the analyst typed. Without an artifact captured on the
+spot (a photo, a count sheet, a timed log: a `captured_live` source passed as `artifact_ids`)
+it is capped at **B**, because a single walk-through can be staged, misread or recalled wrongly.
+
 ### What the engine refuses, so grades cannot be talked up
 
 - **Authority is capped by source kind.**
@@ -73,6 +77,10 @@ Two sources are independent only when **all three** conditions hold:
 1. Their derivation ancestries do not intersect. A summary of an export is not independent of the export.
 2. No source in either ancestry shares a `controller` with the other. **An organization's owner, staff, documents and systems share one controller.** Interviewing three employees gives you three testimonies from the same controller. It is not triangulation.
 3. If both declare an observation period, the periods overlap.
+
+An observation without an artifact corroborates another source only when the claim also has
+artifact-less observations from **at least two different days** (`as_of`). One staged day is
+not enough.
 
 ## Stated vs enacted
 

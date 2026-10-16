@@ -212,14 +212,22 @@ class Ledger:
         context: ObservationContext | dict | None = None,
         upstream_ids: list[str] | None = None,
         verification_ids: list[str] | None = None,
+        artifact_ids: list[str] | None = None,
         independent_channel: bool = False,
         notes: str | None = None,
     ) -> Source:
         """Build and check a source without storing it (ingest checks before parsing)."""
         sha = hashlib.sha256(content).hexdigest()
-        for up in [*(upstream_ids or []), *(verification_ids or [])]:
+        for up in [*(upstream_ids or []), *(verification_ids or []), *(artifact_ids or [])]:
             if up not in self.data.sources:
                 raise RebError("unknown_source", f"Source {up} is not in the ledger.")
+        for aid in artifact_ids or []:
+            if self.data.sources[aid].custody != Custody.CAPTURED_LIVE:
+                raise RebError(
+                    "artifact_not_captured",
+                    f"Source {aid} cannot back an observation: an artifact is something the observer "
+                    "captured on the spot (photo, count sheet, timed log), with custody 'captured_live'.",
+                )
         if isinstance(context, dict):
             context = ObservationContext.model_validate(context)
         source = Source(
@@ -234,6 +242,7 @@ class Ledger:
             controller_explicit=bool(controller),
             upstream_ids=upstream_ids or [],
             verification_ids=verification_ids or [],
+            artifact_ids=artifact_ids or [],
             legal_basis=legal_basis,
             sensitivity=Sensitivity(sensitivity),
             language=language,

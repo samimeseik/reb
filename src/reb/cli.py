@@ -109,6 +109,7 @@ def _run_engagement(led: Ledger, args: argparse.Namespace) -> Any:
         return ingest.record_observation(
             led, title=args.title, note=args.note, observer_role=args.role, legal_basis=args.legal_basis, site=args.site,
             when=args.when, shift=args.shift, facts=facts, public_premises=args.public_premises,
+            artifact_ids=args.artifact,
         )
     if cmd == "evidence":
         ev = led.add_evidence(
@@ -305,6 +306,8 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--shift")
     s.add_argument("--fact", action="append", help='fact text or JSON {"fact":..,"layer":..,"entity":..}')
     s.add_argument("--public-premises", action="store_true")
+    s.add_argument("--artifact", action="append",
+                   help="id of a captured_live source backing it (photo, count sheet); without one the grade is capped at B")
 
     s = sub.add_parser("evidence", help="record a fact from a source (quote is checked against the text)")
     s.add_argument("--source", required=True)
