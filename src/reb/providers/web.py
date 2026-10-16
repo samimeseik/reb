@@ -8,8 +8,11 @@
 
 from __future__ import annotations
 
+import ipaddress
+import os
 import re
 import shutil
+import socket
 import subprocess
 import time
 import urllib.parse
@@ -17,6 +20,8 @@ import urllib.request
 import urllib.robotparser
 from dataclasses import dataclass, field
 from html.parser import HTMLParser
+
+from ..domain.errors import RebError
 
 USER_AGENT = "REB-desk-scan/0.2 (+https://github.com/samimeseik/reb)"
 # Pages that describe the organization itself are visited before catalogue pages.
@@ -131,9 +136,43 @@ def _normalize(url: str) -> str:
     return urllib.parse.urlunsplit((parts.scheme, parts.netloc.lower(), parts.path or "/", "", ""))
 
 
+def check_public_host(url: str) -> None:
+    """The crawler reads public websites only. A URL that resolves to a loopback, private,
+    link-local or reserved address (an intranet, a cloud metadata endpoint) is refused,
+    so an agent cannot be steered into reading internal services.
+    Set REB_ALLOW_PRIVATE_HOSTS=1 to crawl a site on your own network on purpose."""
+    if os.environ.get("REB_ALLOW_PRIVATE_HOSTS") == "1":
+        return
+    host = urllib.parse.urlsplit(url).hostname or ""
+    try:
+        addresses = {info[4][0] for info in socket.getaddrinfo(host, None)}
+    except socket.gaierror as exc:
+        raise RebError("host_unresolved", f"Cannot resolve {host!r}: {exc}.") from None
+    for addr in addresses:
+        ip = ipaddress.ip_address(addr.split("%")[0])
+        if not ip.is_global or ip.is_multicast:
+            raise RebError(
+                "private_host",
+                f"{host} resolves to {ip}, which is not a public address. The crawler reads public "
+                "websites only (set REB_ALLOW_PRIVATE_HOSTS=1 to crawl your own network on purpose).",
+            )
+
+
+class _PublicRedirects(urllib.request.HTTPRedirectHandler):
+    """Check every redirect target too: a public page must not bounce the crawler inward."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        check_public_host(newurl)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+_OPENER = urllib.request.build_opener(_PublicRedirects)
+
+
 def _fetch(url: str, timeout: float) -> tuple[str, str]:
+    check_public_host(url)
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept-Language": "ar,en;q=0.8,tr;q=0.6"})
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
+    with _OPENER.open(req, timeout=timeout) as resp:
         ctype = resp.headers.get("Content-Type", "")
         if "html" not in ctype:
             raise ValueError(f"not HTML ({ctype})")
@@ -143,6 +182,7 @@ def _fetch(url: str, timeout: float) -> tuple[str, str]:
 
 def crawl(start_url: str, *, max_pages: int = 15, delay: float = 0.5, timeout: float = 20) -> Crawl:
     start = _normalize(start_url)
+    check_public_host(start)
     host = urllib.parse.urlsplit(start).netloc
     robots = urllib.robotparser.RobotFileParser()
     robots.set_url(f"{urllib.parse.urlsplit(start).scheme}://{host}/robots.txt")

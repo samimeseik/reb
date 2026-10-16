@@ -14,6 +14,7 @@ from pydantic import ValidationError
 
 from .domain.errors import RebError
 from .domain.ledger import Ledger
+from .domain.models import SourceKind
 from .profiles import list_profiles
 
 
@@ -289,9 +290,10 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--custody", required=True, choices=["subject_held", "issuer_verifiable", "third_party", "captured_live", "public"])
     s.add_argument("--origin", required=True, help="who produced it (role or organization, not a person's name)")
     s.add_argument("--controller", help="who controls its content (default: origin)")
-    s.add_argument("--kind")
+    s.add_argument("--kind", choices=[k.value for k in SourceKind], metavar="KIND",
+                   help="override the detected kind: " + ", ".join(k.value for k in SourceKind))
     s.add_argument("--title")
-    s.add_argument("--legal-basis", help="consent id, mandate id or public URL")
+    s.add_argument("--legal-basis", help="consent id, mandate id, public URL or numbered registry reference")
     s.add_argument("--sensitivity", default="internal", choices=["public", "internal", "personal", "special"])
     s.add_argument("--language")
     s.add_argument("--upstream", action="append", help="source id this was derived from")

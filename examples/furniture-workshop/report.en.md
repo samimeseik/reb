@@ -37,7 +37,7 @@
 | Item | Required | Best grade | State |
 |---|---|---|---|
 | What is the end-to-end core process (order to delivery) as actually enacted, including exceptions? | B | C | contradicted |
-| Which step limits throughput, and by how much? | B | B | met |
+| Which step limits throughput, and by how much? | B | B | answered at the required grade (not a judgement) |
 | Which machines exist, their rated capacity, condition and who can operate them? | B | — | not covered |
 | What does each role actually do, who decides what (RACI), and who is a single point of failure? | C | — | not covered |
 | How are people recruited, onboarded, trained and paid? | C | — | not covered |

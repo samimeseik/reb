@@ -109,7 +109,7 @@ and culture. It is also computed per profile checklist item:
 
 | Item state | Meaning |
 |---|---|
-| `met` | Best grade ≥ required grade |
+| `met` | The question is answered with evidence at or above the required grade. It says nothing about whether the answer is good: a key-person risk can be `met` |
 | `below_required` | Covered, but the best grade is under the required grade |
 | `contradicted` | A contradicted claim or a contradicted unknown exists on the item |
 | `disputed` | A claim on the item is disputed by weak evidence only |

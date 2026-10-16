@@ -55,7 +55,7 @@ L = {
         "required": "Required",
         "state": "State",
         "states": {
-            "met": "met",
+            "met": "answered at the required grade (not a judgement)",
             "below_required": "below required grade",
             "contradicted": "contradicted",
             "disputed": "disputed by weak evidence",
@@ -126,7 +126,7 @@ L = {
         "required": "المطلوب",
         "state": "الحالة",
         "states": {
-            "met": "مستوفى",
+            "met": "مُجاب بالدرجة المطلوبة (ليس حكماً)",
             "below_required": "أقل من الدرجة المطلوبة",
             "contradicted": "متعارض",
             "disputed": "معترَض عليه بدليل ضعيف",

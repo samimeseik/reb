@@ -1,5 +1,7 @@
 # BENCHMARK_RESULTS — n = 1 case, no statistical claim
 
+> **Update 2026-10-16:** Phase 1 is closed. All 11 findings are fixed and their counter-tests pass; S-01 (SSRF) is fixed; value is still unmeasured. This file is the record at audit time. Current status: [`PHASE1_CLOSEOUT.md`](PHASE1_CLOSEOUT.md).
+
 Case: `cases/ngo` (synthetic nonprofit, 5 files). Ground truth: `cases/ngo_TRUTH_hidden.md`. The rubric (`RUBRIC.md`) was written before either run.
 The same base model and the same instructions were used for both runs. Each run had its own copy of the files in its own folder. The scorer was a separate, smaller model that saw anonymized reports (X = C, Y = A).
 Blinding is imperfect: X keeps the grade letters [C]/[D], which hints that it is the REB run.

@@ -1,5 +1,7 @@
 # REPOSITORY_MAP
 
+> **Update 2026-10-16:** Phase 1 is closed. All 11 findings are fixed and their counter-tests pass; S-01 (SSRF) is fixed; value is still unmeasured. This file is the record at audit time. Current status: [`PHASE1_CLOSEOUT.md`](PHASE1_CLOSEOUT.md).
+
 > **Re-verified on `4fc917b`** (the user committed the 7 local edits plus more changes during the audit): all 11 counter-tests still fail as before, and 86/86 existing tests pass. The benchmark run C used the earlier `0a1a168` working tree.
 
 | Repo | Path | Remote | Branch / SHA | Local state |
