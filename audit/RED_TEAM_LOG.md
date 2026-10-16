@@ -1,5 +1,7 @@
 # RED_TEAM_LOG
 
+> **Update 2026-10-16:** Phase 1 is closed. All 11 findings are fixed and their counter-tests pass; S-01 (SSRF) is fixed; value is still unmeasured. This file is the record at audit time. Current status: [`PHASE1_CLOSEOUT.md`](PHASE1_CLOSEOUT.md).
+
 Each round: conclusion, then evidence, then a counter-attack, then a re-test by a different method, then the corrected conclusion.
 Note: these are review passes by the same auditor, not an independent red team.
 

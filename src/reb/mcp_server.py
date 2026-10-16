@@ -102,6 +102,9 @@ def build_server():
         """Register a source file (PDF, DOCX, TXT, CSV/XLSX, e-invoice XML, WhatsApp export,
         image, interview audio/transcript) and extract its inventory facts.
         custody: subject_held | issuer_verifiable | third_party | captured_live | public.
+        kind (optional, detected from content): document | image | spreadsheet | system_export |
+        einvoice | chat_export | interview | observation | event_log | financial_statement |
+        public_record | public_signal | other.
         Interviews and chat exports need legal_basis (consent reference); public sources need
         their URL in legal_basis; issuer_verifiable needs verification_ids (the ingested issuer check).
         controller: who controls the content. The organization's own staff/documents/systems are

@@ -1,5 +1,7 @@
 # DEVELOPMENT_PLAN
 
+> **Update 2026-10-16:** Phase 1 is closed. All 11 findings are fixed and their counter-tests pass; S-01 (SSRF) is fixed; value is still unmeasured. This file is the record at audit time. Current status: [`PHASE1_CLOSEOUT.md`](PHASE1_CLOSEOUT.md).
+
 Effort estimates assume one developer who knows the codebase. S ≈ ≤ 1 day, M ≈ 2–4 days, L ≈ 1–2 weeks.
 
 ## Path comparison

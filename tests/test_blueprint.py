@@ -172,7 +172,8 @@ def test_line_capacity_uses_the_bottleneck(bp_ledger):
 # ------------------------------------------------------------------ web provider
 
 
-def test_crawler_respects_robots_and_stays_on_host(tmp_path):
+def test_crawler_respects_robots_and_stays_on_host(tmp_path, monkeypatch):
+    monkeypatch.setenv("REB_ALLOW_PRIVATE_HOSTS", "1")
     (tmp_path / "robots.txt").write_text("User-agent: *\nDisallow: /private\n")
     (tmp_path / "index.html").write_text(
         "<html><head><title>Home</title><meta name='generator' content='WordPress 6.5'>"
@@ -203,7 +204,8 @@ def test_fingerprints_match_hosts_not_words():
     assert web.footprint(c)["tools"] == []
 
 
-def test_crawler_visits_organization_pages_first(tmp_path):
+def test_crawler_visits_organization_pages_first(tmp_path, monkeypatch):
+    monkeypatch.setenv("REB_ALLOW_PRIVATE_HOSTS", "1")
     links = "".join(f"<a href='/product-{i}.html'>p{i}</a>" for i in range(10)) + "<a href='/hakkimizda.html'>About</a>"
     (tmp_path / "index.html").write_text(f"<html><body>{links}</body></html>")
     (tmp_path / "hakkimizda.html").write_text("<html><body>We were founded in 1990.</body></html>")
@@ -226,7 +228,8 @@ def test_suggest_uses_whole_words():
     assert "regulatory-agency" not in ids and "international-org-office" not in ids
 
 
-def test_crawler_lists_report_pdfs_and_flags_js_pages(tmp_path):
+def test_crawler_lists_report_pdfs_and_flags_js_pages(tmp_path, monkeypatch):
+    monkeypatch.setenv("REB_ALLOW_PRIVATE_HOSTS", "1")
     scripts = "".join(f"<script src='/s{i}.js'></script>" for i in range(6))
     (tmp_path / "index.html").write_text(
         f"<html><head>{scripts}</head><body><a href='/files/annual-report-2025.pdf'>AR</a>"
@@ -256,3 +259,12 @@ def test_read_source_hides_site_boilerplate(tmp_path):
     out = read_source(led, ids[2], skip_boilerplate=True)
     assert [line["text"] for line in out["lines"]] == ["Page 2 unique content line"]
     assert out["lines"][0]["line"] == 3 and out["boilerplate_lines_hidden"] == 2
+
+
+@pytest.mark.parametrize("url", ["http://127.0.0.1/", "http://localhost:8080/admin", "http://169.254.169.254/latest/",
+                                 "http://10.0.0.5/", "http://[::1]/"])
+def test_crawler_refuses_private_addresses(url, monkeypatch):
+    monkeypatch.delenv("REB_ALLOW_PRIVATE_HOSTS", raising=False)
+    with pytest.raises(RebError) as err:
+        web.crawl(url, max_pages=1, delay=0)
+    assert err.value.code == "private_host"

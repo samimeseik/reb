@@ -1,0 +1,83 @@
+id: ngo-funder
+name: Non-profit evidence file (for a funder, partner or board)
+name_ar: ملف أدلة لجهة غير ربحية (للمانح أو الشريك أو مجلس الإدارة)
+description: >
+  What a funder, partner or board needs to know about a non-profit, with its
+  consent: who governs it, where the money comes from and goes, what it delivers
+  and to how many people, and what is still unknown. Reported reach and impact
+  are stated claims until records or independent sources show them. No rating
+  and no judgement of the cause.
+allowed_modes: [engaged, self]
+items:
+  - id: gov.registration
+    layer: regulation
+    question: Is it legally registered, under what form, and are its filings current?
+    question_ar: هل هي مسجّلة قانونياً، وبأي شكل، وهل إيداعاتها محدَّثة؟
+    required_grade: A
+    hints: [associations / foundations registry, latest annual filing, statute]
+  - id: gov.board
+    layer: people
+    question: Who sits on the board, how often does it meet, and does it oversee spending?
+    question_ar: من في مجلس الإدارة، وكم مرة يجتمع، وهل يراقب الإنفاق؟
+    required_grade: B
+    hints: [board minutes, signatory list, conflict-of-interest declarations]
+  - id: gov.related-parties
+    layer: finance
+    question: Are there payments to board members, staff relatives or their companies?
+    question_ar: هل توجد مدفوعات لأعضاء المجلس أو أقارب الموظفين أو شركاتهم؟
+    required_grade: A
+    hints: [vendor list against board and staff names, bank payments]
+  - id: fin.income-sources
+    layer: revenue
+    question: Where does the money come from (grants, donors, earned income), and how concentrated is it?
+    question_ar: من أين يأتي المال (منح، متبرعون، دخل ذاتي)، وما مدى تركّزه في مصدر واحد؟
+    required_grade: A
+    hints: [bank statements, grant agreements, donor ledger]
+  - id: fin.grants-received
+    layer: finance
+    question: Were the grants it reports actually received, in the amounts and on the dates stated?
+    question_ar: هل وصلت المنح المُعلنة فعلاً، بالمبالغ والتواريخ المذكورة؟
+    required_grade: A
+    hints: [grant agreement against bank receipt, funder confirmation]
+  - id: fin.spending
+    layer: finance
+    question: How is money spent (programmes vs administration vs fundraising), and does it match the budget?
+    question_ar: كيف يُنفق المال (برامج، إدارة، جمع تبرعات)، وهل يطابق الموازنة؟
+    required_grade: B
+    hints: [expense ledger, budget vs actual, audited statements]
+  - id: fin.audit
+    layer: finance
+    question: Are accounts independently audited, and what did the auditor note?
+    question_ar: هل تُدقَّق الحسابات من جهة مستقلة، وماذا لاحظ المدقق؟
+    required_grade: B
+    hints: [audit report, management letter]
+  - id: prog.delivery
+    layer: operations
+    question: What does each programme actually deliver, where, and were there stoppages?
+    question_ar: ماذا يقدّم كل برنامج فعلاً، وأين، وهل حدثت انقطاعات؟
+    required_grade: B
+    hints: [distribution logs, site visits, monthly expense pattern, field photos]
+  - id: prog.reach
+    layer: customer
+    question: How many distinct people are reached (not visits or services counted twice)?
+    question_ar: كم شخصاً مختلفاً يُخدَم فعلاً (لا عدد الزيارات أو الخدمات المكررة)؟
+    required_grade: B
+    hints: [beneficiary register with unique ids, sample re-contact, attendance vs unique]
+  - id: prog.impact
+    layer: strategy
+    question: What evidence links the programme to the outcome it claims, and how was it measured?
+    question_ar: ما الدليل الذي يربط البرنامج بالنتيجة التي يدّعيها، وكيف قيست؟
+    required_grade: C
+    hints: [survey method and sample, baseline, independent evaluation]
+  - id: people.dependency
+    layer: people
+    question: Do funding, relationships or delivery depend on one or two people?
+    question_ar: هل يعتمد التمويل أو العلاقات أو التنفيذ على شخص أو شخصين؟
+    required_grade: C
+    hints: [who signs grants, who holds donor relationships, who runs field work]
+  - id: reg.safeguarding
+    layer: regulation
+    question: Are there safeguarding, data-protection and complaints procedures, and are they used?
+    question_ar: هل توجد إجراءات للحماية وحماية البيانات والشكاوى، وهل تُطبَّق؟
+    required_grade: C
+    hints: [policies, complaint log, staff training records]

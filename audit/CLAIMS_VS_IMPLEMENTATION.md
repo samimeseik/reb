@@ -1,5 +1,7 @@
 # CLAIMS_VS_IMPLEMENTATION
 
+> **Update 2026-10-16:** Phase 1 is closed. All 11 findings are fixed and their counter-tests pass; S-01 (SSRF) is fixed; value is still unmeasured. This file is the record at audit time. Current status: [`PHASE1_CLOSEOUT.md`](PHASE1_CLOSEOUT.md).
+
 Legend for the verdict column: **Proven** = exists and holds under counter-tests · **Partial** = exists but can be bypassed or is narrower than stated · **Formal** = present in form, weak in substance · **Not run** = not exercised by this audit.
 
 | Stated capability | Where | Existing test | Audit test | Limits | Verdict |

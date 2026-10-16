@@ -14,9 +14,11 @@
 
 REB is a sibling of [REA — Reverse Engineer Anything](https://github.com/morluto/rea),
 which reverse-engineers software. REB applies the same discipline to
-**companies, factories with their equipment, workshops, ministries, agencies,
-NGOs, clubs, schools — any organization**: processes, machines, hiring,
-suppliers, systems, unit economics and the know-how that lives only in people's heads.
+organizations: processes, machines, hiring, suppliers, systems, unit economics
+and the know-how that lives only in people's heads. Its checklists (profiles)
+are built and tested for **companies, factories and workshops**, with a first
+profile for **non-profits**. Ministries, agencies, clubs and schools are covered
+by the blueprint archetypes but not yet by a tested profile.
 
 Give it whatever is available — a website, a name, social accounts, documents,
 exports — and it produces the organization's **blueprint**: how it is built,
@@ -105,6 +107,7 @@ Analyses:
 | `factory-capacity` | Can this factory make what it claims? | engaged, self |
 | `hiring-system` | How people are found, selected, onboarded, paid and kept | self, engaged |
 | `it-systems` | Systems and data map, manual hand-offs. Software internals go to REA | self, engaged |
+| `ngo-funder` | Non-profit evidence file for a funder, partner or board: governance, money in and out, reach, impact evidence | engaged, self |
 | `desk-scan` | Public records and signals only: observations and questions | public |
 
 Profiles are YAML. Add your own with `reb coverage --profile path/to/profile.yaml`.
@@ -211,6 +214,13 @@ if they share no controller and no derivation ancestry. See
 
 ## Status
 
+- **Phase 1 (hardening):** an independent audit ([audit/](audit/)) found 11
+  ways the grades and `ready` could overstate confidence; all 11 are fixed and
+  each has a counter-test. The audit's one blind benchmark (n = 1) was a tie
+  between an agent with REB and the same agent without it, at about 6× the tool
+  calls. REB's value over a careful agent with a plain evidence table is
+  **not yet measured**. The blueprint layer (archetypes, hypotheses, redesign)
+  is exploratory and outside that measurement.
 - **v0.2:** blueprint layer — design kernel, families, equipment library,
   archetypes, hypotheses with computed confidence, redesign, consistency
   checks, web provider, Markdown/HTML/PDF blueprint. Benchmarks in
