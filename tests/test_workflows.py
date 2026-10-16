@@ -185,6 +185,20 @@ def test_renamed_chat_is_detected_and_needs_consent(ledger, tmp_path):
     assert err.value.code == "consent_required"
 
 
+@pytest.mark.parametrize("suffix", [".csv", ".md", ".log", ".json", ".tsv"])
+def test_chat_saved_under_any_text_extension_is_still_a_chat(ledger, tmp_path, suffix):
+    f = tmp_path / f"export{suffix}"
+    f.write_text(CHAT.read_text(encoding="utf-8"), encoding="utf-8")
+    with pytest.raises(RebError) as err:
+        ingest.ingest_file(ledger, f, custody="subject_held", origin_party="x")
+    assert err.value.code == "consent_required"
+    res = ingest.ingest_file(ledger, f, custody="subject_held", origin_party="x", legal_basis="consent-1")
+    assert res["source"]["kind"] == "chat_export"
+    stored = ledger.source_text(res["source"]["id"])
+    senders = {m.sender for m in whatsapp.parse_text(CHAT.read_text(encoding="utf-8"))}
+    assert senders and not any(s in stored for s in senders)
+
+
 def test_unparsed_chat_text_is_not_stored(ledger, tmp_path):
     f = tmp_path / "WhatsApp Chat.txt"
     f.write_text("Fatma Yilmaz said hello\nanother line\n", encoding="utf-8")

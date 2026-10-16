@@ -10,7 +10,7 @@ Type: CODE (bug) · METHOD (design weakness) · DATA (needs external data) · US
 
 | ID | Sev | Type | Title | Status |
 |---|---|---|---|---|
-| F-04 | High | CODE | Renamed WhatsApp export skips the consent check **and** pseudonymization | Reproduced 2 ways |
+| F-04 | High | CODE | Renamed WhatsApp export skips the consent check **and** pseudonymization | **Fixed**: content sniffing for every text-like file |
 | F-11 | High | CODE | In `engaged`/`self` mode the subject's own public website/press is a separate controller → "independent" of its internal records | Reproduced (test + hit in benchmark run C) |
 | F-06 | High | METHOD+CODE | `ready` reachable with a self-declared verifier, reused case evidence and an open material unknown | Reproduced |
 | F-02 | High | METHOD | Analyst-typed observation note = grade A and an independent source → triangulates alone | Reproduced |
