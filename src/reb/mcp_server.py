@@ -112,10 +112,13 @@ def build_server():
 
     @server.tool()
     @_safe
-    def read_source(source_id: str, start_line: int = 1, max_lines: int = 200, workspace: str | None = None) -> dict:
-        """Read a source's stored (pseudonymized) text with line numbers, for quoting."""
+    def read_source(source_id: str, start_line: int = 1, max_lines: int = 200, skip_boilerplate: bool = False,
+                    workspace: str | None = None) -> dict:
+        """Read a source's stored (pseudonymized) text with line numbers, for quoting.
+        skip_boilerplate hides menus/footers repeated across the same site's pages."""
         with Ledger.open(_ws(workspace), write=False) as led:
-            return ingest.read_source(led, source_id, start_line=start_line, max_lines=max_lines)
+            return ingest.read_source(led, source_id, start_line=start_line, max_lines=max_lines,
+                                      skip_boilerplate=skip_boilerplate)
 
     @server.tool()
     @_safe

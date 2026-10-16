@@ -101,7 +101,8 @@ def _run_engagement(led: Ledger, args: argparse.Namespace) -> Any:
             notes=args.notes,
         )
     if cmd == "read":
-        return ingest.read_source(led, args.source_id, start_line=args.start, max_lines=args.max)
+        return ingest.read_source(led, args.source_id, start_line=args.start, max_lines=args.max,
+                                  skip_boilerplate=args.skip_boilerplate)
     if cmd == "observe":
         facts = [json.loads(f) if f.strip().startswith("{") else {"fact": f} for f in args.fact or []]
         return ingest.record_observation(
@@ -283,6 +284,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("source_id")
     s.add_argument("--start", type=int, default=1)
     s.add_argument("--max", type=int, default=200)
+    s.add_argument("--skip-boilerplate", action="store_true", help="hide menus/footers repeated across the site")
 
     s = sub.add_parser("observe", help="record a site-walk / time-study observation")
     s.add_argument("--title", required=True)

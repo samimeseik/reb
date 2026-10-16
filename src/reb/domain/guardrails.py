@@ -20,6 +20,8 @@ PUBLIC_ALLOWED_KINDS = {
     SourceKind.DOCUMENT,
     SourceKind.IMAGE,
     SourceKind.OBSERVATION,  # what any member of the public can see
+    SourceKind.FINANCIAL_STATEMENT,  # published annual reports / filed accounts
+    SourceKind.SPREADSHEET,  # open-data tables
 }
 
 CONSENT_REQUIRED_KINDS = {SourceKind.INTERVIEW, SourceKind.CHAT_EXPORT, SourceKind.OBSERVATION}

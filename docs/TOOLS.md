@@ -23,6 +23,33 @@ On failure a tool returns `{"error": "<code>", "message": "<remedy>"}`.
 | `build_obligation_ledger` | `reb ledger` | workflow | Status (`ready` / `open` / `failed` / `unknown`) with reasons |
 | `render_report` | `reb report` | workflow | Markdown report in Arabic (RTL) or English |
 
+### Blueprint layer
+
+| MCP tool | CLI | Purpose |
+|---|---|---|
+| `show_kernel` | `reb kernel [--family F]` | Building blocks, design rules, traces; how a family builds them |
+| `list_archetypes` | `reb archetypes` | Ready-made operating models |
+| `start_blueprint` | `reb blueprint start --url U [--archetype A]` | Crawl the public site (robots.txt), footprint, archetype suggestion, seed |
+| `apply_archetype` | `reb blueprint apply A` | Seed (more) archetype hypotheses |
+| `add_hypothesis` | `reb hypothesis add` | Inference with signals / calculation; confidence computed |
+| `update_hypothesis` | `reb hypothesis update` | Add signals; support or refute with evidence |
+| `promote_hypothesis` | `reb hypothesis promote` | Supported hypothesis becomes a graded claim |
+| `grade_hypothesis` | `reb hypothesis grade` | Owner verdict, for calibration only |
+| `add_design_item` | `reb design` | copy / improve / cannot_copy / build_step, with refs |
+| `add_equipment` | `reb equipment` | Equipment register entry with station and rate |
+| `check_consistency` | `reb consistency` | Do the parts fit together? |
+| `build_blueprint` | `reb blueprint build` | Full blueprint as JSON |
+| `render_blueprint` | `reb blueprint render --md --html --pdf` | 7-section report |
+
+## Blueprint loop
+
+1. `open_engagement(profile="blueprint")` → `start_blueprint(url)`.
+2. Search for wider public traces (registries, job ads, reports, procurement, maps, videos); ingest each one you use.
+3. Record strong traces as claims. Support, refute or promote the archetype hypotheses.
+4. Add signal hypotheses, equipment and calculations with metrics. Then call `check_consistency`.
+5. Add redesign items with refs.
+6. Call `render_blueprint`.
+
 ## Typical agent loop
 
 1. `open_engagement`, choosing the mode and profile carefully.

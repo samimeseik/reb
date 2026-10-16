@@ -133,6 +133,90 @@ Each claim can carry one of these tags:
 
 The report lists them so that a copied map is not over-trusted.
 
+## The blueprint layer: forward engineering used in reverse
+
+### Design kernel
+`src/reb/kernel/blocks.yaml` defines the 10 blocks every working organization has:
+
+| Block | Feeds components |
+|---|---|
+| direction & governance | identity, moat |
+| demand | customers, acquisition, offer |
+| value delivery | operations |
+| people & structure | team |
+| money | revenue_model, economics |
+| assets, equipment & tools | assets |
+| information & systems | systems |
+| control | identity, operations |
+| support functions | partners, team |
+| learning & improvement | moat |
+
+Each block has **elements** (what must exist in some form), **design rules**
+(for example: throughput equals the slowest stage; a manager directly supervises about
+5–15 people; in public bodies, budget lines mirror the organization chart) and
+**traces**, each with a strength:
+
+- `strong`: the trace is the element itself or an official record of it. Record it as a **claim**.
+- `moderate`: the trace exists mainly because the element exists. Record it as a **hypothesis signal**.
+- `weak`: compatible with the element, but with other explanations. Record it as a hypothesis signal, and look for a second source.
+
+`families.yaml` says how a `business`, a `public_body`, a `nonprofit` and an
+`industrial` plant build each block, and lists the traces specific to each
+family. `equipment.yaml` holds the machine library: function, typical rate,
+inputs and outputs, skill and maintenance.
+
+### Archetypes
+`src/reb/archetypes/` composes **modules** on three axes:
+- value: manufacturing, trading, professional service, brokerage, platform, membership, non-profit, hospitality/retail
+- delivery: fixed site, field, remote/digital, project
+- payer: consumer, business, government, donors, third party
+
+A family plus modules plus specifics (process stages, roles, equipment, build
+steps) makes an archetype. Applying one seeds every component with
+`basis=archetype` hypotheses (confidence **low**), each with its cheapest test.
+It also seeds design items: failure points become `improve` items, and build
+steps become `build_step` items. Each design item references the hypothesis it
+came from.
+
+### Hypotheses
+A hypothesis is never rendered as a fact. Its confidence is **computed**:
+
+| Support | Confidence |
+|---|---|
+| archetype pattern only, or only analyst inferences | low |
+| signals from one source, or several under one controller | medium |
+| signals from two or more independent sources | high |
+| calculation | the weakest of its inputs |
+
+Rules for changing its status:
+- `supported` needs evidence beyond the original signals: a record, an observation, a document or a public record, or a source independent of every signal source.
+- `refuted` needs evidence.
+- `promote_hypothesis` turns a supported hypothesis into an ordinary graded claim.
+- Owner verdicts (`grade_hypothesis`) feed **calibration** only. They are never evidence.
+
+### Consistency checks
+`check_consistency` reads metric values from claims first, then from hypotheses
+(the midpoint of their range). It checks:
+- revenue ≈ units × price;
+- commission revenue ≈ deals × average deal value × rate;
+- lead time ≈ work-in-progress ÷ throughput;
+- headcount ≈ workload ÷ productive hours;
+- stated output ≤ line capacity. Line capacity is the slowest station in the equipment routing × operating hours, and the 352 hours/month default is shown as an assumption.
+
+A conflict opens an unknown that names both sides.
+
+### Blueprint
+`build_blueprint` assembles, for each of the 12 components:
+- how it is built (kernel elements, rules, family notes);
+- the traces to look for;
+- what is known, inferred, refuted and unknown;
+- a completeness score.
+
+It adds the process map (mined from records if any exist, otherwise the archetype stages), the
+organization, the numbers, the consistency results, the redesign, the
+**verification plan** (proposed hypotheses ranked by impact × uncertainty ÷ test cost)
+and the calibration.
+
 ## What REB deliberately does not do
 
 - It does not write findings for you. The agent proposes, and the engine grades and refuses.
