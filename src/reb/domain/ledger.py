@@ -20,7 +20,14 @@ from pathlib import Path
 from typing import Any
 
 from .errors import RebError
-from .grading import AUTHORITY_RANK, compute_grade, evaluate_claim
+from .grading import (
+    AUTHORITY_RANK,
+    WEAK_AUTHORITIES,
+    compute_grade,
+    evaluate_claim,
+    hypothesis_confidence,
+    independent,
+)
 from .guardrails import (
     Pseudonymizer,
     check_authority,
@@ -30,12 +37,22 @@ from .guardrails import (
 )
 from .models import (
     Authority,
+    COMPONENT_LAYER,
     Claim,
     ClaimKind,
+    Component,
     Confidence,
     Custody,
+    DesignItem,
+    DesignKind,
     Engagement,
+    EquipmentItem,
     Evidence,
+    Hypothesis,
+    HypothesisBasis,
+    HypothesisConfidence,
+    HypothesisStatus,
+    Level,
     Layer,
     LedgerData,
     Mode,
@@ -47,6 +64,7 @@ from .models import (
     SourceKind,
     Unknown,
     UnknownStatus,
+    ValueRange,
     utc_now,
 )
 
@@ -348,6 +366,7 @@ class Ledger:
         replicability: Replicability | str = Replicability.UNASSESSED,
         industry_prior: bool = False,
         as_of: str | None = None,
+        component: Component | str | None = None,
     ) -> Claim:
         statement = self.scrub(statement) or ""
         check_vocabulary(statement)
@@ -371,6 +390,7 @@ class Ledger:
             replicability=Replicability(replicability),
             industry_prior=industry_prior,
             as_of=as_of,
+            component=Component(component) if component else None,
         )
         existing = self.data.claims.get(claim.id)
         if existing:
@@ -527,3 +547,265 @@ class Ledger:
                     f"This unknown needs evidence of authority '{unknown.required_authority.value}' "
                     "or stronger to be settled.",
                 )
+
+    # ---- hypotheses (the blueprint layer) ------------------------------
+    def add_hypothesis(
+        self,
+        *,
+        statement: str,
+        component: Component | str,
+        basis: HypothesisBasis | str,
+        signal_evidence_ids: list[str] | None = None,
+        derived_from: list[str] | None = None,
+        archetype: str | None = None,
+        assumptions: list[str] | None = None,
+        range: ValueRange | dict | None = None,
+        test: str | None = None,
+        test_cost: Level | str = Level.MEDIUM,
+        impact: Level | str = Level.MEDIUM,
+        metric: str | None = None,
+    ) -> Hypothesis:
+        """Record an inference. Its confidence is computed from what supports it."""
+        statement = self.scrub(statement) or ""
+        assumptions = [self.scrub(a) or "" for a in assumptions or []]
+        test = self.scrub(test)
+        for text in [statement, *assumptions, test or ""]:
+            check_vocabulary(text)
+        basis = HypothesisBasis(basis)
+        component = Component(component)
+        signals = list(dict.fromkeys(signal_evidence_ids or []))
+        for eid in signals:
+            self.evidence(eid)
+        derived = list(dict.fromkeys(derived_from or []))
+        for ref in derived:
+            if ref not in self.data.hypotheses and ref not in self.data.claims:
+                raise RebError("unknown_reference", f"{ref} is neither a hypothesis nor a claim.")
+        if basis == HypothesisBasis.SIGNAL and not signals:
+            raise RebError("signal_required", "A signal-based hypothesis must cite the evidence it was inferred from.")
+        if basis == HypothesisBasis.CALCULATION and (not derived or not assumptions):
+            raise RebError(
+                "calculation_inputs_required",
+                "A calculation must name its inputs (derived_from) and state its assumptions.",
+            )
+        if basis == HypothesisBasis.ARCHETYPE and not archetype:
+            raise RebError("archetype_required", "An archetype-based hypothesis must name the archetype.")
+        if isinstance(range, dict):
+            range = ValueRange.model_validate(range)
+        if range and range.low > range.high:
+            raise RebError("invalid_range", "range.low is above range.high.")
+        hyp = Hypothesis(
+            id="hyp_" + digest([statement, component.value, basis.value])[:12],
+            statement=statement,
+            component=component,
+            basis=basis,
+            signal_evidence_ids=signals,
+            derived_from=derived,
+            archetype=archetype,
+            assumptions=assumptions,
+            range=range,
+            test=test,
+            test_cost=Level(test_cost),
+            impact=Level(impact),
+            metric=metric,
+        )
+        existing = self.data.hypotheses.get(hyp.id)
+        if existing:
+            existing.signal_evidence_ids = list(dict.fromkeys([*existing.signal_evidence_ids, *signals]))
+            hyp = existing
+        self.data.hypotheses[hyp.id] = hyp
+        self.reevaluate_hypotheses()
+        return hyp
+
+    def hypothesis(self, hypothesis_id: str) -> Hypothesis:
+        try:
+            return self.data.hypotheses[hypothesis_id]
+        except KeyError:
+            raise RebError("unknown_hypothesis", f"Hypothesis {hypothesis_id} is not in the ledger.") from None
+
+    def reevaluate_hypotheses(self) -> None:
+        """Signals first, then calculations in dependency order."""
+        conf = {}
+        for cid, claim in self.data.claims.items():
+            conf[cid] = (
+                HypothesisConfidence.HIGH
+                if claim.status.value == "triangulated"
+                else HypothesisConfidence.MEDIUM
+                if claim.status.value == "single_source"
+                else HypothesisConfidence.LOW
+            )
+        pending = dict(self.data.hypotheses)
+        for _ in range(len(pending) + 1):
+            progressed = False
+            for hid, hyp in list(pending.items()):
+                if all(d in conf for d in hyp.derived_from):
+                    hyp.confidence = hypothesis_confidence(hyp, self.data.evidence, self.data.sources, conf)
+                    conf[hid] = hyp.confidence
+                    del pending[hid]
+                    progressed = True
+            if not progressed:
+                break
+        for hyp in pending.values():  # circular inputs: never above low
+            hyp.confidence = HypothesisConfidence.LOW
+
+    def update_hypothesis(
+        self,
+        hypothesis_id: str,
+        *,
+        revision: int,
+        add_signals: list[str] | None = None,
+        status: HypothesisStatus | str | None = None,
+        status_evidence_ids: list[str] | None = None,
+        test: str | None = None,
+        impact: Level | str | None = None,
+        test_cost: Level | str | None = None,
+    ) -> Hypothesis:
+        hyp = self.hypothesis(hypothesis_id)
+        if revision != hyp.revision:
+            raise RebError(
+                "stale_revision",
+                f"Hypothesis {hypothesis_id} is at revision {hyp.revision}, not {revision}. Re-read it first.",
+            )
+        for eid in [*(add_signals or []), *(status_evidence_ids or [])]:
+            self.evidence(eid)
+        if hyp.status == HypothesisStatus.PROMOTED:
+            raise RebError("already_promoted", f"{hypothesis_id} is now claim {hyp.promoted_claim_id}; update that claim.")
+        hyp.signal_evidence_ids = list(dict.fromkeys([*hyp.signal_evidence_ids, *(add_signals or [])]))
+        if test:
+            check_vocabulary(test)
+            hyp.test = self.scrub(test)
+        if impact:
+            hyp.impact = Level(impact)
+        if test_cost:
+            hyp.test_cost = Level(test_cost)
+        if status:
+            status = HypothesisStatus(status)
+            if status == HypothesisStatus.PROMOTED:
+                raise RebError("use_promote", "Use promote_hypothesis to turn a hypothesis into a claim.")
+            if status in (HypothesisStatus.SUPPORTED, HypothesisStatus.REFUTED):
+                ids = list(dict.fromkeys(status_evidence_ids or []))
+                if not ids:
+                    raise RebError("evidence_required", "Only evidence can support or refute a hypothesis.")
+                if status == HypothesisStatus.SUPPORTED and not self._corroborates(hyp, ids):
+                    raise RebError(
+                        "insufficient_support",
+                        "Support must come from a record, observation, document or public record, or from a "
+                        "source independent of the signals the hypothesis was inferred from.",
+                    )
+                hyp.status_evidence_ids = list(dict.fromkeys([*hyp.status_evidence_ids, *ids]))
+            hyp.status = status
+        hyp.revision += 1
+        self.reevaluate_hypotheses()
+        return hyp
+
+    def _corroborates(self, hyp: Hypothesis, evidence_ids: list[str]) -> bool:
+        signal_sources = {self.data.evidence[e].source_id for e in hyp.signal_evidence_ids if e in self.data.evidence}
+        for eid in evidence_ids:
+            ev = self.data.evidence[eid]
+            if eid in hyp.signal_evidence_ids:
+                continue
+            if ev.authority not in WEAK_AUTHORITIES:
+                return True
+            if all(independent(ev.source_id, s, self.data.sources) for s in signal_sources):
+                return True
+        return False
+
+    def promote_hypothesis(self, hypothesis_id: str, *, revision: int) -> Claim:
+        """A supported hypothesis becomes an ordinary, graded claim."""
+        hyp = self.hypothesis(hypothesis_id)
+        if revision != hyp.revision:
+            raise RebError("stale_revision", f"Hypothesis {hypothesis_id} is at revision {hyp.revision}.")
+        if hyp.status != HypothesisStatus.SUPPORTED:
+            raise RebError("not_supported", "Only a supported hypothesis can be promoted to a claim.")
+        claim = self.record_claim(
+            statement=hyp.statement,
+            layer=COMPONENT_LAYER[hyp.component],
+            component=hyp.component,
+            evidence_ids=[*hyp.signal_evidence_ids, *hyp.status_evidence_ids],
+            value=(hyp.range.low + hyp.range.high) / 2 if hyp.range and hyp.range.low == hyp.range.high else None,
+            unit=hyp.range.unit if hyp.range and hyp.range.low == hyp.range.high else None,
+        )
+        hyp.status = HypothesisStatus.PROMOTED
+        hyp.promoted_claim_id = claim.id
+        hyp.revision += 1
+        return claim
+
+    def grade_hypothesis(self, hypothesis_id: str, verdict: str) -> Hypothesis:
+        """The owner's verdict, used only to calibrate confidence — never as evidence."""
+        if verdict not in {"correct", "partial", "wrong"}:
+            raise RebError("invalid_input", "verdict must be correct, partial or wrong.")
+        hyp = self.hypothesis(hypothesis_id)
+        hyp.owner_verdict = verdict
+        return hyp
+
+    # ---- design items (the redesign) -------------------------------------
+    def add_design_item(
+        self,
+        *,
+        component: Component | str,
+        kind: DesignKind | str,
+        statement: str,
+        refs: list[str],
+        phase: str | None = None,
+        cost: ValueRange | dict | None = None,
+    ) -> DesignItem:
+        statement = self.scrub(statement) or ""
+        check_vocabulary(statement)
+        if not refs:
+            raise RebError(
+                "refs_required",
+                "Every redesign item must rest on a claim, hypothesis or evidence id it was derived from.",
+            )
+        for ref in refs:
+            if ref not in self.data.claims and ref not in self.data.hypotheses and ref not in self.data.evidence:
+                raise RebError("unknown_reference", f"{ref} is not a claim, hypothesis or evidence id.")
+        if isinstance(cost, dict):
+            cost = ValueRange.model_validate(cost)
+        component = Component(component)
+        kind = DesignKind(kind)
+        item = DesignItem(
+            id="des_" + digest([component.value, kind.value, statement])[:12],
+            component=component,
+            kind=kind,
+            statement=statement,
+            refs=list(dict.fromkeys(refs)),
+            phase=phase,
+            cost=cost,
+        )
+        self.data.design[item.id] = item
+        return item
+
+    # ---- equipment register --------------------------------------------
+    def add_equipment(
+        self,
+        *,
+        name: str,
+        refs: list[str],
+        equipment_type: str | None = None,
+        station: int | None = None,
+        count: int = 1,
+        rate: ValueRange | dict | None = None,
+        notes: str | None = None,
+    ) -> EquipmentItem:
+        name = self.scrub(name) or ""
+        check_vocabulary(name)
+        if not refs:
+            raise RebError("refs_required", "An equipment entry must rest on evidence, a claim or a hypothesis.")
+        for ref in refs:
+            if ref not in self.data.claims and ref not in self.data.hypotheses and ref not in self.data.evidence:
+                raise RebError("unknown_reference", f"{ref} is not a claim, hypothesis or evidence id.")
+        if count < 1:
+            raise RebError("invalid_input", "count must be at least 1.")
+        if isinstance(rate, dict):
+            rate = ValueRange.model_validate(rate)
+        item = EquipmentItem(
+            id="eq_" + digest([name, station, equipment_type])[:12],
+            name=name,
+            equipment_type=equipment_type,
+            station=station,
+            count=count,
+            rate=rate,
+            refs=list(dict.fromkeys(refs)),
+            notes=self.scrub(notes),
+        )
+        self.data.equipment[item.id] = item
+        return item

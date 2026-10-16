@@ -1,0 +1,195 @@
+# REB design kernel — the building blocks every working organization has, in some form.
+#
+# Forward engineering: how each block is built (elements + design rules).
+# Reverse engineering: which public traces each element leaves and what they imply.
+#
+# A company, a ministry, an NGO and a factory all have these ten blocks; the
+# families (families.yaml) say how each family builds them. Trace strength:
+#   strong   – the trace is the element itself or an official record of it
+#   moderate – the trace exists mainly because the element exists
+#   weak     – the trace is compatible with the element but has other explanations
+blocks:
+  - id: direction
+    name: "Direction & governance"
+    name_ar: "التوجيه والحوكمة"
+    purpose: "Why the organization exists, who decides, and who it answers to."
+    purpose_ar: "لماذا توجد الجهة، ومن يقرر، ولمن تُحاسَب."
+    components: [identity, moat]
+    elements:
+      - {id: "mandate", en: "Mandate or purpose (business plan, founding law, statutes)", ar: "التفويض أو الغاية (خطة العمل، قانون الإنشاء، النظام الأساسي)"}
+      - {id: "owners", en: "Owners or principals (shareholders, state, members, donors)", ar: "الملاك أو الأصيلون (مساهمون، الدولة، الأعضاء، المانحون)"}
+      - {id: "decision_rights", en: "Who decides what (board, minister, director, founder)", ar: "من يقرر ماذا (مجلس، وزير، مدير، مؤسس)"}
+      - {id: "strategy", en: "Priorities and targets for the next period", ar: "الأولويات والأهداف للمرحلة القادمة"}
+    rules:
+      - {en: "Every organization has one top decision point; where it is unclear, decisions route informally through a founder or patron.", ar: "لكل جهة نقطة قرار عليا واحدة، وحيث تكون غامضة تمر القرارات بشكل غير رسمي عبر مؤسس أو راعٍ."}
+      - {en: "Strategy shows in where money and people go, not in what is written.", ar: "الاستراتيجية تظهر في وجهة المال والناس، لا في ما هو مكتوب."}
+    traces:
+      - {element: "mandate", strength: "strong", en: "Founding law, articles of association or registered statutes", ar: "قانون الإنشاء أو عقد التأسيس أو النظام الأساسي المسجّل"}
+      - {element: "owners", strength: "strong", en: "Trade or associations registry entries, official gazette", ar: "قيود السجل التجاري أو سجل الجمعيات والجريدة الرسمية"}
+      - {element: "decision_rights", strength: "moderate", en: "Who signs public documents and who speaks publicly", ar: "من يوقّع الوثائق العامة ومن يتحدث علناً"}
+      - {element: "strategy", strength: "moderate", en: "Strategic plan, annual report, budget priorities, new hiring areas", ar: "الخطة الاستراتيجية والتقرير السنوي وأولويات الموازنة ومجالات التوظيف الجديدة"}
+
+  - id: demand
+    name: "Demand (customers, beneficiaries, citizens)"
+    name_ar: "الطلب (العملاء، المستفيدون، المواطنون)"
+    purpose: "Who the organization serves, how they arrive, and how they are kept."
+    purpose_ar: "من تخدمه الجهة، وكيف يصل إليها، وكيف تحافظ عليه."
+    components: [customers, acquisition, offer]
+    elements:
+      - {id: "segments", en: "Who is served and who pays (may differ)", ar: "من يُخدَم ومن يدفع (قد يختلفان)"}
+      - {id: "offer", en: "What is offered, at what price or under what entitlement", ar: "ماذا يُقدَّم وبأي سعر أو بأي استحقاق"}
+      - {id: "channels", en: "How demand arrives (sales, referrals, walk-in, legal obligation, tenders)", ar: "كيف يصل الطلب (مبيعات، إحالات، حضور مباشر، إلزام قانوني، مناقصات)"}
+      - {id: "intake", en: "The first-contact process (enquiry, application, order)", ar: "إجراء أول تواصل (استفسار، طلب خدمة، أمر شراء)"}
+    rules:
+      - {en: "Every intake has a qualification step that decides who is served first.", ar: "كل استقبال للطلب فيه خطوة تأهيل تحدد من يُخدم أولاً."}
+      - {en: "Where the payer is not the user, design follows the payer's requirements.", ar: "حين لا يكون الدافع هو المستخدم، يتبع التصميم متطلبات الدافع."}
+    traces:
+      - {element: "offer", strength: "strong", en: "Price lists, service catalogues, citizen service charters", ar: "قوائم الأسعار وأدلة الخدمات ومواثيق خدمة المواطن"}
+      - {element: "channels", strength: "moderate", en: "Ad library entries, social accounts, contact forms, WhatsApp links, procurement awards", ar: "الإعلانات المنشورة وحسابات التواصل ونماذج التواصل وروابط واتساب وترسيات المناقصات"}
+      - {element: "segments", strength: "moderate", en: "Language of the site, testimonials, case studies", ar: "لغة الموقع والشهادات ودراسات الحالة"}
+      - {element: "intake", strength: "strong", en: "Public forms and booking flows (walk through them)", ar: "النماذج ومسارات الحجز العامة (يُمرّ بها فعلياً)"}
+
+  - id: delivery
+    name: "Value delivery (core operations)"
+    name_ar: "تقديم القيمة (العمليات الأساسية)"
+    purpose: "The chain of steps that turns demand into the product, service or decision."
+    purpose_ar: "سلسلة الخطوات التي تحوّل الطلب إلى منتج أو خدمة أو قرار."
+    components: [operations]
+    elements:
+      - {id: "value_chain", en: "Ordered stages from intake to hand-over", ar: "مراحل مرتبة من الاستقبال حتى التسليم"}
+      - {id: "flow_type", en: "Flow design: make-to-order vs to-stock, batch vs continuous, case-by-case", ar: "نوع التدفق: حسب الطلب أو للمخزون، دفعات أو مستمر، حالة بحالة"}
+      - {id: "bottleneck", en: "The stage that limits throughput", ar: "المرحلة التي تحدّ من الطاقة"}
+      - {id: "standard_work", en: "SOPs, work instructions, checklists, forms", ar: "الإجراءات وتعليمات العمل وقوائم التحقق والنماذج"}
+    rules:
+      - {en: "Throughput equals the capacity of the slowest stage; queues form in front of it.", ar: "الطاقة تساوي طاقة أبطأ مرحلة، والطوابير تتكون أمامها."}
+      - {en: "Every recurring process has an owner; where none is visible, the founder or the most senior person owns it by default.", ar: "لكل عملية متكررة مالك، وحين لا يظهر مالك يكون المؤسس أو الأقدم هو المالك ضمنياً."}
+      - {en: "Lead time ≈ work-in-progress ÷ throughput (Little's law).", ar: "مدة التنفيذ ≈ الأعمال الجارية ÷ الطاقة (قانون ليتل)."}
+    traces:
+      - {element: "value_chain", strength: "moderate", en: "Step-by-step service descriptions, case-study timelines, process diagrams in public documents", ar: "أوصاف الخدمة خطوة بخطوة والجداول الزمنية في دراسات الحالة والمخططات في الوثائق العامة"}
+      - {element: "bottleneck", strength: "moderate", en: "Waiting times quoted to customers, complaints about delays, piles seen on site", ar: "أوقات الانتظار المعلنة وشكاوى التأخير والتكدس المرئي في الموقع"}
+      - {element: "standard_work", strength: "strong", en: "Published procedures, ISO certificates and their scope", ar: "الإجراءات المنشورة وشهادات الأيزو ونطاقها"}
+
+  - id: people
+    name: "People & structure"
+    name_ar: "الناس والهيكل"
+    purpose: "Who does the work, how they are grouped, managed, hired and paid."
+    purpose_ar: "من ينفّذ العمل، وكيف يُجمَّع ويُدار ويُوظَّف ويُدفع له."
+    components: [team]
+    elements:
+      - {id: "structure", en: "Units and reporting lines (functional, divisional, matrix)", ar: "الوحدات وخطوط التبعية (وظيفي، قطاعي، مصفوفي)"}
+      - {id: "roles", en: "Roles and their skills", ar: "الأدوار ومهاراتها"}
+      - {id: "key_people", en: "Single points of failure and holders of tacit knowledge", ar: "نقاط الفشل الفردية وحاملو المعرفة الضمنية"}
+      - {id: "hiring", en: "How people are recruited, onboarded and trained", ar: "كيف يُستقطب الناس ويُهيَّؤون ويُدرَّبون"}
+      - {id: "incentives", en: "Pay structure and what it rewards", ar: "هيكل الأجر وما يكافئه"}
+    rules:
+      - {en: "A manager directly supervises about 5–15 people; more means informal sub-leads exist.", ar: "المدير يشرف مباشرة على 5–15 شخصاً تقريباً، وأكثر من ذلك يعني وجود قادة فرعيين غير رسميين."}
+      - {en: "Headcount ≈ workload hours ÷ productive hours per person.", ar: "عدد الموظفين ≈ ساعات العمل المطلوبة ÷ الساعات المنتجة للفرد."}
+      - {en: "People do what pay rewards, not what the policy says.", ar: "الناس يفعلون ما يكافئه الأجر، لا ما تقوله السياسة."}
+    traces:
+      - {element: "structure", strength: "strong", en: "Published organization chart or organizational regulation", ar: "الهيكل التنظيمي المنشور أو اللائحة التنظيمية"}
+      - {element: "roles", strength: "moderate", en: "Job ads (titles, required tools, reporting lines), LinkedIn titles", ar: "إعلانات التوظيف (المسميات، الأدوات المطلوبة، خطوط التبعية) ومسميات لينكدإن"}
+      - {element: "key_people", strength: "weak", en: "The same name on every call, post and testimonial", ar: "الاسم نفسه في كل مكالمة ومنشور وشهادة"}
+      - {element: "hiring", strength: "moderate", en: "Repeated ads for the same role (turnover), careers pages", ar: "الإعلانات المتكررة للدور نفسه (دوران) وصفحات الوظائف"}
+
+  - id: finance
+    name: "Money (revenue, cost, cash)"
+    name_ar: "المال (الإيراد، التكلفة، النقد)"
+    purpose: "How money comes in, where it goes, and how cash is kept positive."
+    purpose_ar: "كيف يدخل المال، وأين يذهب، وكيف يبقى النقد موجباً."
+    components: [revenue_model, economics]
+    elements:
+      - {id: "revenue_model", en: "Sources of income (sales, commission, fees, budget allocation, grants, dues)", ar: "مصادر الدخل (مبيعات، عمولة، رسوم، مخصصات موازنة، منح، اشتراكات)"}
+      - {id: "cost_structure", en: "Main cost lines and which are fixed or variable", ar: "بنود التكلفة الرئيسية وما الثابت منها والمتغير"}
+      - {id: "unit_economics", en: "Revenue and cost per unit of output (product, case, member, citizen served)", ar: "الإيراد والتكلفة لكل وحدة ناتج (منتج، حالة، عضو، مواطن مخدوم)"}
+      - {id: "cash_cycle", en: "Payment terms, stock and receivables, budget release cycle", ar: "آجال الدفع والمخزون والذمم ودورة صرف الموازنة"}
+    rules:
+      - {en: "Revenue ≈ units × price; check it against size (people, space, machines).", ar: "الإيراد ≈ الوحدات × السعر، ويُفحص مقابل الحجم (الناس، المساحة، المكائن)."}
+      - {en: "In public bodies, the budget law lines mirror the organization chart.", ar: "في الجهات العامة، بنود قانون الموازنة تعكس الهيكل التنظيمي."}
+    traces:
+      - {element: "revenue_model", strength: "strong", en: "Annual reports, filed accounts, budget law, grant announcements", ar: "التقارير السنوية والقوائم المودعة وقانون الموازنة وإعلانات المنح"}
+      - {element: "revenue_model", strength: "moderate", en: "Pricing pages and statements about who pays", ar: "صفحات الأسعار والتصريحات عن من يدفع"}
+      - {element: "cost_structure", strength: "weak", en: "Premises size, headcount, energy-heavy equipment", ar: "مساحة المقر وعدد الموظفين والمعدات كثيفة الطاقة"}
+
+  - id: assets
+    name: "Assets, equipment & tools"
+    name_ar: "الأصول والمعدات والأدوات"
+    purpose: "The physical and legal means of production — premises, machines, tools, vehicles, licences."
+    purpose_ar: "وسائل الإنتاج المادية والقانونية: المقرات والمكائن والأدوات والمركبات والتراخيص."
+    components: [assets]
+    elements:
+      - {id: "premises", en: "Sites, their size and use", ar: "المواقع ومساحتها واستخدامها"}
+      - {id: "equipment", en: "Machines and tools with function, capacity and condition (see the equipment register)", ar: "المكائن والأدوات ووظيفتها وطاقتها وحالتها (انظر سجل المعدات)"}
+      - {id: "routing", en: "The path products take through equipment", ar: "المسار الذي يسلكه المنتج بين المعدات"}
+      - {id: "licences", en: "Licences, permits, certificates, approvals", ar: "التراخيص والتصاريح والشهادات والموافقات"}
+    rules:
+      - {en: "Line capacity is the minimum of station capacities along the routing.", ar: "طاقة الخط هي أدنى طاقة بين المحطات على مسار المنتج."}
+      - {en: "Every machine needs an operator skill and a maintenance routine; missing ones show up as downtime.", ar: "كل ماكينة تحتاج مهارة تشغيل وروتين صيانة، وغيابهما يظهر كتوقفات."}
+    traces:
+      - {element: "equipment", strength: "strong", en: "Nameplates and machine brands visible in photos or videos", ar: "لوحات المكائن وعلاماتها الظاهرة في الصور أو الفيديو"}
+      - {element: "equipment", strength: "moderate", en: "Job ads naming machines or CNC/PLC skills, dealer case studies", ar: "إعلانات توظيف تذكر المكائن أو مهارات CNC/PLC، ودراسات حالة الموزعين"}
+      - {element: "premises", strength: "moderate", en: "Map footprint, building size, industrial-zone allocation", ar: "مساحة الموقع على الخريطة وحجم المبنى وتخصيص المنطقة الصناعية"}
+      - {element: "licences", strength: "strong", en: "Public registries of permits, certificates and approvals", ar: "السجلات العامة للتصاريح والشهادات والموافقات"}
+
+  - id: information
+    name: "Information & systems"
+    name_ar: "المعلومات والأنظمة"
+    purpose: "Where records live, how information moves, and where it is re-typed by hand."
+    purpose_ar: "أين تُحفظ السجلات، وكيف تنتقل المعلومات، وأين يُعاد إدخالها يدوياً."
+    components: [systems]
+    elements:
+      - {id: "systems", en: "Core systems (ERP, accounting, CRM, case management, POS, spreadsheets, paper)", ar: "الأنظمة الأساسية (ERP، محاسبة، CRM، إدارة الحالات، نقاط البيع، إكسل، ورق)"}
+      - {id: "flows", en: "Hand-offs between systems and people", ar: "نقاط التسليم بين الأنظمة والناس"}
+      - {id: "records", en: "Records that are legally required", ar: "السجلات المطلوبة قانونياً"}
+    rules:
+      - {en: "Every manual re-entry between two systems is a delay and an error source.", ar: "كل إعادة إدخال يدوية بين نظامين مصدر تأخير وأخطاء."}
+    traces:
+      - {element: "systems", strength: "moderate", en: "Software named in job ads, site technology fingerprints, e-invoice/e-government integrations", ar: "البرامج المذكورة في إعلانات التوظيف وبصمات تقنيات الموقع وتكامل الفوترة والحكومة الإلكترونية"}
+      - {element: "flows", strength: "weak", en: "Forms that must be downloaded and e-mailed back", ar: "نماذج تُنزَّل ثم تُرسل بالبريد"}
+
+  - id: control
+    name: "Control (quality, compliance, audit)"
+    name_ar: "الرقابة (الجودة، الامتثال، التدقيق)"
+    purpose: "How the organization checks that work is right, legal and honest."
+    purpose_ar: "كيف تتأكد الجهة أن العمل صحيح وقانوني ونزيه."
+    components: [identity, operations]
+    elements:
+      - {id: "quality", en: "Inspection, testing, complaint handling", ar: "الفحص والاختبار ومعالجة الشكاوى"}
+      - {id: "compliance", en: "Regulatory obligations and who tracks them", ar: "الالتزامات التنظيمية ومن يتابعها"}
+      - {id: "segregation", en: "Separation of who orders, who approves, who pays and who receives", ar: "الفصل بين من يطلب ومن يعتمد ومن يدفع ومن يستلم"}
+      - {id: "audit", en: "Internal and external audit, inspections", ar: "التدقيق الداخلي والخارجي والتفتيش"}
+    rules:
+      - {en: "Where one person orders, approves and pays, control is personal, not systemic.", ar: "حين يطلب شخص واحد ويعتمد ويدفع، تكون الرقابة شخصية لا نظامية."}
+      - {en: "Public bodies are audited by a supreme audit institution whose reports are often public.", ar: "الجهات العامة يدققها ديوان رقابة أعلى، وتقاريره غالباً منشورة."}
+    traces:
+      - {element: "audit", strength: "strong", en: "Audit-court or auditor reports, inspection results", ar: "تقارير ديوان المحاسبة أو المدقق ونتائج التفتيش"}
+      - {element: "quality", strength: "moderate", en: "Certificates, recall notices, complaint-site patterns", ar: "الشهادات وإشعارات السحب وأنماط مواقع الشكاوى"}
+
+  - id: support
+    name: "Support functions"
+    name_ar: "الوظائف المساندة"
+    purpose: "HR, finance & accounting, IT, procurement, legal, facilities."
+    purpose_ar: "الموارد البشرية والمالية والمحاسبة والتقنية والمشتريات والقانونية والمرافق."
+    components: [partners, team]
+    elements:
+      - {id: "procurement", en: "How suppliers are chosen and paid (tenders, quotes, relationships)", ar: "كيف يُختار الموردون ويُدفع لهم (مناقصات، عروض أسعار، علاقات)"}
+      - {id: "outsourced", en: "Which support functions are outsourced (accounting, legal, IT, cleaning)", ar: "أي الوظائف المساندة مُسنَدة لجهات خارجية (محاسبة، قانونية، تقنية، نظافة)"}
+    rules:
+      - {en: "Small organizations outsource accounting and legal; growth brings them in-house.", ar: "الجهات الصغيرة تُسند المحاسبة والقانونية للخارج، والنمو يُدخلها للداخل."}
+    traces:
+      - {element: "procurement", strength: "strong", en: "Public procurement notices and awards", ar: "إعلانات المناقصات العامة وترسياتها"}
+      - {element: "outsourced", strength: "weak", en: "Supplier and partner logos, accountant named on filings", ar: "شعارات الموردين والشركاء والمحاسب المذكور في القوائم المودعة"}
+
+  - id: improvement
+    name: "Learning & improvement"
+    name_ar: "التعلم والتحسين"
+    purpose: "How the organization measures itself and changes."
+    purpose_ar: "كيف تقيس الجهة نفسها وكيف تتغير."
+    components: [moat]
+    elements:
+      - {id: "kpis", en: "What is measured and reported", ar: "ما يُقاس ويُبلَّغ عنه"}
+      - {id: "change", en: "How new products, services or reforms are introduced", ar: "كيف تُقدَّم المنتجات أو الخدمات أو الإصلاحات الجديدة"}
+    rules:
+      - {en: "What is reported publicly is what management is judged on.", ar: "ما يُنشر علناً هو ما تُحاسَب عليه الإدارة."}
+    traces:
+      - {element: "kpis", strength: "moderate", en: "Numbers repeated in reports, posts and dashboards", ar: "الأرقام المتكررة في التقارير والمنشورات ولوحات المؤشرات"}
+      - {element: "change", strength: "weak", en: "Version history of the website (archived snapshots)", ar: "تاريخ نسخ الموقع (اللقطات المؤرشفة)"}

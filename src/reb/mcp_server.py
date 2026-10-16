@@ -155,7 +155,8 @@ def build_server():
         contradicting_evidence_ids: list[str] | None = None, entity: str | None = None,
         item: str | None = None, kind: str = "neutral", metric: str | None = None,
         value: float | None = None, unit: str | None = None, replicability: str = "unassessed",
-        industry_prior: bool = False, as_of: str | None = None, workspace: str | None = None,
+        industry_prior: bool = False, as_of: str | None = None, component: str | None = None,
+        workspace: str | None = None,
     ) -> dict:
         """Record a claim about the organization. Status (conjecture / single_source /
         triangulated / contradicted) and grade are computed from the evidence.
@@ -165,7 +166,8 @@ def build_server():
             c = led.record_claim(statement=statement, layer=layer, evidence_ids=evidence_ids,
                                  contradicting_evidence_ids=contradicting_evidence_ids, entity=entity, item=item,
                                  kind=kind, metric=metric, value=value, unit=unit,
-                                 replicability=replicability, industry_prior=industry_prior, as_of=as_of)
+                                 replicability=replicability, industry_prior=industry_prior, as_of=as_of,
+                                 component=component)
             return _dump(c)
 
     @server.tool()
@@ -290,6 +292,162 @@ def build_server():
                 Path(out_path).write_text(text, encoding="utf-8")
                 return {"written": out_path}
             return {"report": text}
+
+    # ------------------------------------------------------------ blueprint layer
+
+    @server.tool()
+    @_safe
+    def show_kernel(family: str | None = None) -> Any:
+        """The design kernel: the 10 building blocks every organization has (elements, design
+        rules, and the traces each element leaves). family: business | public_body | nonprofit |
+        industrial shows how that family builds the blocks and its specific traces."""
+        from .kernel import blocks, families
+
+        if family:
+            return families()[family].model_dump()
+        return [b.model_dump() for b in blocks()]
+
+    @server.tool()
+    @_safe
+    def list_archetypes() -> list[dict]:
+        """Typical operating models (company, ministry, organization, factory types) that seed a blueprint."""
+        from .archetypes import archetypes
+
+        return [{"id": a.id, "family": a.family, "name": a.name, "name_ar": a.name_ar, "keywords": a.keywords}
+                for a in archetypes().values()]
+
+    @server.tool()
+    @_safe
+    def start_blueprint(url: str | None = None, archetype: str | None = None, max_pages: int = 15,
+                        workspace: str | None = None) -> dict:
+        """Crawl the organization's public website (robots.txt respected) into sources and a technical
+        footprint, suggest archetypes, and seed the blueprint with the chosen archetype (all
+        hypotheses start at LOW confidence)."""
+        from .application.blueprint import start_blueprint as start
+
+        with Ledger.open(_ws(workspace)) as led:
+            return start(led, url=url, archetype_id=archetype, max_pages=max_pages)
+
+    @server.tool()
+    @_safe
+    def apply_archetype(archetype: str, workspace: str | None = None) -> dict:
+        """Seed (more) archetype hypotheses into the blueprint."""
+        from .archetypes import apply_archetype as apply
+
+        with Ledger.open(_ws(workspace)) as led:
+            return apply(led, archetype)
+
+    @server.tool()
+    @_safe
+    def add_hypothesis(
+        statement: str, component: str, basis: str, signal_evidence_ids: list[str] | None = None,
+        derived_from: list[str] | None = None, assumptions: list[str] | None = None,
+        range: dict | None = None, metric: str | None = None, test: str | None = None,
+        test_cost: str = "medium", impact: str = "medium", archetype: str | None = None,
+        workspace: str | None = None,
+    ) -> dict:
+        """Record an inference about how the organization works. basis: signal (cite the evidence it
+        was inferred from) | archetype | calculation (derived_from + assumptions). Confidence is
+        computed: archetype only = low, one source = medium, two independent sources = high.
+        component: identity|customers|offer|revenue_model|acquisition|operations|team|systems|
+        partners|assets|economics|moat. range: {"low","high","unit"}."""
+        with Ledger.open(_ws(workspace)) as led:
+            return _dump(led.add_hypothesis(
+                statement=statement, component=component, basis=basis, signal_evidence_ids=signal_evidence_ids,
+                derived_from=derived_from, assumptions=assumptions, range=range, metric=metric, test=test,
+                test_cost=test_cost, impact=impact, archetype=archetype))
+
+    @server.tool()
+    @_safe
+    def update_hypothesis(
+        hypothesis_id: str, revision: int, add_signals: list[str] | None = None, status: str | None = None,
+        status_evidence_ids: list[str] | None = None, test: str | None = None, impact: str | None = None,
+        test_cost: str | None = None, workspace: str | None = None,
+    ) -> dict:
+        """Add signals or mark supported/refuted — only with evidence; support must go beyond the
+        original signals."""
+        with Ledger.open(_ws(workspace)) as led:
+            return _dump(led.update_hypothesis(
+                hypothesis_id, revision=revision, add_signals=add_signals, status=status,
+                status_evidence_ids=status_evidence_ids, test=test, impact=impact, test_cost=test_cost))
+
+    @server.tool()
+    @_safe
+    def promote_hypothesis(hypothesis_id: str, revision: int, workspace: str | None = None) -> dict:
+        """Turn a supported hypothesis into an ordinary graded claim."""
+        with Ledger.open(_ws(workspace)) as led:
+            return _dump(led.promote_hypothesis(hypothesis_id, revision=revision))
+
+    @server.tool()
+    @_safe
+    def grade_hypothesis(hypothesis_id: str, verdict: str, workspace: str | None = None) -> dict:
+        """The owner's verdict (correct | partial | wrong), used only to calibrate confidence."""
+        with Ledger.open(_ws(workspace)) as led:
+            return _dump(led.grade_hypothesis(hypothesis_id, verdict))
+
+    @server.tool()
+    @_safe
+    def add_design_item(component: str, kind: str, statement: str, refs: list[str], phase: str | None = None,
+                        cost: dict | None = None, workspace: str | None = None) -> dict:
+        """Redesign item. kind: copy | improve | cannot_copy | build_step. refs: the claim,
+        hypothesis or evidence ids it rests on (required)."""
+        with Ledger.open(_ws(workspace)) as led:
+            return _dump(led.add_design_item(component=component, kind=kind, statement=statement, refs=refs,
+                                             phase=phase, cost=cost))
+
+    @server.tool()
+    @_safe
+    def add_equipment(name: str, refs: list[str], equipment_type: str | None = None, station: int | None = None,
+                      count: int = 1, rate: dict | None = None, notes: str | None = None,
+                      workspace: str | None = None) -> dict:
+        """Equipment register entry. station = position in the routing; rate = rated rate per machine
+        {"low","high","unit"} (use one unit per hour across stations to get line capacity)."""
+        with Ledger.open(_ws(workspace)) as led:
+            return _dump(led.add_equipment(name=name, refs=refs, equipment_type=equipment_type, station=station,
+                                           count=count, rate=rate, notes=notes))
+
+    @server.tool()
+    @_safe
+    def check_consistency(workspace: str | None = None) -> dict:
+        """Check that the parts fit together (revenue vs volume x price, Little's law, headcount vs
+        workload, stated output vs line capacity). Conflicts open unknowns."""
+        from .application.consistency import check_consistency as check
+
+        with Ledger.open(_ws(workspace)) as led:
+            return check(led)
+
+    @server.tool()
+    @_safe
+    def build_blueprint(workspace: str | None = None) -> dict:
+        """The full blueprint: per component how it is built, what is known / inferred / unknown, the
+        traces to look for; process map; organization; numbers; redesign; verification plan."""
+        from .application.blueprint import build_blueprint as build
+
+        with Ledger.open(_ws(workspace), write=False) as led:
+            return build(led)
+
+    @server.tool()
+    @_safe
+    def render_blueprint(language: str | None = None, md_path: str | None = None, html_path: str | None = None,
+                         pdf_path: str | None = None, workspace: str | None = None) -> dict:
+        """Write the blueprint as Markdown, an interactive HTML page and/or PDF (needs local Chrome)."""
+        from .application.blueprint import build_blueprint as build
+        from .application.blueprint_render import html_to_pdf, render_html, render_markdown
+
+        with Ledger.open(_ws(workspace), write=False) as led:
+            bp = build(led)
+            lang = language or led.engagement.language
+        written = {}
+        if md_path:
+            Path(md_path).write_text(render_markdown(bp, lang), encoding="utf-8")
+            written["md"] = md_path
+        if html_path or pdf_path:
+            hp = Path(html_path or Path(pdf_path).with_suffix(".html"))
+            hp.write_text(render_html(bp, lang), encoding="utf-8")
+            written["html"] = str(hp)
+            if pdf_path:
+                written["pdf"] = pdf_path if html_to_pdf(hp, Path(pdf_path)) else "no local Chrome/Chromium found"
+        return written or {"markdown": render_markdown(bp, lang)}
 
     return server
 

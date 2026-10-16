@@ -197,6 +197,7 @@ class Claim(BaseModel):
     id: str
     statement: str
     layer: Layer
+    component: "Component | None" = None
     entity: str | None = None
     item: str | None = None  # profile checklist item id
     kind: ClaimKind = ClaimKind.NEUTRAL
@@ -256,6 +257,128 @@ class Obligation(BaseModel):
     reasons: list[str] = Field(default_factory=list)
 
 
+# ---------------------------------------------------------------- blueprint layer
+
+
+class Component(str, Enum):
+    """The 12 components of an organization's operating model."""
+
+    IDENTITY = "identity"  # legal status, size, age, location
+    CUSTOMERS = "customers"  # segments and who pays
+    OFFER = "offer"  # products/services and pricing
+    REVENUE_MODEL = "revenue_model"  # how money comes in
+    ACQUISITION = "acquisition"  # channels and sales funnel
+    OPERATIONS = "operations"  # core value chain / processes
+    TEAM = "team"  # roles, structure, key-person dependence
+    SYSTEMS = "systems"  # tools and data
+    PARTNERS = "partners"  # suppliers, partners, regulators they depend on
+    ASSETS = "assets"  # premises, equipment, licences
+    ECONOMICS = "economics"  # unit economics and cost structure
+    MOAT = "moat"  # culture, advantage, what is hard to copy
+
+
+COMPONENT_LAYER: dict[Component, Layer] = {
+    Component.IDENTITY: Layer.REGULATION,
+    Component.CUSTOMERS: Layer.CUSTOMER,
+    Component.OFFER: Layer.STRATEGY,
+    Component.REVENUE_MODEL: Layer.REVENUE,
+    Component.ACQUISITION: Layer.CUSTOMER,
+    Component.OPERATIONS: Layer.OPERATIONS,
+    Component.TEAM: Layer.PEOPLE,
+    Component.SYSTEMS: Layer.SYSTEMS,
+    Component.PARTNERS: Layer.SUPPLY,
+    Component.ASSETS: Layer.EQUIPMENT,
+    Component.ECONOMICS: Layer.FINANCE,
+    Component.MOAT: Layer.CULTURE,
+}
+
+
+class HypothesisBasis(str, Enum):
+    SIGNAL = "signal"  # inferred from a trace we recorded
+    ARCHETYPE = "archetype"  # typical for this kind of organization
+    CALCULATION = "calculation"  # computed from other hypotheses / facts
+
+
+class HypothesisConfidence(str, Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
+
+class HypothesisStatus(str, Enum):
+    PROPOSED = "proposed"
+    SUPPORTED = "supported"  # evidence beyond the original signals backs it
+    REFUTED = "refuted"
+    PROMOTED = "promoted"  # turned into a claim
+
+
+class Level(str, Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
+
+class ValueRange(BaseModel):
+    low: float
+    high: float
+    unit: str
+
+
+class Hypothesis(BaseModel):
+    """An inference about how the organization works. Never rendered as a fact."""
+
+    id: str
+    statement: str
+    component: Component
+    basis: HypothesisBasis
+    signal_evidence_ids: list[str] = Field(default_factory=list)
+    derived_from: list[str] = Field(default_factory=list)  # hypothesis / claim ids (calculation)
+    archetype: str | None = None
+    assumptions: list[str] = Field(default_factory=list)
+    range: ValueRange | None = None
+    metric: str | None = None  # for consistency checks, e.g. "headcount", "output_per_month"
+    confidence: HypothesisConfidence = HypothesisConfidence.LOW
+    test: str | None = None  # cheapest way to confirm or refute
+    test_cost: Level = Level.MEDIUM
+    impact: Level = Level.MEDIUM  # how much it matters for a decision
+    status: HypothesisStatus = HypothesisStatus.PROPOSED
+    status_evidence_ids: list[str] = Field(default_factory=list)
+    promoted_claim_id: str | None = None
+    owner_verdict: str | None = None  # correct | partial | wrong — for calibration
+    revision: int = 1
+    recorded_at: str = Field(default_factory=utc_now)
+
+
+class DesignKind(str, Enum):
+    COPY = "copy"  # keep as is in a rebuilt version
+    IMPROVE = "improve"  # weakness to beat
+    CANNOT_COPY = "cannot_copy"  # non-transferable
+    BUILD_STEP = "build_step"  # recipe item to build it
+
+
+class DesignItem(BaseModel):
+    id: str
+    component: Component
+    kind: DesignKind
+    statement: str
+    refs: list[str]  # claim / hypothesis / evidence ids it rests on
+    phase: str | None = None  # e.g. "day 0-30"
+    cost: ValueRange | None = None
+
+
+class EquipmentItem(BaseModel):
+    """One machine type in the organization's equipment register."""
+
+    id: str
+    name: str
+    equipment_type: str | None = None  # kernel equipment id, if it matches one
+    station: int | None = None  # position in the routing (1 = first)
+    count: int = 1
+    rate: ValueRange | None = None  # rated rate per machine
+    refs: list[str]  # evidence / hypothesis / claim ids it rests on
+    notes: str | None = None
+
+
 class LedgerData(BaseModel):
     schema_version: int = 1
     engagement: Engagement
@@ -264,3 +387,10 @@ class LedgerData(BaseModel):
     claims: dict[str, Claim] = Field(default_factory=dict)
     unknowns: dict[str, Unknown] = Field(default_factory=dict)
     obligations: dict[str, Obligation] = Field(default_factory=dict)
+    hypotheses: dict[str, Hypothesis] = Field(default_factory=dict)
+    design: dict[str, DesignItem] = Field(default_factory=dict)
+    equipment: dict[str, EquipmentItem] = Field(default_factory=dict)
+    archetype: str | None = None
+
+
+Claim.model_rebuild()

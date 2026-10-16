@@ -25,6 +25,7 @@ def _print(data: Any, as_json: bool) -> None:
 
 
 READ_ONLY = {"read", "coverage", "ledger", "report", "export"}
+READ_ONLY_SUB = {("blueprint", "build"), ("blueprint", "render")}
 
 
 def _case_pairs(values: list[str] | None) -> dict[str, list[str]]:
@@ -37,6 +38,19 @@ def _case_pairs(values: list[str] | None) -> dict[str, list[str]]:
 
 def run(args: argparse.Namespace) -> Any:
     cmd = args.command
+    if cmd == "archetypes":
+        from .archetypes import archetypes
+
+        return [{"id": a.id, "family": a.family, "name": a.name, "name_ar": a.name_ar, "compose": a.compose}
+                for a in archetypes().values()]
+    if cmd == "kernel":
+        from .kernel import blocks, families
+
+        if args.family:
+            return families()[args.family].model_dump()
+        return [{"id": b.id, "name": b.name, "name_ar": b.name_ar, "purpose_ar": b.purpose_ar,
+                 "components": [c.value for c in b.components], "elements": [e.ar for e in b.elements]}
+                for b in blocks()]
     if cmd == "profiles":
         return [{"id": p.id, "name": p.name, "name_ar": p.name_ar, "modes": [m.value for m in p.allowed_modes], "items": len(p.items)} for p in list_profiles()]
     if cmd == "init":
@@ -61,7 +75,8 @@ def run(args: argparse.Namespace) -> Any:
         )
         return led.engagement.model_dump(mode="json")
 
-    with Ledger.open(Path(args.workspace), write=cmd not in READ_ONLY) as led:
+    write = cmd not in READ_ONLY and (cmd, getattr(args, "sub", None)) not in READ_ONLY_SUB
+    with Ledger.open(Path(args.workspace), write=write) as led:
         return _run_engagement(led, args)
 
 
@@ -105,6 +120,7 @@ def _run_engagement(led: Ledger, args: argparse.Namespace) -> Any:
             contradicting_evidence_ids=args.contradicting, entity=args.entity, item=args.item,
             kind=args.kind, metric=args.metric, value=args.value, unit=args.unit,
             replicability=args.replicability, industry_prior=args.industry_prior, as_of=args.as_of,
+            component=args.component,
         )
         return c.model_dump(mode="json")
     if cmd == "unknown":
@@ -162,6 +178,61 @@ def _run_engagement(led: Ledger, args: argparse.Namespace) -> Any:
         return text
     if cmd == "export":
         return json.loads(led.data.model_dump_json())
+    if cmd == "blueprint":
+        from .application import blueprint as bpmod
+        from .application.blueprint_render import html_to_pdf, render_html, render_markdown
+
+        if args.sub == "start":
+            return bpmod.start_blueprint(led, url=args.url, archetype_id=args.archetype, max_pages=args.max_pages)
+        if args.sub == "apply":
+            from .archetypes import apply_archetype
+
+            return apply_archetype(led, args.archetype)
+        bp = bpmod.build_blueprint(led)
+        if args.sub == "build":
+            return bp
+        lang = args.lang or led.engagement.language
+        written = {}
+        if args.md:
+            Path(args.md).write_text(render_markdown(bp, lang), encoding="utf-8")
+            written["md"] = args.md
+        if args.html or args.pdf:
+            html_path = Path(args.html or Path(args.pdf).with_suffix(".html"))
+            html_path.write_text(render_html(bp, lang), encoding="utf-8")
+            written["html"] = str(html_path)
+            if args.pdf:
+                written["pdf"] = args.pdf if html_to_pdf(html_path, Path(args.pdf)) else "no local Chrome/Chromium found"
+        return written or render_markdown(bp, lang)
+    if cmd == "hypothesis":
+        if args.sub == "add":
+            rng = {"low": args.low, "high": args.high, "unit": args.unit} if args.low is not None else None
+            h = led.add_hypothesis(
+                statement=args.statement, component=args.component, basis=args.basis,
+                signal_evidence_ids=args.signal, derived_from=args.derived, archetype=args.archetype,
+                assumptions=args.assumption, range=rng, test=args.test, test_cost=args.test_cost,
+                impact=args.impact, metric=args.metric,
+            )
+        elif args.sub == "update":
+            h = led.update_hypothesis(args.hypothesis_id, revision=args.revision, add_signals=args.signal,
+                                      status=args.status, status_evidence_ids=args.status_evidence, test=args.test,
+                                      impact=args.impact, test_cost=args.test_cost)
+        elif args.sub == "promote":
+            return led.promote_hypothesis(args.hypothesis_id, revision=args.revision).model_dump(mode="json")
+        else:
+            h = led.grade_hypothesis(args.hypothesis_id, args.verdict)
+        return h.model_dump(mode="json")
+    if cmd == "design":
+        cost = {"low": args.cost_low, "high": args.cost_high, "unit": args.cost_unit} if args.cost_low is not None else None
+        return led.add_design_item(component=args.component, kind=args.kind, statement=args.statement,
+                                   refs=args.ref, phase=args.phase, cost=cost).model_dump(mode="json")
+    if cmd == "equipment":
+        rate = {"low": args.rate_low, "high": args.rate_high, "unit": args.rate_unit} if args.rate_low is not None else None
+        return led.add_equipment(name=args.name, refs=args.ref, equipment_type=args.type, station=args.station,
+                                 count=args.count, rate=rate, notes=args.notes).model_dump(mode="json")
+    if cmd == "consistency":
+        from .application.consistency import check_consistency
+
+        return check_consistency(led)
     raise RebError("unknown_command", cmd)
 
 
@@ -248,6 +319,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--unit")
     s.add_argument("--replicability", default="unassessed", choices=["codifiable", "needs_capability", "needs_asset", "non_transferable", "unassessed"])
     s.add_argument("--industry-prior", action="store_true")
+    s.add_argument("--component", choices=["identity", "customers", "offer", "revenue_model", "acquisition", "operations", "team", "systems", "partners", "assets", "economics", "moat"])
     s.add_argument("--as-of")
 
     s = sub.add_parser("unknown", help="record or update an unknown")
@@ -315,6 +387,81 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--out")
 
     sub.add_parser("export", help="export the full ledger as JSON")
+
+    sub.add_parser("archetypes", help="list built-in archetypes (typical operating models)")
+    s = sub.add_parser("kernel", help="show the design kernel (building blocks of any organization)")
+    s.add_argument("--family", choices=["business", "public_body", "nonprofit", "industrial"])
+
+    s = sub.add_parser("blueprint", help="build the organization blueprint")
+    bs = s.add_subparsers(dest="sub", required=True)
+    b = bs.add_parser("start", help="crawl the public site and seed the blueprint from an archetype")
+    b.add_argument("--url")
+    b.add_argument("--archetype")
+    b.add_argument("--max-pages", type=int, default=15)
+    b = bs.add_parser("apply", help="apply (another) archetype")
+    b.add_argument("archetype")
+    bs.add_parser("build", help="the blueprint as JSON")
+    b = bs.add_parser("render", help="render Markdown / HTML / PDF")
+    b.add_argument("--lang", choices=["ar", "en"])
+    b.add_argument("--md")
+    b.add_argument("--html")
+    b.add_argument("--pdf")
+
+    s = sub.add_parser("hypothesis", help="record, update, promote or grade an inference")
+    hs = s.add_subparsers(dest="sub", required=True)
+    h = hs.add_parser("add")
+    h.add_argument("--statement", required=True)
+    h.add_argument("--component", required=True, choices=["identity", "customers", "offer", "revenue_model", "acquisition", "operations", "team", "systems", "partners", "assets", "economics", "moat"])
+    h.add_argument("--basis", required=True, choices=["signal", "archetype", "calculation"])
+    h.add_argument("--signal", action="append", help="evidence id the inference rests on")
+    h.add_argument("--derived", action="append", help="hypothesis/claim id used in a calculation")
+    h.add_argument("--assumption", action="append")
+    h.add_argument("--archetype")
+    h.add_argument("--low", type=float)
+    h.add_argument("--high", type=float)
+    h.add_argument("--unit")
+    h.add_argument("--metric")
+    h.add_argument("--test")
+    h.add_argument("--test-cost", default="medium", choices=["low", "medium", "high"])
+    h.add_argument("--impact", default="medium", choices=["low", "medium", "high"])
+    h = hs.add_parser("update")
+    h.add_argument("hypothesis_id")
+    h.add_argument("--revision", type=int, required=True)
+    h.add_argument("--signal", action="append")
+    h.add_argument("--status", choices=["proposed", "supported", "refuted"])
+    h.add_argument("--status-evidence", action="append")
+    h.add_argument("--test")
+    h.add_argument("--impact", choices=["low", "medium", "high"])
+    h.add_argument("--test-cost", choices=["low", "medium", "high"])
+    h = hs.add_parser("promote")
+    h.add_argument("hypothesis_id")
+    h.add_argument("--revision", type=int, required=True)
+    h = hs.add_parser("grade", help="owner verdict, for calibration only")
+    h.add_argument("hypothesis_id")
+    h.add_argument("--verdict", required=True, choices=["correct", "partial", "wrong"])
+
+    s = sub.add_parser("design", help="add a redesign item (copy / improve / cannot_copy / build_step)")
+    s.add_argument("--component", required=True, choices=["identity", "customers", "offer", "revenue_model", "acquisition", "operations", "team", "systems", "partners", "assets", "economics", "moat"])
+    s.add_argument("--kind", required=True, choices=["copy", "improve", "cannot_copy", "build_step"])
+    s.add_argument("--statement", required=True)
+    s.add_argument("--ref", action="append", required=True)
+    s.add_argument("--phase")
+    s.add_argument("--cost-low", type=float)
+    s.add_argument("--cost-high", type=float)
+    s.add_argument("--cost-unit")
+
+    s = sub.add_parser("equipment", help="add a machine to the equipment register")
+    s.add_argument("--name", required=True)
+    s.add_argument("--ref", action="append", required=True)
+    s.add_argument("--type", help="kernel equipment id (see reb kernel)")
+    s.add_argument("--station", type=int, help="position in the routing")
+    s.add_argument("--count", type=int, default=1)
+    s.add_argument("--rate-low", type=float)
+    s.add_argument("--rate-high", type=float)
+    s.add_argument("--rate-unit")
+    s.add_argument("--notes")
+
+    sub.add_parser("consistency", help="check that the parts of the blueprint fit together")
 
     s = sub.add_parser("mcp", help="run the MCP server (stdio)")
     return p
