@@ -228,6 +228,7 @@ class Unknown(BaseModel):
     entity: str | None = None
     item: str | None = None
     status: UnknownStatus = UnknownStatus.OPEN
+    blocking: bool = False  # material to its whole layer: blocks every obligation on that layer
     revision: int = 1
     required_authority: Authority | None = None
     recommended_probes: list[str] = Field(default_factory=list)

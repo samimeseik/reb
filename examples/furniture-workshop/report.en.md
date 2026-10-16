@@ -4,7 +4,7 @@
 - **Mode:** self
 - **Authorization basis:** owner (synthetic example)
 - **Profile:** sop-replication
-- **Generated:** 2026-10-15
+- **Generated:** 2026-10-16
 
 > This file states what the recorded evidence shows, with a grade for each finding. It is not an audit, a valuation, legal advice or a warranty. Anything not covered below is unknown, not absent.
 
@@ -95,8 +95,8 @@
 
 **open** · {'open': 3, 'unknown': 6}
 
-- `ops.core-process` — **open** — missing owner (accountable role); missing case evidence: happy_path, exception_rework, peak_load, staff_absence, supplier_failure; missing passing verifier; open unknowns on this item
-- `ops.bottleneck` — **open** — case evidence below grade B: happy_path, peak_load
+- `ops.core-process` — **open** — missing owner (accountable role); missing case evidence: happy_path, exception_rework, peak_load, staff_absence, supplier_failure; missing passing verifier; open unknowns on this item, or blocking/contradicted on its layer: unk_0b07fd610764
+- `ops.bottleneck` — **open** — case evidence below grade B: happy_path, peak_load; open unknowns on this item, or blocking/contradicted on its layer: unk_0b07fd610764
 - `equip.register` — **unknown** — no evidence recorded for this item
 - `people.roles` — **unknown** — no evidence recorded for this item
 - `people.hiring` — **unknown** — no evidence recorded for this item

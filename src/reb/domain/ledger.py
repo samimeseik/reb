@@ -434,6 +434,7 @@ class Ledger:
         recommended_probes: list[str] | None = None,
         supporting_evidence_ids: list[str] | None = None,
         contradicting_evidence_ids: list[str] | None = None,
+        blocking: bool = False,
     ) -> Unknown:
         question = self.scrub(question) or ""
         probes = [self.scrub(p) or "" for p in recommended_probes or []]
@@ -451,6 +452,7 @@ class Ledger:
             entity=self.scrub(entity),
             item=item,
             status=status,
+            blocking=blocking,
             required_authority=Authority(required_authority) if required_authority else None,
             recommended_probes=probes,
             supporting_evidence_ids=supporting_evidence_ids or [],

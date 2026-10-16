@@ -183,14 +183,15 @@ def build_server():
         question: str, layer: str | None = None, entity: str | None = None, item: str | None = None,
         required_authority: str | None = None, recommended_probes: list[str] | None = None,
         supporting_evidence_ids: list[str] | None = None, contradicting_evidence_ids: list[str] | None = None,
-        workspace: str | None = None,
+        blocking: bool = False, workspace: str | None = None,
     ) -> dict:
-        """Record an open question and the cheapest probe that would settle it."""
+        """Record an open question and the cheapest probe that would settle it.
+        blocking=True: material to its whole layer; blocks every obligation on that layer."""
         with Ledger.open(_ws(workspace), write=True) as led:
             u = led.record_unknown(question=question, layer=layer, entity=entity, item=item,
                                    required_authority=required_authority, recommended_probes=recommended_probes,
                                    supporting_evidence_ids=supporting_evidence_ids,
-                                   contradicting_evidence_ids=contradicting_evidence_ids)
+                                   contradicting_evidence_ids=contradicting_evidence_ids, blocking=blocking)
             return _dump(u)
 
     @server.tool()
@@ -276,10 +277,24 @@ def build_server():
     ) -> dict:
         """Attach owner, per-case evidence or a verifier
         ({"kind": "desk_review|reconciliation|conformance|prediction|pilot", "passed": bool,
-        "evidence_ids": [...]}) to a reconstruction obligation."""
+        "evidence_ids": [...]}) to a reconstruction obligation. A verifier counts as passing only
+        once its run is recorded with record_verification."""
         with Ledger.open(_ws(workspace), write=True) as led:
             return _dump(coverage.record_obligation(led, item=item, owner=owner,
                                                     case_evidence=case_evidence, verifier=verifier, profile=profile))
+
+    @server.tool()
+    @_safe
+    def record_verification(
+        item: str, source_id: str, kind: str, result: str, fact: str, location: str | None = None,
+        quote: str | None = None, profile: str | None = None, workspace: str | None = None,
+    ) -> dict:
+        """Record a verification run (kind: desk_review|reconciliation|conformance|prediction|pilot;
+        result: pass|fail) as evidence on the source that holds it, and attach it as the
+        obligation's verifier. The source must be independent of the case evidence."""
+        with Ledger.open(_ws(workspace), write=True) as led:
+            return coverage.record_verification(led, item=item, source_id=source_id, kind=kind, result=result,
+                                                fact=fact, location=location, quote=quote, profile=profile)
 
     @server.tool()
     @_safe

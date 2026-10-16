@@ -69,7 +69,8 @@ OBS=$(r observe --title "Site walk 2026-10-10" --role "analyst" --site "workshop
   --legal-basis "staff notice N-2026-01 (synthetic)" \
   --note "Morning walk through all stations." \
   --fact '{"fact": "Nine assembled carcasses were waiting in front of the single spray booth.", "layer": "operations", "entity": "paint"}' \
-  | get 'd["evidence"][0]["id"]')
+  | get 'd["evidence"][0]["id"]+" "+d["source"]["id"]')
+read -r OBS OBS_SRC <<< "$OBS"
 
 echo "== 7. claims (status and grade are computed)"
 r claim --statement "The written procedure and the usta state a lead time of about 10 days." --layer operations \
@@ -101,9 +102,9 @@ r unknown add --question "Which licences and permits does the workshop hold?" --
 echo "== 10. one obligation progressed (owner + cases + verifier)"
 # The verifier must cite evidence beyond the case evidence: the model (from the chat)
 # predicted a queue at the spray booth; the site walk then observed it.
-r obligation --item ops.bottleneck --owner "workshop manager" --case "happy_path=$PM_EV" --case "peak_load=$INT_PAINT" \
-  --verifier prediction --passed --verifier-evidence "$OBS" \
-  --note "Process model predicted the paint queue later observed on the site walk." >/dev/null
+r obligation --item ops.bottleneck --owner "workshop manager" --case "happy_path=$PM_EV" --case "peak_load=$INT_PAINT" >/dev/null
+r verify --item ops.bottleneck --source "$OBS_SRC" --kind prediction --result pass \
+  --fact "Process model predicted the paint queue; the site walk then saw nine carcasses waiting at the spray booth." >/dev/null
 
 echo "== 11. coverage and report"
 r coverage | get 'd["summary"]'

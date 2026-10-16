@@ -138,6 +138,8 @@ def record_obligation(
         ob.case_evidence[case] = list(dict.fromkeys([*ob.case_evidence.get(case, []), *ids]))
     if verifier:
         v = Verifier.model_validate(verifier)
+        # A passing result is never taken from this flag alone: evaluate_obligation
+        # looks for a recorded verification (see record_verification).
         if v.note:
             check_vocabulary(v.note)
             v.note = ledger.scrub(v.note)
@@ -149,6 +151,74 @@ def record_obligation(
     return ob
 
 
+def verify_operation(item: str) -> str:
+    return f"verify:{item}"
+
+
+def record_verification(
+    ledger: Ledger,
+    *,
+    item: str,
+    source_id: str,
+    kind: str,
+    result: str,
+    fact: str,
+    location: str | None = None,
+    quote: str | None = None,
+    profile: str | None = None,
+) -> dict[str, Any]:
+    """Record the outcome of a verification run as evidence on the source that holds it
+    (the reconciliation sheet, the pilot log, the observed prediction), then attach it as the
+    obligation's verifier. This is the only way a verifier can count as passing."""
+    from ..providers import default_authority
+
+    if result not in ("pass", "fail"):
+        raise RebError("invalid_result", "result must be 'pass' or 'fail'.")
+    source = ledger.source(source_id)
+    ev = ledger.add_evidence(
+        source_id=source_id,
+        fact=fact,
+        authority=default_authority(source.kind, source.custody),
+        provider="verification",
+        operation=verify_operation(item),
+        location=location,
+        quote=quote,
+        normalized={"verifier": kind, "result": result},
+    )
+    prior = ledger.data.obligations.get(item)
+    ids = [*(prior.verifier.evidence_ids if prior and prior.verifier and prior.verifier.kind == kind else []), ev.id]
+    ob = record_obligation(
+        ledger, item=item, profile=profile,
+        verifier={"kind": kind, "passed": result == "pass", "evidence_ids": list(dict.fromkeys(ids))},
+    )
+    return {"evidence": ev.model_dump(mode="json"), "obligation": ob.model_dump(mode="json")}
+
+
+def _recorded_results(ledger: Ledger, ob: Obligation) -> tuple[list, list]:
+    """Verifier evidence that records a verification of this item, split by result."""
+    if not ob.verifier:
+        return [], []
+    recorded = [
+        ev for eid in ob.verifier.evidence_ids
+        if (ev := ledger.data.evidence.get(eid)) and ev.operation == verify_operation(ob.item)
+    ]
+    return ([e for e in recorded if e.normalized.get("result") == "pass"],
+            [e for e in recorded if e.normalized.get("result") == "fail"])
+
+
+def _blocking_unknowns(ledger: Ledger, ob: Obligation) -> list[str]:
+    """Open unknowns on this item, plus contradicted or blocking ones anywhere on its layer."""
+    out = []
+    for u in ledger.data.unknowns.values():
+        if u.status not in OPEN_UNKNOWN:
+            continue
+        if u.item == ob.item or (
+            u.layer == ob.layer and (u.blocking or u.status == UnknownStatus.CONTRADICTED)
+        ):
+            out.append(u.id)
+    return out
+
+
 def evaluate_obligation(ledger: Ledger, ob: Obligation) -> None:
     reasons: list[str] = []
     case_ev = [ledger.data.evidence[e] for ids in ob.case_evidence.values() for e in ids if e in ledger.data.evidence]
@@ -156,7 +226,8 @@ def evaluate_obligation(ledger: Ledger, ob: Obligation) -> None:
     if not case_ev and not claims:
         ob.status, ob.reasons = ObligationStatus.UNKNOWN, ["no evidence recorded for this item"]
         return
-    if ob.verifier and ob.verifier.passed is False:
+    passes, fails = _recorded_results(ledger, ob)
+    if fails or (ob.verifier and ob.verifier.passed is False):
         ob.status, ob.reasons = ObligationStatus.FAILED, [f"verifier '{ob.verifier.kind}' failed"]
         return
     if not ob.owner:
@@ -173,31 +244,44 @@ def evaluate_obligation(ledger: Ledger, ob: Obligation) -> None:
     ]
     if weak:
         reasons.append(f"case evidence below grade {ob.required_grade.value}: {', '.join(weak)}")
+    seen: dict[str, str] = {}
+    reused = set()
+    for case, ids in ob.case_evidence.items():
+        for eid in ids:
+            if eid in seen and seen[eid] != case:
+                reused.add(eid)
+            seen.setdefault(eid, case)
+    if reused:
+        reasons.append(f"the same evidence is cited for different cases: {', '.join(sorted(reused))}")
     if not ob.verifier or ob.verifier.passed is not True:
         reasons.append("missing passing verifier")
+    elif not passes:
+        reasons.append(
+            f"verifier result not recorded: record the run with record_verification "
+            f"(evidence with operation '{verify_operation(ob.item)}' and result 'pass')"
+        )
     elif not verifier_sufficient(ob.verifier.kind, strongest_authority(case_ev)):
         reasons.append(
             f"verifier '{ob.verifier.kind}' is too weak for evidence of authority "
             f"'{strongest_authority(case_ev).value}'"
         )
-    elif not _verifier_independent(ledger, ob, case_ev):
+    elif not _verifier_independent(passes, case_ev, ledger):
         # A verifier drawn from the same sources as the cases checks the model against itself.
         reasons.append("verifier cites no evidence independent of the case evidence (circular)")
     if any(c.status == ClaimStatus.CONTRADICTED for c in claims):
         reasons.append("contradicted claims on this item")
-    if any(u.item == ob.item and u.status in OPEN_UNKNOWN for u in ledger.data.unknowns.values()):
-        reasons.append("open unknowns on this item")
+    blocking = _blocking_unknowns(ledger, ob)
+    if blocking:
+        reasons.append(f"open unknowns on this item, or blocking/contradicted on its layer: {', '.join(blocking)}")
     ob.status = ObligationStatus.READY if not reasons else ObligationStatus.OPEN
     ob.reasons = reasons
 
 
-def _verifier_independent(ledger: Ledger, ob: Obligation, case_ev: list) -> bool:
+def _verifier_independent(passes: list, case_ev: list, ledger: Ledger) -> bool:
     case_sources = {e.source_id for e in case_ev}
-    for eid in ob.verifier.evidence_ids:
-        ev = ledger.data.evidence.get(eid)
-        if ev and all(independent(ev.source_id, cs, ledger.data.sources) for cs in case_sources):
-            return True
-    return False
+    return any(
+        all(independent(ev.source_id, cs, ledger.data.sources) for cs in case_sources) for ev in passes
+    )
 
 
 def obligation_ledger(ledger: Ledger, profile: str | None = None) -> dict[str, Any]:

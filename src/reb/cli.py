@@ -131,6 +131,7 @@ def _run_engagement(led: Ledger, args: argparse.Namespace) -> Any:
                 question=args.question, layer=args.layer, entity=args.entity, item=args.item,
                 required_authority=args.required_authority, recommended_probes=args.probe,
                 supporting_evidence_ids=args.supporting, contradicting_evidence_ids=args.contradicting,
+                blocking=args.blocking,
             )
         else:
             resolution = None
@@ -170,6 +171,11 @@ def _run_engagement(led: Ledger, args: argparse.Namespace) -> Any:
             led, item=args.item, owner=args.owner, case_evidence=_case_pairs(args.case), verifier=verifier, profile=args.profile
         )
         return ob.model_dump(mode="json")
+    if cmd == "verify":
+        return coverage.record_verification(
+            led, item=args.item, source_id=args.source, kind=args.kind, result=args.result, fact=args.fact,
+            location=args.location, quote=args.quote, profile=args.profile,
+        )
     if cmd == "ledger":
         return coverage.obligation_ledger(led, args.profile)
     if cmd == "report":
@@ -338,6 +344,8 @@ def build_parser() -> argparse.ArgumentParser:
     a.add_argument("--probe", action="append")
     a.add_argument("--supporting", action="append")
     a.add_argument("--contradicting", action="append")
+    a.add_argument("--blocking", action="store_true",
+                   help="material to the whole layer: blocks every obligation on that layer until resolved")
     u = us.add_parser("update")
     u.add_argument("unknown_id")
     u.add_argument("--revision", type=int, required=True)
@@ -381,6 +389,16 @@ def build_parser() -> argparse.ArgumentParser:
     g.add_argument("--failed", action="store_true")
     s.add_argument("--verifier-evidence", action="append")
     s.add_argument("--note")
+    s.add_argument("--profile")
+
+    s = sub.add_parser("verify", help="record a verification run as evidence and attach it to an obligation")
+    s.add_argument("--item", required=True)
+    s.add_argument("--source", required=True, help="source holding the verification (sheet, pilot log, observation)")
+    s.add_argument("--kind", required=True, choices=["desk_review", "reconciliation", "conformance", "prediction", "pilot"])
+    s.add_argument("--result", required=True, choices=["pass", "fail"])
+    s.add_argument("--fact", required=True, help="what was checked and what came out")
+    s.add_argument("--location")
+    s.add_argument("--quote")
     s.add_argument("--profile")
 
     s = sub.add_parser("ledger", help="reconstruction obligation ledger")

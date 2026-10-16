@@ -103,12 +103,13 @@ A profile item marked `obligation: true` becomes an obligation. Its status is
 `ready` only when every one of these holds:
 
 1. It has an owner: the accountable role in the rebuilt or documented organization.
-2. Each required case (`happy_path`, `exception_rework`, `peak_load`, `staff_absence`, `supplier_failure`) has at least one piece of evidence at or above the item's required grade.
+2. Each required case (`happy_path`, `exception_rework`, `peak_load`, `staff_absence`, `supplier_failure`) has at least one piece of evidence at or above the item's required grade. One piece of evidence cannot stand for two different cases.
 3. It has a passing verifier, strong enough for the evidence it checks. Verifiers from weakest to strongest: `desk_review` < `reconciliation` < `conformance` < `prediction` < `pilot`. A desk review cannot close an item whose case evidence includes system records or direct observation.
-4. The verifier cites evidence from a source **independent** of every case source. Re-citing the case evidence, or evidence from the same source, only checks the model against itself.
-5. The item has no contradicted claims and no open unknowns.
+4. The verifier's run is **recorded as evidence** (`record_verification` / `reb verify`: operation `verify:<item>` with result `pass` or `fail`) on a source **independent** of every case source. A `passed: true` flag on its own does not count. Re-citing the case evidence, or evidence from the same source, only checks the model against itself.
+5. The item has no contradicted claims and no open unknowns, and its layer has no open unknown that is contradicted or marked `blocking`.
 
-If the verifier failed, the status is `failed`. If no evidence exists, it is
+`ready` means the record is complete and checked. It does not certify that the rebuilt process will work.
+If a recorded verification failed, the status is `failed`. If no evidence exists, it is
 `unknown`. Every other case is `open`, and the reasons are listed.
 
 ## Unknowns

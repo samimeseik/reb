@@ -6,7 +6,7 @@
 - **وضع التحليل:** self
 - **أساس التفويض:** owner (synthetic example)
 - **ملف التشغيل:** sop-replication
-- **تاريخ الإصدار:** 2026-10-15
+- **تاريخ الإصدار:** 2026-10-16
 
 > يعرض هذا الملف ما تُظهره الأدلة المسجّلة، مع درجة لكل نتيجة. وهو ليس تدقيقاً ولا تقييماً ولا استشارة قانونية ولا ضماناً. كل ما لم يُغطَّ أدناه مجهول، وليس غير موجود.
 
@@ -97,8 +97,8 @@
 
 **open** · {'open': 3, 'unknown': 6}
 
-- `ops.core-process` — **open** — missing owner (accountable role); missing case evidence: happy_path, exception_rework, peak_load, staff_absence, supplier_failure; missing passing verifier; open unknowns on this item
-- `ops.bottleneck` — **open** — case evidence below grade B: happy_path, peak_load
+- `ops.core-process` — **open** — missing owner (accountable role); missing case evidence: happy_path, exception_rework, peak_load, staff_absence, supplier_failure; missing passing verifier; open unknowns on this item, or blocking/contradicted on its layer: unk_0b07fd610764
+- `ops.bottleneck` — **open** — case evidence below grade B: happy_path, peak_load; open unknowns on this item, or blocking/contradicted on its layer: unk_0b07fd610764
 - `equip.register` — **unknown** — no evidence recorded for this item
 - `people.roles` — **unknown** — no evidence recorded for this item
 - `people.hiring` — **unknown** — no evidence recorded for this item

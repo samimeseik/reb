@@ -33,7 +33,7 @@ REB exists to stop that:
 - **Missing coverage is unknown, not absent.** Gaps become explicit Unknowns with the cheapest probe that would close them.
 - **What people say is kept apart from what records show** (*stated vs enacted*). Gaps between the two are recorded as contradictions instead of being averaged away.
 - **Quotes are checked.** Evidence that quotes a source must match the source text verbatim.
-- **Reconstructions close only when proven.** A rebuilt process or SOP item is `ready` only with an owner, evidence for every required case, and a strong enough verifier. These are REA's reconstruction obligation ledgers, applied to organizations.
+- **Reconstructions close only when the record is complete.** A rebuilt process or SOP item is `ready` only with an owner, distinct evidence for every required case, a verification run recorded as evidence from an independent source, and no blocking unknown on its layer. `ready` means the record is complete and checked; it does not certify that the process will work. These are REA's reconstruction obligation ledgers, applied to organizations.
 - **Copying has limits.** Each finding can be tagged as codifiable, needs a capability, needs an asset, or non-transferable (relationships, licences, location, timing, founder).
 
 ## How it works: forward engineering, used in reverse
@@ -173,7 +173,7 @@ ingest the files in ~/exports, map the order-to-delivery process from the
 WhatsApp group, and tell me what is still unknown.
 ```
 
-30 tools: evidence (`open_engagement`, `ingest_source`, `read_source`,
+31 tools: evidence (`open_engagement`, `ingest_source`, `read_source`,
 `record_observation`, `record_evidence`, `record_claim`, `record_unknown`,
 `update_unknown`, `search_evidence`), analyses (`analyze_event_log`,
 `analyze_invoices`, `compare_stated_vs_enacted`, `check_consistency`),
@@ -181,7 +181,7 @@ blueprint (`show_kernel`, `list_archetypes`, `start_blueprint`,
 `apply_archetype`, `add_hypothesis`, `update_hypothesis`, `promote_hypothesis`,
 `grade_hypothesis`, `add_design_item`, `add_equipment`, `build_blueprint`,
 `render_blueprint`) and reports (`list_profiles`, `inspect_coverage`,
-`record_obligation`, `build_obligation_ledger`, `render_report`).
+`record_obligation`, `record_verification`, `build_obligation_ledger`, `render_report`).
 See [docs/TOOLS.md](docs/TOOLS.md).
 
 ## Evidence grades
