@@ -8,6 +8,7 @@ sources that share no controller and no derivation ancestry.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable, Mapping
 
 from .models import (
@@ -22,6 +23,7 @@ from .models import (
     HypothesisBasis,
     HypothesisConfidence,
     Source,
+    SourceKind,
 )
 
 GRADE_ORDER = [Grade.A, Grade.B, Grade.C, Grade.D, Grade.E]
@@ -86,8 +88,53 @@ def grade_at_least(grade: Grade | None, required: Grade) -> bool:
     return grade is not None and GRADE_ORDER.index(grade) <= GRADE_ORDER.index(required)
 
 
+def unbacked_observation(source: Source | None) -> bool:
+    """An observation typed by the analyst with no captured artifact (photo, count sheet)."""
+    return bool(source) and source.kind == SourceKind.OBSERVATION and not source.artifact_ids
+
+
+_STOP = {"the", "and", "for", "are", "was", "were", "with", "that", "this", "from", "has", "have", "its",
+         "not", "but", "all", "can", "says", "said", "shows", "ve", "bir", "bu", "da", "de", "ile",
+         "في", "من", "على", "إلى", "عن", "أن", "هذا", "هذه"}
+
+
+def _numbers(text: str, *, parts: bool = False) -> set[str]:
+    """Numbers with thousands separators removed. With parts, each separator-delimited
+    piece counts too (a CSV row '1,100' may hold the numbers 1 and 100)."""
+    found = re.findall(r"\d[\d.,]*\d|\d", text)
+    out = {re.sub(r"[.,]", "", n) for n in found}
+    if parts:
+        out |= {p for n in found for p in re.split(r"[.,]", n) if p}
+    return out
+
+
+def _script(text: str) -> str:
+    return "arabic" if re.search(r"[\u0600-\u06FF]", text) else "latin"
+
+
+def fact_beyond_quote(fact: str, quote: str) -> tuple[Grade, str] | None:
+    """A quote proves the words are in the source, not that they support the fact.
+    Numbers in the fact that the quote lacks cap the evidence at D; a fact in the quote's
+    script that shares not one word, number or code with it caps it at C."""
+    missing = _numbers(fact) - _numbers(quote, parts=True)
+    if missing:
+        return Grade.D, f"fact states numbers not in its quote ({', '.join(sorted(missing))}); record the inference separately"
+    if _script(fact) != _script(quote):
+        return None  # a translation into another script cannot be compared word by word
+    words = {w for w in re.findall(r"\w{2,}", fact.casefold()) if w not in _STOP}
+    if len(words) < 3:
+        return None
+    quoted = {w[:5] for w in re.findall(r"\w{2,}", quote.casefold())}
+    if not any(w[:5] in quoted for w in words):
+        return Grade.C, "fact shares no words, numbers or codes with its quote; record the inference separately"
+    return None
+
+
 def compute_grade(authority: Authority, confidence: Confidence, source: Source) -> Grade:
-    return worst(AUTHORITY_BASE[authority], CONFIDENCE_CAP[confidence], custody_cap(source))
+    # A typed note of a single walk-through is not as strong as a record captured live:
+    # without an artifact it can be mistaken, staged or recalled wrongly.
+    artifact_cap = Grade.B if unbacked_observation(source) else Grade.A
+    return worst(AUTHORITY_BASE[authority], CONFIDENCE_CAP[confidence], custody_cap(source), artifact_cap)
 
 
 def ancestry(source_id: str, sources: Mapping[str, Source]) -> set[str]:
@@ -102,6 +149,7 @@ def ancestry(source_id: str, sources: Mapping[str, Source]) -> set[str]:
         src = sources.get(current)
         if src:
             stack.extend(src.upstream_ids)
+            stack.extend(src.possible_upstream_ids)
     return seen
 
 
@@ -134,16 +182,29 @@ def evaluate_claim(
 ) -> tuple[ClaimStatus, Grade | None]:
     supporting = [evidence[e] for e in claim.evidence_ids if e in evidence]
     grade = best(e.grade for e in supporting)
-    if claim.contradicting_evidence_ids:
+    contradicting = [evidence[e] for e in claim.contradicting_evidence_ids if e in evidence]
+    if contradicting:
+        against = best(e.grade for e in contradicting)
+        if grade_at_least(grade, Grade.B) and not grade_at_least(against, Grade.C):
+            return ClaimStatus.DISPUTED_WEAK, grade
         return ClaimStatus.CONTRADICTED, grade
     if not supporting:
         return ClaimStatus.CONJECTURE, None
     # Triangulation needs two independent sources, and at least one of the two pieces of
     # evidence must be a record, an observation, a document or a public record:
     # several people saying the same thing is still testimony.
+    # An observation without an artifact can only corroborate when the claim has unbacked
+    # observations on at least two different days (one staged day is not enough).
+    unbacked_days = {
+        e.as_of or e.source_id for e in supporting if unbacked_observation(sources.get(e.source_id))
+    }
     for i, a in enumerate(supporting):
         for b in supporting[i + 1 :]:
             if a.authority in WEAK_AUTHORITIES and b.authority in WEAK_AUTHORITIES:
+                continue
+            if len(unbacked_days) < 2 and any(
+                unbacked_observation(sources.get(e.source_id)) for e in (a, b)
+            ):
                 continue
             if independent(a.source_id, b.source_id, sources):
                 return ClaimStatus.TRIANGULATED, grade

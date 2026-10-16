@@ -64,11 +64,32 @@ def test_same_controller_is_not_triangulation(ledger):
 
 def test_independent_controllers_triangulate(ledger):
     a = add_text_source(ledger, "rows", controller="workshop", kind="system_export")
-    b = add_text_source(ledger, "walk", controller="observer:analyst", custody="captured_live", kind="observation")
+    photo = add_text_source(ledger, "photo of queue", controller="observer:analyst", custody="captured_live",
+                            kind="image")
+    b = add_text_source(ledger, "walk", controller="observer:analyst", custody="captured_live", kind="observation",
+                        artifact_ids=[photo.id])
     ea = ledger.add_evidence(source_id=a.id, fact="queue", authority="system_record")
     eb = ledger.add_evidence(source_id=b.id, fact="queue seen", authority="direct_observation")
     c = ledger.record_claim(statement="Paint is the bottleneck.", layer="operations", evidence_ids=[ea.id, eb.id])
     assert c.status.value == "triangulated" and c.grade.value == "A"
+
+
+def test_typed_observation_is_capped_and_needs_a_second_day(ledger):
+    a = add_text_source(ledger, "rows", controller="workshop", kind="system_export")
+    ea = ledger.add_evidence(source_id=a.id, fact="queue", authority="system_record")
+    w1 = add_text_source(ledger, "walk 1", controller="observer:analyst", custody="captured_live", kind="observation")
+    e1 = ledger.add_evidence(source_id=w1.id, fact="queue seen", authority="direct_observation", as_of="2026-10-10")
+    assert e1.grade.value == "B"
+    c = ledger.record_claim(statement="Paint is the bottleneck.", layer="operations", evidence_ids=[ea.id, e1.id])
+    assert c.status.value == "single_source"
+    w2 = add_text_source(ledger, "walk 2", controller="observer:analyst", custody="captured_live", kind="observation")
+    e2 = ledger.add_evidence(source_id=w2.id, fact="queue seen again", authority="direct_observation",
+                             as_of="2026-10-14")
+    c = ledger.record_claim(statement="Paint is the bottleneck on most days.", layer="operations",
+                            evidence_ids=[ea.id, e1.id, e2.id])
+    assert c.status.value == "triangulated"
+    with pytest.raises(RebError):
+        add_text_source(ledger, "walk 3", custody="captured_live", kind="observation", artifact_ids=[a.id])
 
 
 def test_derived_source_is_not_independent_of_its_parent(ledger):
@@ -164,3 +185,109 @@ def test_public_mode_accepts_published_reports_but_not_chats(public_ledger):
     assert rep.kind.value == "financial_statement"
     with pytest.raises(RebError):
         add_text_source(public_ledger, "chat", kind="chat_export", custody="public", legal_basis="https://x")
+
+
+@pytest.mark.parametrize("mode", ["engaged", "public"])
+def test_subject_own_publications_share_its_controller(tmp_path, mode):
+    led = Ledger.init(tmp_path, name="t", subject="Hope Bridge", mode=mode,
+                      authorization=None if mode == "public" else "m", aliases=["HB Foundation", "hopebridge.org"])
+    by_name = add_text_source(led, "site", controller="hope-bridge", kind="public_signal", custody="public",
+                              legal_basis="https://example.net/a")
+    by_alias = add_text_source(led, "press", controller="HB foundation", kind="public_signal", custody="public",
+                               legal_basis="https://example.net/b")
+    by_domain = add_text_source(led, "blog", controller="comms team", kind="public_signal", custody="public",
+                                legal_basis="https://www.blog.hopebridge.org/post")
+    other = add_text_source(led, "news", controller="newsco", kind="public_signal", custody="public",
+                            legal_basis="https://news.example/x")
+    assert {by_name.controller, by_alias.controller, by_domain.controller} == {"subject:Hope Bridge"}
+    assert other.controller == "newsco"
+
+
+def test_fact_beyond_quote_is_capped(ledger):
+    src = add_text_source(ledger, "invoice,amount\nINV-1,100\n", kind="system_export", custody="captured_live")
+    ev = ledger.add_evidence(source_id=src.id, fact="The company is highly profitable and collects all receivables",
+                             authority="system_record", quote="INV-1,100")
+    assert ev.grade.value == "C" and any("shares no words" in x for x in ev.limitations)
+    ev = ledger.add_evidence(source_id=src.id, fact="Invoice INV-1 was for 900", authority="system_record",
+                             quote="INV-1,100")
+    assert ev.grade.value == "D"
+    ev = ledger.add_evidence(source_id=src.id, fact="Invoice INV-1 amount was 100", authority="system_record",
+                             quote="INV-1,100")
+    assert ev.grade.value == "A"
+
+
+def test_weak_contradiction_is_a_dispute_not_a_contradiction(ledger):
+    a = add_text_source(ledger, "rows", controller="erp", kind="system_export", custody="captured_live")
+    b = add_text_source(ledger, "bank", controller="Bank", kind="system_export", custody="third_party",
+                        independent_channel=True)
+    r = add_text_source(ledger, "rumour", controller="staff")
+    e1 = ledger.add_evidence(source_id=a.id, fact="paid on time", authority="system_record")
+    e2 = ledger.add_evidence(source_id=b.id, fact="bank shows on time", authority="system_record")
+    weak = ledger.add_evidence(source_id=r.id, fact="someone says late", authority="testimony")
+    strong = ledger.add_evidence(source_id=b.id, fact="bank shows one late payment", authority="system_record")
+    c = ledger.record_claim(statement="Payments are on time.", layer="finance", evidence_ids=[e1.id, e2.id],
+                            contradicting_evidence_ids=[weak.id])
+    assert c.status.value == "disputed_weak"
+    c = ledger.record_claim(statement="Payments are on time.", layer="finance", contradicting_evidence_ids=[strong.id])
+    assert c.status.value == "contradicted"
+
+
+def test_near_duplicate_sources_are_not_independent_until_declared(public_ledger):
+    led = public_ledger
+    a = add_text_source(led, "Acme serves 10,000 customers across the region.", controller="acme",
+                        kind="public_signal", custody="public", legal_basis="https://acme.example/p")
+    b = add_text_source(led, "Acme serves 10,000 customers across the region, the company said.",
+                        controller="newsco", kind="document", custody="public", legal_basis="https://news.example/x")
+    assert b.possible_upstream_ids == [a.id]
+    assert any(u.entity == f"upstream:{b.id}:{a.id}" for u in led.data.unknowns.values())
+    e1 = led.add_evidence(source_id=a.id, fact="Acme says 10,000 customers", authority="public_signal")
+    e2 = led.add_evidence(source_id=b.id, fact="News reports 10,000 customers", authority="governing_document")
+    c = led.record_claim(statement="Acme has 10,000 customers", layer="customer", evidence_ids=[e1.id, e2.id])
+    assert c.status.value == "single_source"
+    led.declare_independent(b.id, a.id, reason="reporter cites the regulator's filing, checked separately")
+    assert led.claim(c.id).status.value == "triangulated"
+
+
+def test_public_reference_and_kind_override_rules(public_ledger):
+    with pytest.raises(RebError) as err:
+        add_text_source(public_ledger, "page", kind="public_signal", custody="public", legal_basis="n/a")
+    assert err.value.code == "public_reference_required"
+    assert add_text_source(public_ledger, "registry", kind="public_record", custody="public",
+                           legal_basis="MERSIS 0123456789").legal_basis
+
+
+def test_document_names_salted_tokens_and_map(tmp_path, monkeypatch):
+    from reb.application.ingest import ingest_file
+
+    led = Ledger.init(tmp_path / "w", name="t", subject="Acme", mode="engaged", authorization="m")
+    memo = tmp_path / "memo.md"
+    memo.write_text("Ahmet Yilmaz approves discounts. Ask Mr. Brown or Selim Bey. Mail a.b@example.com\n"
+                    "Also Kerim Kaya signs.", encoding="utf-8")
+    src = ingest_file(led, memo, custody="subject_held", origin_party="owner", names=["Kerim Kaya"])["source"]
+    text = led.source_text(src["id"])
+    for clear in ("Ahmet Yilmaz", "Brown", "Selim", "Kerim Kaya", "a.b@example.com"):
+        assert clear not in text
+    other = Ledger.init(tmp_path / "w2", name="t", subject="Acme", mode="engaged", authorization="m")
+    assert other.pseudonymizer.person("Ahmet Yilmaz") != led.pseudonymizer.person("Ahmet Yilmaz")
+    led.save()
+    stored = (tmp_path / "w" / ".reb" / "pseudonyms.json").read_text(encoding="utf-8")
+    assert "a.b@example.com" not in stored and "Ahmet Yilmaz" in stored
+    monkeypatch.setenv("REB_PSEUDONYM_DIR", str(tmp_path / "keys"))
+    led2 = Ledger.load(tmp_path / "w")
+    led2.pseudonymizer.person("Someone Else")
+    led2.save()
+    assert (tmp_path / "keys" / f"{led2.engagement.id}.json").exists()
+
+
+def test_kind_override_across_families_needs_reason(tmp_path):
+    from reb.application.ingest import ingest_file
+
+    led = Ledger.init(tmp_path / "w", name="t", subject="Acme", mode="engaged", authorization="m")
+    f = tmp_path / "payroll.csv"
+    f.write_text("name,salary\nX,1000\n", encoding="utf-8")
+    with pytest.raises(RebError) as err:
+        ingest_file(led, f, kind="document", custody="subject_held", origin_party="owner")
+    assert err.value.code == "kind_override_reason_required"
+    res = ingest_file(led, f, kind="document", custody="subject_held", origin_party="owner",
+                      kind_reason="exported memo table, read as text")
+    assert "kind override" in res["source"]["notes"]

@@ -96,23 +96,27 @@ def test_stated_vs_enacted_opens_contradiction(ledger):
 def test_obligation_rejects_circular_verifier(ledger):
     log = add_text_source(ledger, "log", kind="system_export", controller="erp")
     ev = ledger.add_evidence(source_id=log.id, fact="queue at paint", authority="system_record")
-    ob = coverage.record_obligation(ledger, item="ops.bottleneck", owner="manager",
-                                    case_evidence={"happy_path": [ev.id], "peak_load": [ev.id]},
-                                    verifier={"kind": "prediction", "passed": True, "evidence_ids": [ev.id]})
-    assert ob.status.value == "open" and any("circular" in r for r in ob.reasons)
+    ev2 = ledger.add_evidence(source_id=log.id, fact="queue at paint on peak day", authority="system_record")
+    coverage.record_obligation(ledger, item="ops.bottleneck", owner="manager",
+                               case_evidence={"happy_path": [ev.id], "peak_load": [ev2.id]})
+    ob = coverage.record_verification(ledger, item="ops.bottleneck", source_id=log.id, kind="prediction",
+                                      result="pass", fact="queue predicted and seen in the same log")["obligation"]
+    assert ob["status"] == "open" and any("circular" in r for r in ob["reasons"])
 
 
 def test_obligation_desk_review_too_weak_for_system_records(ledger):
     log = add_text_source(ledger, "log", kind="system_export", controller="erp", custody="captured_live")
     walk = add_text_source(ledger, "walk", kind="observation", custody="captured_live", controller="analyst")
     ev = ledger.add_evidence(source_id=log.id, fact="queue", authority="system_record")
-    ev2 = ledger.add_evidence(source_id=walk.id, fact="queue seen", authority="direct_observation")
-    ob = coverage.record_obligation(ledger, item="ops.bottleneck", owner="manager",
-                                    case_evidence={"happy_path": [ev.id], "peak_load": [ev.id]},
-                                    verifier={"kind": "desk_review", "passed": True, "evidence_ids": [ev2.id]})
-    assert ob.status.value == "open"
-    ob = coverage.record_obligation(ledger, item="ops.bottleneck",
-                                    verifier={"kind": "prediction", "passed": True, "evidence_ids": [ev2.id]})
+    ev_peak = ledger.add_evidence(source_id=log.id, fact="queue on peak day", authority="system_record")
+    coverage.record_obligation(ledger, item="ops.bottleneck", owner="manager",
+                               case_evidence={"happy_path": [ev.id], "peak_load": [ev_peak.id]})
+    ob = coverage.record_verification(ledger, item="ops.bottleneck", source_id=walk.id, kind="desk_review",
+                                      result="pass", fact="queue seen")["obligation"]
+    assert ob["status"] == "open"
+    ob = coverage.record_verification(ledger, item="ops.bottleneck", source_id=walk.id, kind="prediction",
+                                      result="pass", fact="predicted queue seen at paint")["obligation"]
+    ob = ledger.data.obligations["ops.bottleneck"]
     assert ob.status.value == "ready"
 
 
@@ -185,6 +189,20 @@ def test_renamed_chat_is_detected_and_needs_consent(ledger, tmp_path):
     assert err.value.code == "consent_required"
 
 
+@pytest.mark.parametrize("suffix", [".csv", ".md", ".log", ".json", ".tsv"])
+def test_chat_saved_under_any_text_extension_is_still_a_chat(ledger, tmp_path, suffix):
+    f = tmp_path / f"export{suffix}"
+    f.write_text(CHAT.read_text(encoding="utf-8"), encoding="utf-8")
+    with pytest.raises(RebError) as err:
+        ingest.ingest_file(ledger, f, custody="subject_held", origin_party="x")
+    assert err.value.code == "consent_required"
+    res = ingest.ingest_file(ledger, f, custody="subject_held", origin_party="x", legal_basis="consent-1")
+    assert res["source"]["kind"] == "chat_export"
+    stored = ledger.source_text(res["source"]["id"])
+    senders = {m.sender for m in whatsapp.parse_text(CHAT.read_text(encoding="utf-8"))}
+    assert senders and not any(s in stored for s in senders)
+
+
 def test_unparsed_chat_text_is_not_stored(ledger, tmp_path):
     f = tmp_path / "WhatsApp Chat.txt"
     f.write_text("Fatma Yilmaz said hello\nanother line\n", encoding="utf-8")
@@ -227,9 +245,13 @@ def test_efatura_person_names_and_tckn_are_scrubbed(ledger, tmp_path):
 def test_obligation_not_ready_on_low_grade_or_same_source_verifier(ledger):
     guess = add_text_source(ledger, "notes", controller="analyst-notes", custody="captured_live", kind="observation")
     e = ledger.add_evidence(source_id=guess.id, fact="guess", authority="analyst_inference", confidence="inferred")
-    cases = {c: [e.id] for c in ["happy_path", "peak_load"]}
-    ob = coverage.record_obligation(ledger, item="ops.bottleneck", owner="m", case_evidence=cases,
-                                    verifier={"kind": "pilot", "passed": True, "evidence_ids": [e.id]})
+    e2 = ledger.add_evidence(source_id=guess.id, fact="guess at peak", authority="analyst_inference",
+                             confidence="inferred")
+    coverage.record_obligation(ledger, item="ops.bottleneck", owner="m",
+                               case_evidence={"happy_path": [e.id], "peak_load": [e2.id]})
+    coverage.record_verification(ledger, item="ops.bottleneck", source_id=guess.id, kind="pilot",
+                                 result="pass", fact="pilot noted in the same notes")
+    ob = ledger.data.obligations["ops.bottleneck"]
     assert ob.status.value == "open"
     assert any("below grade" in r for r in ob.reasons) and any("circular" in r for r in ob.reasons)
 
@@ -326,3 +348,50 @@ def test_cli_reports_invalid_input_without_traceback(ledger, capsys):
     ledger.save()
     code = main(["-w", str(ledger.workspace), "evidence", "--source", src.id, "--fact", "f", "--authority", "bogus"])
     assert code == 2 and "invalid_input" in capsys.readouterr().err
+
+
+def test_obligation_needs_recorded_verifier_distinct_cases_and_no_blocking_unknown(ledger):
+    log = add_text_source(ledger, "log", kind="system_export", controller="erp", custody="captured_live")
+    audit = add_text_source(ledger, "recon", kind="system_export", controller="AuditCo", custody="third_party",
+                            independent_channel=True)
+    ev = ledger.add_evidence(source_id=log.id, fact="case 1 ran step a", authority="system_record")
+    ev2 = ledger.add_evidence(source_id=log.id, fact="case 9 ran step a at peak", authority="system_record")
+    ob = coverage.record_obligation(ledger, item="ops.bottleneck", owner="ops lead",
+                                    case_evidence={"happy_path": [ev.id], "peak_load": [ev.id]},
+                                    verifier={"kind": "reconciliation", "passed": True, "evidence_ids": []})
+    assert ob.status.value == "open"
+    assert any("not recorded" in r for r in ob.reasons) and any("different cases" in r for r in ob.reasons)
+    ob.case_evidence["peak_load"] = [ev2.id]
+    res = coverage.record_verification(ledger, item="ops.bottleneck", source_id=audit.id, kind="reconciliation",
+                                       result="pass", fact="auditor reconciled cases 1 and 9")
+    assert res["obligation"]["status"] == "ready", res["obligation"]["reasons"]
+    u = ledger.record_unknown(question="Does the step depend on one person?", layer="operations", blocking=True)
+    coverage.evaluate_obligation(ledger, ob)
+    assert ob.status.value == "open" and any(u.id in r for r in ob.reasons)
+    coverage.record_verification(ledger, item="ops.bottleneck", source_id=audit.id, kind="reconciliation",
+                                 result="fail", fact="case 12 did not reconcile")
+    assert ledger.data.obligations["ops.bottleneck"].status.value == "failed"
+
+
+def test_retraction_reevaluates_claims_unknowns_and_report(ledger):
+    a = add_text_source(ledger, "rows", controller="workshop", kind="system_export", custody="captured_live")
+    b = add_text_source(ledger, "bank", controller="Bank", kind="system_export", custody="third_party",
+                        independent_channel=True)
+    ea = ledger.add_evidence(source_id=a.id, fact="sales 100", authority="system_record")
+    eb = ledger.add_evidence(source_id=b.id, fact="deposits 100", authority="system_record")
+    c = ledger.record_claim(statement="Sales were about 100.", layer="revenue", evidence_ids=[ea.id, eb.id])
+    assert c.status.value == "triangulated"
+    u = ledger.record_unknown(question="Were deposits complete?", layer="revenue")
+    ledger.update_unknown(u.id, revision=u.revision, status="resolved",
+                          resolution={"kind": "verified", "evidence_ids": [eb.id]})
+    (ev,) = ledger.retract_evidence(eb.id, reason="bank statement was for another account")
+    assert ledger.claim(c.id).status.value == "single_source"
+    assert ledger.data.unknowns[u.id].status.value == "open"
+    assert ev.retracted.affected_claims == [c.id] and ev.retracted.reopened_unknowns == [u.id]
+    with pytest.raises(RebError) as err:
+        ledger.record_claim(statement="Deposits were 100.", layer="revenue", evidence_ids=[eb.id])
+    assert err.value.code == "retracted_evidence"
+    text = report.render_report(ledger, language="en")
+    assert "Retracted evidence" in text and "another account" in text
+    ledger.retract_source(a.id, reason="export was from a test system")
+    assert ledger.claim(c.id).status.value == "conjecture"

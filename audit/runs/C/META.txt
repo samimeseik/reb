@@ -1,0 +1,1 @@
+Run C: 19 tool calls (agent self-reported 13), ~166s, 118k subagent tokens. Write was blocked; the auditor saved the inline report. REB friction: invalid kind 'export'; the organization's public website was not linked to its controller; no stated-vs-stated compare; the dd-evidence profile has no nonprofit items; people.key-person shows 'met' for a risk; zsh quoting.

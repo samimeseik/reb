@@ -133,7 +133,7 @@ def test_hypotheses_never_render_as_known(bp_ledger):
 
 
 def test_html_escapes_content(bp_ledger):
-    site = add_text_source(bp_ledger, "x", custody="public", kind="public_signal", controller="s", legal_basis="u")
+    site = add_text_source(bp_ledger, "x", custody="public", kind="public_signal", controller="s", legal_basis="https://example.org/u")
     e = bp_ledger.add_evidence(source_id=site.id, fact="x", authority="public_signal")
     bp_ledger.add_hypothesis(statement="<script>alert(1)</script>", component="moat", basis="signal",
                              signal_evidence_ids=[e.id])
@@ -145,7 +145,7 @@ def test_html_escapes_content(bp_ledger):
 
 def test_consistency_flags_revenue_mismatch(bp_ledger):
     led = bp_ledger
-    src = add_text_source(led, "x", custody="public", kind="public_signal", controller="s", legal_basis="u")
+    src = add_text_source(led, "x", custody="public", kind="public_signal", controller="s", legal_basis="https://example.org/u")
     e = led.add_evidence(source_id=src.id, fact="x", authority="public_signal")
     for metric, value in (("units_per_year", 1000), ("price_per_unit", 10), ("revenue_per_year", 50000)):
         led.add_hypothesis(statement=f"{metric} about {value}", component="economics", basis="signal",
@@ -157,7 +157,7 @@ def test_consistency_flags_revenue_mismatch(bp_ledger):
 
 def test_line_capacity_uses_the_bottleneck(bp_ledger):
     led = bp_ledger
-    src = add_text_source(led, "x", custody="public", kind="public_signal", controller="s", legal_basis="u")
+    src = add_text_source(led, "x", custody="public", kind="public_signal", controller="s", legal_basis="https://example.org/u")
     e = led.add_evidence(source_id=src.id, fact="video shows machines", authority="public_signal")
     led.add_equipment(name="Mixer", refs=[e.id], station=1, count=2, rate={"low": 500, "high": 500, "unit": "kg/hour"})
     led.add_equipment(name="Oven", refs=[e.id], station=2, count=1, rate={"low": 300, "high": 300, "unit": "kg/hour"})

@@ -7,11 +7,13 @@ On failure a tool returns `{"error": "<code>", "message": "<remedy>"}`.
 | MCP tool | CLI | Shape | Purpose |
 |---|---|---|---|
 | `list_profiles` | `reb profiles` | list | Built-in checklists and their allowed modes |
-| `open_engagement` | `reb init` | setup | Organization, mode, authorization, profile, language |
+| `open_engagement` | `reb init` | setup | Organization, aliases (other names and web domains: their sources never count as independent), mode, authorization, profile, language |
 | `ingest_source` | `reb ingest PATH` | inspect | Hash, check admissibility, extract, pseudonymize, record inventory evidence |
 | `read_source` | `reb read SRC` | inspect | Stored text with line numbers, for quoting |
 | `record_observation` | `reb observe` | observe | Site walk, time study or nameplate reading as direct observation |
 | `record_evidence` | `reb evidence` | record | One fact from a source. The quote is checked and the grade computed |
+| `retract_evidence` | `reb retract` | record | Withdraw evidence found wrong (by id or whole source); everything citing it is re-evaluated and the report lists it |
+| `declare_independent` | `reb independent` | record | Clear a near-duplicate flag between two sources, with the reason you checked |
 | `record_claim` | `reb claim` | record | Statement plus evidence. Status and grade are computed |
 | `record_unknown` / `update_unknown` | `reb unknown add/update` | record | Open questions with revisions. Resolving one needs evidence of the required authority |
 | `search_evidence` | `reb export` + jq | search | Filter evidence by text, layer, entity or minimum grade |
@@ -20,6 +22,7 @@ On failure a tool returns `{"error": "<code>", "message": "<remedy>"}`.
 | `compare_stated_vs_enacted` | `reb compare` | compare | Opens contradicted unknowns for gaps beyond the tolerance |
 | `inspect_coverage` | `reb coverage` | workflow | Coverage per layer and per profile item |
 | `record_obligation` | `reb obligation` | record | Owner, case evidence and verifier for an obligation |
+| `record_verification` | `reb verify` | record | A verification run (pass/fail) recorded as evidence; the only way a verifier counts as passing |
 | `build_obligation_ledger` | `reb ledger` | workflow | Status (`ready` / `open` / `failed` / `unknown`) with reasons |
 | `render_report` | `reb report` | workflow | Markdown report in Arabic (RTL) or English |
 
@@ -58,5 +61,5 @@ On failure a tool returns `{"error": "<code>", "message": "<remedy>"}`.
 4. `record_claim`: one claim per finding, `kind=stated` or `kind=enacted` when a number is involved.
 5. `compare_stated_vs_enacted` for each metric that has both kinds.
 6. `inspect_coverage`. For each `not_covered` or `below_required` item, `record_unknown` with a probe.
-7. `record_obligation` as owners, cases and verifiers become available.
+7. `record_obligation` as owners and cases become available; `record_verification` once a verification has actually been run.
 8. `render_report`.

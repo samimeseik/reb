@@ -78,15 +78,83 @@ def check_authority(source: Source, authority: Authority) -> None:
         )
 
 
+def _fold(value: str) -> str:
+    return re.sub(r"[\s._-]+", "", value).casefold()
+
+
+def _url_host(value: str | None) -> str | None:
+    match = re.match(r"^[a-z][a-z0-9+.-]*://([^/:?#\s]+)", (value or "").strip(), re.IGNORECASE)
+    return match.group(1).casefold().removeprefix("www.") if match else None
+
+
+def is_subject_party(engagement: Engagement, source: Source) -> bool:
+    """True when the source was produced or published by the subject itself:
+    its origin or controller is the subject's name or a declared alias, or its URL
+    is on one of the subject's declared domains."""
+    names = {_fold(n) for n in [engagement.subject, *engagement.aliases] if n}
+    if {_fold(source.origin_party), _fold(source.controller)} & names:
+        return True
+    host = _url_host(source.legal_basis)
+    domains = {a.casefold().removeprefix("www.") for a in engagement.aliases if "." in a and " " not in a}
+    return bool(host) and any(host == d or host.endswith("." + d) for d in domains)
+
+
 def normalize_controller(engagement: Engagement, source: Source) -> None:
-    """The organization's owner, staff, documents and systems share ONE controller.
-    Only third parties, observers and public sources can be independent of it."""
+    """The organization's owner, staff, documents, systems, website and press releases
+    share ONE controller, in every mode. Only third parties, observers and public sources
+    published by others can be independent of it."""
+    subject = f"subject:{engagement.subject}"
+    if is_subject_party(engagement, source):
+        source.controller = subject
+        return
     if engagement.mode == Mode.PUBLIC:
         return
     if source.custody in (Custody.SUBJECT_HELD,) or (
         source.kind == SourceKind.INTERVIEW and source.custody != Custody.THIRD_PARTY
     ):
-        source.controller = f"subject:{engagement.subject}"
+        source.controller = subject
+
+
+_URL_RE = re.compile(r"^https?://[^\s/?#]+", re.IGNORECASE)
+_REGISTRY_RE = re.compile(r"^(?=.*[^\W\d_])(?=.*\d)\S.{2,}$")
+
+
+def is_public_reference(value: str | None) -> bool:
+    """A URL, or a registry reference that names the registry and carries a number."""
+    value = (value or "").strip()
+    return bool(_URL_RE.match(value) or _REGISTRY_RE.match(value))
+
+
+# A declared kind may refine the detected one within the same family (a .md page is a
+# public_signal, a .csv is an event_log). Crossing families (a spreadsheet declared a
+# document) changes which rules apply, so it needs a stated reason.
+KIND_FAMILIES: dict[SourceKind, set[SourceKind]] = {
+    SourceKind.DOCUMENT: {SourceKind.DOCUMENT, SourceKind.PUBLIC_SIGNAL, SourceKind.PUBLIC_RECORD,
+                          SourceKind.FINANCIAL_STATEMENT, SourceKind.INTERVIEW, SourceKind.OBSERVATION},
+    SourceKind.SPREADSHEET: {SourceKind.SPREADSHEET, SourceKind.SYSTEM_EXPORT, SourceKind.EVENT_LOG,
+                             SourceKind.FINANCIAL_STATEMENT, SourceKind.PUBLIC_RECORD},
+    SourceKind.EINVOICE: {SourceKind.EINVOICE, SourceKind.SYSTEM_EXPORT},
+    SourceKind.IMAGE: {SourceKind.IMAGE, SourceKind.DOCUMENT, SourceKind.FINANCIAL_STATEMENT,
+                       SourceKind.PUBLIC_RECORD, SourceKind.PUBLIC_SIGNAL, SourceKind.OBSERVATION},
+    SourceKind.INTERVIEW: {SourceKind.INTERVIEW},
+    SourceKind.CHAT_EXPORT: {SourceKind.CHAT_EXPORT},
+}
+
+
+def check_kind_override(detected: SourceKind, declared: SourceKind, reason: str | None) -> str | None:
+    """Returns the note to keep on the source, or raises when a cross-family override has no reason."""
+    family = KIND_FAMILIES.get(detected)
+    # Declaring a kind that needs consent only adds protection, so it needs no reason.
+    if family is None or declared in family or declared in CONSENT_REQUIRED_KINDS:
+        return None
+    if not (reason or "").strip():
+        raise RebError(
+            "kind_override_reason_required",
+            f"The file looks like a {detected.value}, not a {declared.value}. Ingest it as "
+            f"{sorted(k.value for k in family)}, or say why in kind_reason (it is kept and reported).",
+        )
+    check_vocabulary(reason)
+    return f"kind override: detected {detected.value}, declared {declared.value}: {reason.strip()}"
 
 
 def check_source_admissible(engagement: Engagement, source: Source, known_sources: set[str] | None = None) -> None:
@@ -104,10 +172,11 @@ def check_source_admissible(engagement: Engagement, source: Source, known_source
             f"Sources of kind '{source.kind.value}' record other people's words or work. "
             "Record the consent, staff-notice or mandate reference in legal_basis first.",
         )
-    if source.custody == Custody.PUBLIC and not source.legal_basis:
+    if source.custody == Custody.PUBLIC and not is_public_reference(source.legal_basis):
         raise RebError(
             "public_reference_required",
-            "Public sources need their URL or registry reference in legal_basis.",
+            "Public sources need their URL (https://…) or a registry reference with its number "
+            f"(e.g. 'MERSIS 0123456789') in legal_basis; got {source.legal_basis!r}.",
         )
     if source.custody == Custody.CAPTURED_LIVE and source.kind not in LIVE_CAPTURE_KINDS:
         raise RebError(
@@ -190,19 +259,86 @@ _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
 ]
 
 
-class Pseudonymizer:
-    """Replaces identifiers with stable tokens. The mapping stays local
-    (`.reb/pseudonyms.json`) and is never rendered into reports."""
+# Common given names (Turkish, Arabic, English). A capitalized word after one of these is
+# taken as a surname, so "Ahmet Yilmaz" in a memo is pseudonymized like a chat sender.
+# Heuristic: it finds most names in business documents, not all of them.
+GIVEN_NAMES = {
+    # Turkish
+    "Ahmet", "Mehmet", "Mustafa", "Ali", "Hüseyin", "Hasan", "İbrahim", "Ibrahim", "İsmail", "Ismail",
+    "Osman", "Yusuf", "Murat", "Ömer", "Omer", "Ramazan", "Halil", "Süleyman", "Suleyman", "Abdullah",
+    "Mahmut", "Recep", "Salih", "Fatih", "Kemal", "Emre", "Burak", "Cem", "Serkan", "Hakan", "Volkan",
+    "Onur", "Kerem", "Selim", "Tolga", "Uğur", "Ugur", "Erkan", "Orhan", "Yasin", "Furkan", "Enes",
+    "Fatma", "Ayşe", "Ayse", "Emine", "Hatice", "Zeynep", "Elif", "Meryem", "Şerife", "Zehra",
+    "Hanife", "Merve", "Esra", "Özlem", "Ozlem", "Yasemin", "Selin", "Ebru", "Derya", "Aylin", "Ece",
+    "Büşra", "Busra", "Gamze", "Tuğba", "Tugba", "Sibel", "Hülya", "Hulya", "Nur", "Seda",
+    # Arabic (transliterated)
+    "Mohammed", "Muhammad", "Mohamed", "Mohammad", "Ahmed", "Ahmad", "Khalid", "Khaled", "Omar", "Umar",
+    "Abdulrahman", "Abdelrahman", "Hassan", "Hussein", "Hussain", "Youssef", "Yousef", "Yusef",
+    "Saeed", "Said", "Sami", "Faisal", "Fahad", "Fahd", "Nasser", "Hamad", "Majid", "Tariq", "Tarek",
+    "Waleed", "Walid", "Karim", "Kareem", "Mahmoud", "Mustafa", "Mostafa", "Ziad", "Ziyad", "Bilal",
+    "Fatima", "Fatimah", "Aisha", "Aysha", "Mariam", "Maryam", "Noura", "Nora", "Sara", "Sarah",
+    "Huda", "Layla", "Leila", "Reem", "Rim", "Hind", "Amal", "Nadia", "Salma", "Rania", "Dina",
+    # English
+    "John", "James", "Michael", "David", "Robert", "William", "Richard", "Thomas", "Mark", "Paul",
+    "Peter", "George", "Daniel", "Andrew", "Steven", "Mary", "Anna", "Emma", "Laura", "Linda",
+    "Susan", "Elizabeth", "Jennifer", "Maria", "Jessica", "Karen",
+    # Arabic script
+    "محمد", "أحمد", "احمد", "علي", "حسن", "حسين", "خالد", "عمر", "عبدالله", "إبراهيم", "ابراهيم",
+    "يوسف", "سامي", "فيصل", "ناصر", "طارق", "وليد", "كريم", "محمود", "مصطفى", "فاطمة", "عائشة",
+    "مريم", "سارة", "نورة", "هدى", "ليلى", "ريم", "هند", "أمل", "نادية", "سلمى",
+}
+_HONORIFIC = r"(?:Mr|Mrs|Ms|Dr|Prof|Sn|Sayın|Bay|Bayan)\.?"
+_CAP = r"[A-ZÇĞİÖŞÜ][a-zçğıöşüA-ZÇĞİÖŞÜ'’-]+"
+_ARABIC_WORD = r"[\u0621-\u064A]{2,}"
+_ARABIC_HONORIFIC = r"(?:السيد|السيدة|الأستاذ|الأستاذة|الدكتور|الدكتورة|المهندس|المهندسة|الحاج)"
 
-    def __init__(self, mapping: dict[str, str] | None = None):
+
+def detect_person_names(text: str | None) -> list[str]:
+    """Person names in free text: a common given name followed by one or two capitalized
+    words (Latin) or one word (Arabic script); a capitalized name after an honorific
+    (Mr, Dr, Sayın …) or before Bey/Hanım; an Arabic name after السيد/الأستاذ/الدكتور …"""
+    if not text:
+        return []
+    found: list[str] = []
+    for m in re.finditer(rf"(?<![\w])({_CAP})((?:\s+{_CAP}){{1,2}})(?![\w])", text):
+        if m.group(1) in GIVEN_NAMES:
+            found.append(m.group(0).strip())
+    for m in re.finditer(rf"(?<![\w]){_HONORIFIC}\s+({_CAP}(?:\s+{_CAP})?)", text):
+        found.append(m.group(1))
+    for m in re.finditer(rf"(?<![\w])({_CAP}(?:\s+{_CAP})?)\s+(?:Bey|Hanım|Hanim)(?![\w])", text):
+        found.append(m.group(1))
+    for m in re.finditer(rf"(?<![\u0621-\u064A])({_ARABIC_WORD})\s+({_ARABIC_WORD})", text):
+        if m.group(1) in GIVEN_NAMES:
+            found.append(m.group(0))
+    for m in re.finditer(rf"{_ARABIC_HONORIFIC}\s+({_ARABIC_WORD}(?:\s+{_ARABIC_WORD})?)", text):
+        found.append(m.group(1))
+    return list(dict.fromkeys(found))
+
+
+class Pseudonymizer:
+    """Replaces identifiers with stable tokens. This is pseudonymization, not anonymization:
+    the organization's originals and the local map still identify people.
+
+    Tokens are salted per engagement, so a token in a shared report cannot be matched to
+    a guessed name without the workspace. Only person names are kept in the map (they are
+    needed to find the same person in later sources); identifiers found by pattern
+    (e-mail, phone, IBAN, national id) are re-derived from the salt and never written down."""
+
+    PERSISTED_KINDS = ("PERSON",)
+
+    def __init__(self, mapping: dict[str, str] | None = None, salt: str = ""):
         self.mapping: dict[str, str] = mapping or {}
+        self.salt = salt
 
     def token(self, kind: str, value: str) -> str:
         key = f"{kind}:{value.strip()}"
         if key not in self.mapping:
-            digest = hashlib.sha256(key.encode()).hexdigest()[:6]
+            digest = hashlib.sha256((self.salt + key).encode()).hexdigest()[:6]
             self.mapping[key] = f"[{kind}-{digest}]"
         return self.mapping[key]
+
+    def persisted(self) -> dict[str, str]:
+        return {k: v for k, v in self.mapping.items() if k.split(":", 1)[0] in self.PERSISTED_KINDS}
 
     def person(self, name: str, role: str | None = None) -> str:
         tok = self.token("PERSON", name)

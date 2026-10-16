@@ -226,7 +226,7 @@ def build_blueprint(ledger: Ledger) -> dict[str, Any]:
 
 
 def _process(ledger: Ledger, arch, lang: str) -> dict[str, Any]:
-    mined = [e for e in ledger.data.evidence.values() if e.operation == "discover_process"]
+    mined = [e for e in ledger.live_evidence.values() if e.operation == "discover_process"]
     if mined:
         latest = mined[-1].normalized
         top = latest["variants"][0]["trace"] if latest.get("variants") else []

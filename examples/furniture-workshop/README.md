@@ -19,11 +19,11 @@ REB=../../.venv/bin/reb ./run.sh     # or just ./run.sh if `reb` is on PATH
 The run writes `report.ar.md`, `report.en.md` and `process.mmd`. It shows:
 
 - **Stated vs enacted.** The SOP and the usta say about 10 days. The orders group shows a median of about 15 days. This becomes a contradicted unknown, and the checklist item is marked `contradicted`.
-- **Bottleneck.** The longest wait is assembly → paint, plus a repaint loop. This is triangulated by the process data, the interview and a site walk. A grade A observation exists, but the claim relies partly on subject-held data.
+- **Bottleneck.** The longest wait is assembly → paint, plus a repaint loop. The process data, the interview and one site walk agree, but the claim stays **single source [B]**: the data and the interview are both the workshop's, and a single typed site walk with no photo or count sheet is capped at B and cannot corroborate on its own. A photo of the queue, or a second walk on another day, would triangulate it.
 - **Not triangulation.** The SOP and the usta's interview share one controller (the workshop), so they count as one source. Agreeing with yourself is not corroboration.
 - **Tacit knowledge.** Only one person can set up the edge-bander for 2 mm PVC. The evidence is testimony only (grade D), from a single controller. The next probe is to observe it.
 - **Invoices.** They were handed over as files, so their custody is `subject_held` and the grade is capped at C. They would reach A only after each UUID is checked with the tax authority.
 - **Conjecture.** "Customers mostly come through architects" has no evidence and is shown as conjecture.
-- **Obligations.** `ops.bottleneck` has an owner, cases, and a prediction confirmed by an independent site walk. It still stays `open`, because its case evidence comes from a chat the workshop handed over (grade C) and an interview (grade D), both below the item's required grade B. Pulling the order log live, or timing the paint queue on site, would close it. The other obligations stay `open` or `unknown`, with reasons.
+- **Obligations.** `ops.bottleneck` has an owner, cases, and a prediction confirmed by an independent site walk, recorded with `reb verify`. It still stays `open`: an open contradiction on the operations layer (stated vs enacted lead time) blocks it, and its case evidence comes from a chat the workshop handed over (grade C) and an interview (grade D), both below the item's required grade B. Pulling the order log live, or timing the paint queue on site, would close it. The other obligations stay `open` or `unknown`, with reasons.
 
 Regenerate the data with `python generate_data.py`.

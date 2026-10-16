@@ -73,15 +73,19 @@ def build_server():
     def open_engagement(
         name: str, subject: str, mode: str, authorization: str | None = None,
         profile: str | None = None, language: str = "ar", workspace: str | None = None,
+        aliases: list[str] | None = None,
     ) -> dict:
         """Open an engagement. mode: self (you own/run it), engaged (written mandate from the
-        organization), public (public sources only). authorization is required unless public."""
+        organization), public (public sources only). authorization is required unless public.
+        aliases: the subject's other names and web domains; sources from them are never
+        counted as independent of the subject."""
         if profile:
             prof = load_profile(profile)
             if mode not in [m.value for m in prof.allowed_modes]:
                 raise RebError("mode_not_allowed", f"Profile '{prof.id}' allows {[m.value for m in prof.allowed_modes]}.")
         led = Ledger.init(_ws(workspace), name=name, subject=subject, mode=mode,
-                          authorization=authorization, profile=profile, language=language)
+                          authorization=authorization, profile=profile, language=language,
+                          aliases=aliases)
         return _dump(led.engagement)
 
     @server.tool()
@@ -92,7 +96,8 @@ def build_server():
         sensitivity: str = "internal", language: str | None = None,
         upstream_ids: list[str] | None = None, verification_ids: list[str] | None = None,
         independent_channel: bool = False, site: str | None = None, period_start: str | None = None,
-        period_end: str | None = None, notes: str | None = None, workspace: str | None = None,
+        period_end: str | None = None, notes: str | None = None, names: list[str] | None = None,
+        kind_reason: str | None = None, workspace: str | None = None,
     ) -> dict:
         """Register a source file (PDF, DOCX, TXT, CSV/XLSX, e-invoice XML, WhatsApp export,
         image, interview audio/transcript) and extract its inventory facts.
@@ -100,7 +105,9 @@ def build_server():
         Interviews and chat exports need legal_basis (consent reference); public sources need
         their URL in legal_basis; issuer_verifiable needs verification_ids (the ingested issuer check).
         controller: who controls the content. The organization's own staff/documents/systems are
-        forced to one controller. period_start/period_end (YYYY-MM-DD) bound what the source covers."""
+        forced to one controller. period_start/period_end (YYYY-MM-DD) bound what the source covers.
+        names: people to pseudonymize beyond those detected automatically. kind_reason: required
+        when kind crosses families with the detected kind (e.g. a spreadsheet declared a document)."""
         with Ledger.open(_ws(workspace), write=True) as led:
             return ingest.ingest_file(
                 led, path, custody=custody, origin_party=origin_party,
@@ -108,6 +115,7 @@ def build_server():
                 sensitivity=sensitivity, language=language, upstream_ids=upstream_ids,
                 verification_ids=verification_ids, independent_channel=independent_channel,
                 context={"site": site, "period_start": period_start, "period_end": period_end}, notes=notes,
+                names=names, kind_reason=kind_reason,
             )
 
     @server.tool()
@@ -125,16 +133,45 @@ def build_server():
     def record_observation(
         title: str, note: str, observer_role: str, legal_basis: str | None = None, site: str | None = None, when: str | None = None,
         shift: str | None = None, facts: list[dict] | None = None, public_premises: bool = False,
-        workspace: str | None = None,
+        artifact_ids: list[str] | None = None, workspace: str | None = None,
     ) -> dict:
         """Record what you directly observed on site (site walk, time study, nameplate reading).
         facts: [{"fact": "...", "layer": "...", "entity": "...", "location": "..."}].
-        Observing staff needs legal_basis (e.g. staff notice), unless public_premises=true."""
+        Observing staff needs legal_basis (e.g. staff notice), unless public_premises=true.
+        artifact_ids: captured_live sources backing it (photo, count sheet). Without one the
+        grade is capped at B and it corroborates only with observations from another day."""
         with Ledger.open(_ws(workspace), write=True) as led:
             return ingest.record_observation(
                 led, title=title, note=note, observer_role=observer_role, legal_basis=legal_basis,
                 site=site, when=when, shift=shift, facts=facts, public_premises=public_premises,
+                artifact_ids=artifact_ids,
             )
+
+    @server.tool()
+    @_safe
+    def declare_independent(source_id: str, other_id: str, reason: str, workspace: str | None = None) -> dict:
+        """Clear a near-duplicate flag (ingest flags a source whose text largely repeats another
+        source under a different controller) after checking the two reached the facts separately."""
+        with Ledger.open(_ws(workspace), write=True) as led:
+            return _dump(led.declare_independent(source_id, other_id, reason=reason))
+
+    @server.tool()
+    @_safe
+    def retract_evidence(
+        reason: str, evidence_ids: list[str] | None = None, source_id: str | None = None,
+        workspace: str | None = None,
+    ) -> dict:
+        """Withdraw evidence found wrong (bad extraction, forged or superseded document): pass
+        evidence_ids, or source_id to retract all of a source's evidence. It stays in the ledger
+        and the report; claims, unknowns, hypotheses and obligations are re-evaluated without it."""
+        with Ledger.open(_ws(workspace), write=True) as led:
+            if source_id:
+                items = led.retract_source(source_id, reason=reason)
+            elif evidence_ids:
+                items = led.retract_evidence(evidence_ids, reason=reason)
+            else:
+                raise RebError("nothing_to_retract", "Pass evidence_ids or source_id.")
+            return {"retracted": [_dump(e) for e in items]}
 
     @server.tool()
     @_safe
@@ -179,14 +216,15 @@ def build_server():
         question: str, layer: str | None = None, entity: str | None = None, item: str | None = None,
         required_authority: str | None = None, recommended_probes: list[str] | None = None,
         supporting_evidence_ids: list[str] | None = None, contradicting_evidence_ids: list[str] | None = None,
-        workspace: str | None = None,
+        blocking: bool = False, workspace: str | None = None,
     ) -> dict:
-        """Record an open question and the cheapest probe that would settle it."""
+        """Record an open question and the cheapest probe that would settle it.
+        blocking=True: material to its whole layer; blocks every obligation on that layer."""
         with Ledger.open(_ws(workspace), write=True) as led:
             u = led.record_unknown(question=question, layer=layer, entity=entity, item=item,
                                    required_authority=required_authority, recommended_probes=recommended_probes,
                                    supporting_evidence_ids=supporting_evidence_ids,
-                                   contradicting_evidence_ids=contradicting_evidence_ids)
+                                   contradicting_evidence_ids=contradicting_evidence_ids, blocking=blocking)
             return _dump(u)
 
     @server.tool()
@@ -272,10 +310,24 @@ def build_server():
     ) -> dict:
         """Attach owner, per-case evidence or a verifier
         ({"kind": "desk_review|reconciliation|conformance|prediction|pilot", "passed": bool,
-        "evidence_ids": [...]}) to a reconstruction obligation."""
+        "evidence_ids": [...]}) to a reconstruction obligation. A verifier counts as passing only
+        once its run is recorded with record_verification."""
         with Ledger.open(_ws(workspace), write=True) as led:
             return _dump(coverage.record_obligation(led, item=item, owner=owner,
                                                     case_evidence=case_evidence, verifier=verifier, profile=profile))
+
+    @server.tool()
+    @_safe
+    def record_verification(
+        item: str, source_id: str, kind: str, result: str, fact: str, location: str | None = None,
+        quote: str | None = None, profile: str | None = None, workspace: str | None = None,
+    ) -> dict:
+        """Record a verification run (kind: desk_review|reconciliation|conformance|prediction|pilot;
+        result: pass|fail) as evidence on the source that holds it, and attach it as the
+        obligation's verifier. The source must be independent of the case evidence."""
+        with Ledger.open(_ws(workspace), write=True) as led:
+            return coverage.record_verification(led, item=item, source_id=source_id, kind=kind, result=result,
+                                                fact=fact, location=location, quote=quote, profile=profile)
 
     @server.tool()
     @_safe

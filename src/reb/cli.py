@@ -72,6 +72,7 @@ def run(args: argparse.Namespace) -> Any:
             profile=args.profile,
             analyst=args.analyst,
             language=args.language,
+            aliases=args.alias,
         )
         return led.engagement.model_dump(mode="json")
 
@@ -99,6 +100,8 @@ def _run_engagement(led: Ledger, args: argparse.Namespace) -> Any:
             independent_channel=args.independent_channel,
             context={"site": args.site, "period_start": args.period_start, "period_end": args.period_end},
             notes=args.notes,
+            names=args.name,
+            kind_reason=args.kind_reason,
         )
     if cmd == "read":
         return ingest.read_source(led, args.source_id, start_line=args.start, max_lines=args.max,
@@ -108,6 +111,7 @@ def _run_engagement(led: Ledger, args: argparse.Namespace) -> Any:
         return ingest.record_observation(
             led, title=args.title, note=args.note, observer_role=args.role, legal_basis=args.legal_basis, site=args.site,
             when=args.when, shift=args.shift, facts=facts, public_premises=args.public_premises,
+            artifact_ids=args.artifact,
         )
     if cmd == "evidence":
         ev = led.add_evidence(
@@ -115,6 +119,16 @@ def _run_engagement(led: Ledger, args: argparse.Namespace) -> Any:
             location=args.location, quote=args.quote, entity=args.entity, layer=args.layer, as_of=args.as_of,
         )
         return ev.model_dump(mode="json")
+    if cmd == "independent":
+        return led.declare_independent(args.source, args.other, reason=args.reason).model_dump(mode="json")
+    if cmd == "retract":
+        if args.source:
+            items = led.retract_source(args.source, reason=args.reason)
+        elif args.evidence:
+            items = led.retract_evidence(args.evidence, reason=args.reason)
+        else:
+            raise RebError("nothing_to_retract", "Pass --evidence (repeatable) or --source.")
+        return [e.model_dump(mode="json") for e in items]
     if cmd == "claim":
         c = led.record_claim(
             statement=args.statement, layer=args.layer, evidence_ids=args.evidence,
@@ -130,6 +144,7 @@ def _run_engagement(led: Ledger, args: argparse.Namespace) -> Any:
                 question=args.question, layer=args.layer, entity=args.entity, item=args.item,
                 required_authority=args.required_authority, recommended_probes=args.probe,
                 supporting_evidence_ids=args.supporting, contradicting_evidence_ids=args.contradicting,
+                blocking=args.blocking,
             )
         else:
             resolution = None
@@ -169,6 +184,11 @@ def _run_engagement(led: Ledger, args: argparse.Namespace) -> Any:
             led, item=args.item, owner=args.owner, case_evidence=_case_pairs(args.case), verifier=verifier, profile=args.profile
         )
         return ob.model_dump(mode="json")
+    if cmd == "verify":
+        return coverage.record_verification(
+            led, item=args.item, source_id=args.source, kind=args.kind, result=args.result, fact=args.fact,
+            location=args.location, quote=args.quote, profile=args.profile,
+        )
     if cmd == "ledger":
         return coverage.obligation_ledger(led, args.profile)
     if cmd == "report":
@@ -256,6 +276,8 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("init", help="open an engagement in the workspace")
     s.add_argument("--name", required=True)
     s.add_argument("--subject", required=True, help="organization name or pseudonym")
+    s.add_argument("--alias", action="append", default=[],
+                   help="another name or web domain of the subject (repeatable); its sources are never independent")
     s.add_argument("--mode", required=True, choices=["self", "engaged", "public"])
     s.add_argument("--authorization", help="ownership or written-mandate reference (required unless public)")
     s.add_argument("--profile")
@@ -279,6 +301,8 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--site")
     s.add_argument("--period-start")
     s.add_argument("--period-end")
+    s.add_argument("--name", action="append", help="a person to pseudonymize in this source (repeatable)")
+    s.add_argument("--kind-reason", help="why --kind differs from the detected kind (kept on the source)")
 
     s = sub.add_parser("read", help="read a source's stored text with line numbers")
     s.add_argument("source_id")
@@ -296,6 +320,18 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--shift")
     s.add_argument("--fact", action="append", help='fact text or JSON {"fact":..,"layer":..,"entity":..}')
     s.add_argument("--public-premises", action="store_true")
+    s.add_argument("--artifact", action="append",
+                   help="id of a captured_live source backing it (photo, count sheet); without one the grade is capped at B")
+
+    s = sub.add_parser("independent", help="clear a near-duplicate flag after checking the sources are independent")
+    s.add_argument("--source", required=True)
+    s.add_argument("--other", required=True)
+    s.add_argument("--reason", required=True)
+
+    s = sub.add_parser("retract", help="withdraw evidence found wrong; everything citing it is re-evaluated")
+    s.add_argument("--evidence", action="append", help="evidence id (repeatable)")
+    s.add_argument("--source", help="retract every live piece of evidence from this source")
+    s.add_argument("--reason", required=True)
 
     s = sub.add_parser("evidence", help="record a fact from a source (quote is checked against the text)")
     s.add_argument("--source", required=True)
@@ -335,6 +371,8 @@ def build_parser() -> argparse.ArgumentParser:
     a.add_argument("--probe", action="append")
     a.add_argument("--supporting", action="append")
     a.add_argument("--contradicting", action="append")
+    a.add_argument("--blocking", action="store_true",
+                   help="material to the whole layer: blocks every obligation on that layer until resolved")
     u = us.add_parser("update")
     u.add_argument("unknown_id")
     u.add_argument("--revision", type=int, required=True)
@@ -378,6 +416,16 @@ def build_parser() -> argparse.ArgumentParser:
     g.add_argument("--failed", action="store_true")
     s.add_argument("--verifier-evidence", action="append")
     s.add_argument("--note")
+    s.add_argument("--profile")
+
+    s = sub.add_parser("verify", help="record a verification run as evidence and attach it to an obligation")
+    s.add_argument("--item", required=True)
+    s.add_argument("--source", required=True, help="source holding the verification (sheet, pilot log, observation)")
+    s.add_argument("--kind", required=True, choices=["desk_review", "reconciliation", "conformance", "prediction", "pilot"])
+    s.add_argument("--result", required=True, choices=["pass", "fail"])
+    s.add_argument("--fact", required=True, help="what was checked and what came out")
+    s.add_argument("--location")
+    s.add_argument("--quote")
     s.add_argument("--profile")
 
     s = sub.add_parser("ledger", help="reconstruction obligation ledger")

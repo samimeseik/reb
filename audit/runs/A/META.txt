@@ -1,0 +1,1 @@
+Run A: 3 tool calls, ~41s, 82.7k subagent tokens. Write was blocked; the agent returned the report inline and the auditor saved it to runA/REPORT.md (Markdown layout only, content unchanged).

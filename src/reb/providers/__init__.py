@@ -56,14 +56,21 @@ EXTENSION_KINDS: dict[str, SourceKind] = {
 }
 
 
+# Container formats whose bytes are not plain text; everything else is sniffed.
+BINARY_SUFFIXES = {".pdf", ".docx", ".xlsx", ".png", ".jpg", ".jpeg", ".webp",
+                   ".mp3", ".m4a", ".wav", ".ogg", ".opus"}
+
+
 def detect_kind(path: Path) -> SourceKind:
-    """Detect by content first for text files, so a renamed chat export is still a
-    chat export (and still needs a legal basis)."""
-    if path.suffix.lower() in (".txt", ""):
+    """Detect by content first for every text-like file, whatever its extension, so a
+    chat export saved as .csv/.md/.log/.json is still a chat export (and still needs a
+    legal basis and sender pseudonymization)."""
+    if path.suffix.lower() not in BINARY_SUFFIXES:
         from .whatsapp import looks_like_chat
 
-        head = path.read_text(encoding="utf-8", errors="replace")[:8000]
-        if looks_like_chat(head):
+        with path.open("rb") as handle:
+            raw = handle.read(16000)
+        if b"\x00" not in raw and looks_like_chat(raw.decode("utf-8", errors="replace")):
             return SourceKind.CHAT_EXPORT
     return EXTENSION_KINDS.get(path.suffix.lower(), SourceKind.OTHER)
 

@@ -1,0 +1,4 @@
+.txt blocked consent_required
+.csv ADMITTED kind= spreadsheet text has Ahmet: True
+.md ADMITTED kind= document text has Ahmet: True
+.log ADMITTED kind= other text has Ahmet: True
