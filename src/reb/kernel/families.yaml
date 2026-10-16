@@ -1,0 +1,84 @@
+# How each family of organization builds the ten kernel blocks, and the traces
+# that are specific to that family. A family is chosen first; archetypes refine it.
+families:
+  - id: business
+    name: "For-profit business"
+    name_ar: "منشأة ربحية"
+    blocks:
+      direction:
+        - {en: "Owners (founder/partners/shareholders) decide; a board exists only in larger companies.", ar: "الملاك (مؤسس، شركاء، مساهمون) يقررون، ومجلس الإدارة موجود في الشركات الأكبر فقط."}
+      finance:
+        - {en: "Income comes from customers or commissions; profit is the test of the design.", ar: "الدخل من العملاء أو العمولات، والربح هو اختبار التصميم."}
+      people:
+        - {en: "Small firms are founder-centred with a flat structure; functional departments appear at roughly 20–50 people.", ar: "الشركات الصغيرة متمحورة حول المؤسس بهيكل مسطح، والأقسام الوظيفية تظهر عند 20–50 شخصاً تقريباً."}
+    traces:
+      - {block: "direction", strength: "strong", en: "Trade registry and trade-registry gazette (capital, partners, managers, changes)", ar: "السجل التجاري وجريدته (رأس المال، الشركاء، المديرون، التغييرات)"}
+      - {block: "finance", strength: "strong", en: "Filed accounts for listed or large companies; tax-office rankings", ar: "القوائم المالية المودعة للشركات المدرجة أو الكبيرة وترتيبات كبار دافعي الضرائب"}
+
+  - id: public_body
+    name: "Government body (ministry, authority, agency, municipality)"
+    name_ar: "جهة حكومية (وزارة، هيئة، وكالة، بلدية)"
+    blocks:
+      direction:
+        - {en: "Built from a founding law or decree that sets the mandate, powers and the head (minister, president, director-general).", ar: "تُبنى من قانون أو مرسوم إنشاء يحدد التفويض والصلاحيات ورأس الجهة (وزير، رئيس، مدير عام)."}
+        - {en: "Decision rights flow top-down through deputy ministers / general directorates; political and administrative layers differ.", ar: "حقوق القرار تتدفق من الأعلى عبر وكلاء الوزارة والمديريات العامة، والطبقة السياسية تختلف عن الإدارية."}
+      demand:
+        - {en: "Demand is set by law: citizens and businesses must use the service; the 'price' is a fee or nothing.", ar: "الطلب يحدده القانون: المواطن والمنشأة ملزمان باستخدام الخدمة، و«السعر» رسم أو لا شيء."}
+      delivery:
+        - {en: "Core processes are case handling: application → completeness check → review/inspection → decision → issuance → appeal.", ar: "العمليات الأساسية معالجة حالات: طلب ← فحص اكتمال ← مراجعة/تفتيش ← قرار ← إصدار ← تظلّم."}
+        - {en: "Field offices or provincial directorates deliver; headquarters sets policy.", ar: "المكاتب الميدانية أو المديريات الإقليمية تنفذ، والمقر يضع السياسات."}
+      people:
+        - {en: "Structure is fixed by an organizational regulation (units, positions, grades); staff are civil servants hired by exam or appointment.", ar: "الهيكل تحدده لائحة تنظيمية (وحدات، وظائف، درجات)، والموظفون موظفو خدمة مدنية يُعيَّنون بمسابقة أو تعيين."}
+      finance:
+        - {en: "Money comes from the budget law; spending follows budget lines per unit and programme; fees usually go to the treasury.", ar: "المال يأتي من قانون الموازنة، والإنفاق يتبع بنود الموازنة لكل وحدة وبرنامج، والرسوم غالباً تذهب للخزينة."}
+      support:
+        - {en: "Procurement follows the public procurement law (tenders, thresholds, awards published).", ar: "المشتريات تتبع قانون المشتريات العامة (مناقصات، حدود، ترسيات منشورة)."}
+      control:
+        - {en: "Audited by the supreme audit institution; internal audit and inspection boards exist.", ar: "يدققها ديوان الرقابة الأعلى، وتوجد هيئات تدقيق داخلي وتفتيش."}
+    traces:
+      - {block: "direction", strength: "strong", en: "Founding law / decree in the official gazette", ar: "قانون أو مرسوم الإنشاء في الجريدة الرسمية"}
+      - {block: "people", strength: "strong", en: "Organizational regulation and published organization chart", ar: "اللائحة التنظيمية والهيكل التنظيمي المنشور"}
+      - {block: "finance", strength: "strong", en: "Budget law and budget execution reports by programme", ar: "قانون الموازنة وتقارير تنفيذها حسب البرنامج"}
+      - {block: "support", strength: "strong", en: "Procurement portal notices and awards", ar: "إعلانات بوابة المشتريات وترسياتها"}
+      - {block: "control", strength: "strong", en: "Supreme audit institution reports", ar: "تقارير ديوان الرقابة الأعلى"}
+      - {block: "improvement", strength: "moderate", en: "Strategic plan and annual performance report KPIs", ar: "مؤشرات الخطة الاستراتيجية وتقرير الأداء السنوي"}
+      - {block: "demand", strength: "strong", en: "E-government service catalogue, citizen charters and published service times", ar: "دليل خدمات الحكومة الإلكترونية ومواثيق خدمة المواطن وأزمنة الخدمة المنشورة"}
+
+  - id: nonprofit
+    name: "Non-profit or international organization"
+    name_ar: "منظمة غير ربحية أو دولية"
+    blocks:
+      direction:
+        - {en: "Statutes define the mission; a board or general assembly governs; international bodies answer to member states or a headquarters.", ar: "النظام الأساسي يحدد الرسالة، ومجلس أو جمعية عمومية يحكم، والمنظمات الدولية تُحاسَب أمام الدول الأعضاء أو المقر."}
+      finance:
+        - {en: "Funding from donations, grants, member contributions; restricted vs unrestricted funds shape what can be spent where.", ar: "التمويل من التبرعات والمنح ومساهمات الأعضاء، والأموال المقيدة وغير المقيدة تحدد أين يُصرف المال."}
+      delivery:
+        - {en: "Programme cycle: needs assessment → design → funding → implementation (often via partners) → monitoring & evaluation → reporting.", ar: "دورة البرنامج: تقييم الاحتياج ← تصميم ← تمويل ← تنفيذ (غالباً عبر شركاء) ← متابعة وتقييم ← تقارير."}
+      people:
+        - {en: "A country office or secretariat with programme, finance, logistics and M&E units; heavy use of consultants and implementing partners.", ar: "مكتب قُطري أو أمانة عامة بوحدات البرامج والمالية واللوجستيات والمتابعة والتقييم، مع اعتماد كبير على الاستشاريين والشركاء المنفذين."}
+    traces:
+      - {block: "finance", strength: "strong", en: "Annual reports, audited statements, donor databases (e.g. aid transparency registries)", ar: "التقارير السنوية والقوائم المدققة وقواعد بيانات المانحين (مثل سجلات شفافية المساعدات)"}
+      - {block: "people", strength: "moderate", en: "Vacancy notices with grade, unit and reporting line", ar: "إعلانات الوظائف بالدرجة والوحدة وخط التبعية"}
+      - {block: "support", strength: "strong", en: "Procurement notices and long-term agreements", ar: "إعلانات المشتريات والاتفاقيات طويلة الأجل"}
+      - {block: "delivery", strength: "moderate", en: "Project pages, evaluations, partner lists", ar: "صفحات المشاريع والتقييمات وقوائم الشركاء"}
+
+  - id: industrial
+    name: "Industrial plant (factory, workshop, production site)"
+    name_ar: "منشأة صناعية (مصنع، ورشة، موقع إنتاج)"
+    blocks:
+      assets:
+        - {en: "The plant is built around its equipment: each machine has a function, a rated rate, inputs, outputs, an operator skill and maintenance; products follow a routing through them.", ar: "المصنع مبني حول معداته: لكل ماكينة وظيفة وطاقة اسمية ومدخلات ومخرجات ومهارة تشغيل وصيانة، والمنتجات تسلك مساراً بينها."}
+      delivery:
+        - {en: "Production planning → material issue → production by routing → quality control → packing → dispatch; maintenance and quality run alongside.", ar: "تخطيط الإنتاج ← صرف المواد ← الإنتاج حسب المسار ← مراقبة الجودة ← التعبئة ← الشحن، والصيانة والجودة تسيران بالتوازي."}
+      people:
+        - {en: "Plant manager → production, maintenance, quality, warehouse/logistics; shifts with shift leads and operators per line.", ar: "مدير المصنع ← الإنتاج والصيانة والجودة والمستودع واللوجستيات، وورديات بقادة ورديات ومشغلين لكل خط."}
+      finance:
+        - {en: "Cost per unit = materials (bill of materials) + machine and labour time (routing) + energy + overhead.", ar: "تكلفة الوحدة = المواد (قائمة المواد) + وقت الماكينة والعمل (المسار) + الطاقة + المصاريف العامة."}
+      control:
+        - {en: "Incoming, in-process and final inspection; traceability by lot; product certifications.", ar: "فحص المواد الواردة وأثناء التصنيع والنهائي، وتتبع حسب الدفعة، وشهادات المنتج."}
+    traces:
+      - {block: "assets", strength: "strong", en: "Equipment nameplates and brands in photos and factory-tour videos", ar: "لوحات المعدات وعلاماتها في الصور وفيديوهات جولات المصنع"}
+      - {block: "assets", strength: "moderate", en: "Machine-dealer reference lists and case studies", ar: "قوائم مراجع وكلاء المكائن ودراسات حالتهم"}
+      - {block: "assets", strength: "strong", en: "Environmental permits, capacity reports and industrial registry entries", ar: "التصاريح البيئية وتقارير الطاقة الإنتاجية وقيود السجل الصناعي"}
+      - {block: "control", strength: "strong", en: "ISO 9001 / 22000 / 14001, CE, halal and food-safety approvals with their scope", ar: "شهادات الأيزو والـCE والحلال وموافقات سلامة الغذاء ونطاقها"}
+      - {block: "people", strength: "moderate", en: "Ads for operators, maintenance technicians, QC staff and shift patterns", ar: "إعلانات المشغلين وفنيي الصيانة ومراقبي الجودة وأنماط الورديات"}

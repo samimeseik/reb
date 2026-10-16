@@ -1,0 +1,116 @@
+# Axis 2 — how it delivers; Axis 3 — who pays. Typical patterns, to be tested.
+modules:
+  - id: delivery.fixed_site
+    name: "Delivered at a fixed site"
+    name_ar: "تسليم في موقع ثابت"
+    components:
+      assets:
+        - en: "The premises (owned or leased) are a key asset and a fixed cost."
+          ar: "المقر (ملك أو إيجار) أصل رئيسي وتكلفة ثابتة."
+          impact: medium
+          test: "Check the land/lease situation through public listings or the address history."
+      acquisition:
+        - en: "Walk-ins, map listings and the immediate area bring a large share of customers."
+          ar: "الزوار المباشرون وقوائم الخرائط والمنطقة المحيطة تجلب جزءاً كبيراً من العملاء."
+          impact: medium
+          test: "Read map reviews for how people found them."
+
+  - id: delivery.field
+    name: "Delivered in the field"
+    name_ar: "تسليم ميداني"
+    components:
+      operations:
+        - en: "Scheduling, travel and on-site work dominate; route planning sets daily capacity."
+          ar: "الجدولة والتنقل والعمل في الموقع تهيمن، وتخطيط المسارات يحدد الطاقة اليومية."
+          impact: medium
+          test: "Ask a booking lead time as a customer."
+      assets:
+        - en: "Vehicles and portable equipment are the main assets."
+          ar: "المركبات والمعدات المحمولة هي الأصول الرئيسية."
+          impact: low
+          test: "Count branded vehicles in photos."
+
+  - id: delivery.remote_digital
+    name: "Delivered remotely / digitally"
+    name_ar: "تسليم عن بُعد أو رقمي"
+    components:
+      systems:
+        - en: "The website, messaging (often WhatsApp) and online tools carry the whole customer journey."
+          ar: "الموقع والمراسلة (غالباً واتساب) والأدوات الرقمية تحمل رحلة العميل كاملة."
+          impact: medium
+          test: "Inspect the site's scripts, booking and chat tools."
+      acquisition:
+        - en: "Content, search and paid social bring leads from far beyond the home city."
+          ar: "المحتوى والبحث والإعلانات على التواصل تجلب عملاء من خارج المدينة."
+          impact: medium
+          test: "Check the ad library and search rankings for their main keywords."
+
+  - id: delivery.project
+    name: "Delivered as projects"
+    name_ar: "تسليم على شكل مشاريع"
+    components:
+      operations:
+        - en: "Each job is a project — quote, plan, deliver, hand over — with milestones and change requests."
+          ar: "كل عمل مشروع — تسعير، تخطيط، تنفيذ، تسليم — بمراحل وطلبات تعديل."
+          impact: medium
+          test: "Read case studies for project durations and team sizes."
+      economics:
+        - en: "Cash flow depends on milestone payments; overruns hit margin."
+          ar: "التدفق النقدي يعتمد على دفعات المراحل، والتجاوزات تضرب الهامش."
+          impact: medium
+          test: "Ask payment terms in a quote request."
+
+  - id: payer.consumer
+    name: "Consumers pay"
+    name_ar: "المستهلك يدفع"
+    components:
+      customers:
+        - en: "Individuals and families decide quickly or emotionally; reviews and word of mouth weigh heavily."
+          ar: "الأفراد والعائلات يقررون بسرعة أو بعاطفة، والتقييمات والكلام المتناقل لهما وزن كبير."
+          impact: medium
+          test: "Read the latest 30 reviews for decision reasons."
+
+  - id: payer.business
+    name: "Businesses pay"
+    name_ar: "الشركات تدفع"
+    components:
+      customers:
+        - en: "A few business accounts make up most revenue; sales cycles are longer and involve several decision makers."
+          ar: "حسابات شركات قليلة تشكل معظم الإيراد، ودورات البيع أطول وفيها عدة صانعي قرار."
+          impact: high
+          test: "Look at client logos and case studies for repeat names."
+      economics:
+        - en: "Payment terms of 30–90 days tie up working capital."
+          ar: "آجال دفع من 30 إلى 90 يوماً تحبس رأس المال العامل."
+          impact: medium
+          test: "Ask payment terms as a prospective client."
+
+  - id: payer.government
+    name: "Government pays"
+    name_ar: "الحكومة تدفع"
+    components:
+      acquisition:
+        - en: "Revenue comes through public tenders; eligibility documents and relationships matter."
+          ar: "الإيراد يأتي عبر المناقصات العامة، ووثائق الأهلية والعلاقات مهمة."
+          impact: high
+          test: "Search the public procurement portal for awards to this organization."
+
+  - id: payer.donors
+    name: "Donors / grant makers pay"
+    name_ar: "المانحون يدفعون"
+    components:
+      customers:
+        - en: "The people served are not the people who pay; reporting to donors shapes priorities."
+          ar: "المستفيدون ليسوا من يدفع، والتقارير للمانحين تشكّل الأولويات."
+          impact: medium
+          test: "Compare published programs with donors' stated priorities."
+
+  - id: payer.third_party
+    name: "A third party pays (commission)"
+    name_ar: "طرف ثالث يدفع (عمولة)"
+    components:
+      revenue_model:
+        - en: "The customer pays nothing visible; the supplier pays the organization, which can bias recommendations."
+          ar: "العميل لا يدفع شيئاً ظاهراً، والمورد يدفع للجهة، وهذا قد يحرف التوصيات."
+          impact: high
+          test: "Ask what share of recommended options come from paying partners."

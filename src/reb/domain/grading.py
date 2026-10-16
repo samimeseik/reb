@@ -18,6 +18,9 @@ from .models import (
     Custody,
     Evidence,
     Grade,
+    Hypothesis,
+    HypothesisBasis,
+    HypothesisConfidence,
     Source,
 )
 
@@ -162,3 +165,40 @@ def verifier_sufficient(verifier_kind: str, case_authority: Authority | None) ->
     if case_authority in (Authority.SYSTEM_RECORD, Authority.DIRECT_OBSERVATION):
         return VERIFIER_RANK.index(verifier_kind) >= VERIFIER_RANK.index("reconciliation")
     return True
+
+
+# ------------------------------------------------------------ hypotheses
+
+
+def hypothesis_confidence(
+    hypothesis: Hypothesis,
+    evidence: Mapping[str, Evidence],
+    sources: Mapping[str, Source],
+    upstream: Mapping[str, HypothesisConfidence] | None = None,
+) -> HypothesisConfidence:
+    """Computed, never chosen:
+    - archetype pattern alone, or signals that are only inferences -> low
+    - signals from one source (or one controller) -> medium
+    - signals from two or more independent sources -> high
+    - calculation -> the weakest of its inputs (and of its own signals, if any)
+    """
+    order = [HypothesisConfidence.LOW, HypothesisConfidence.MEDIUM, HypothesisConfidence.HIGH]
+    signals = [evidence[e] for e in hypothesis.signal_evidence_ids if e in evidence]
+    signals = [e for e in signals if e.authority != Authority.ANALYST_INFERENCE]
+    if not signals:
+        own = HypothesisConfidence.LOW
+    else:
+        own = HypothesisConfidence.MEDIUM
+        source_ids = sorted({e.source_id for e in signals})
+        if any(independent(a, b, sources) for i, a in enumerate(source_ids) for b in source_ids[i + 1 :]):
+            own = HypothesisConfidence.HIGH
+    if hypothesis.basis == HypothesisBasis.CALCULATION:
+        inputs = [(upstream or {}).get(h) for h in hypothesis.derived_from]
+        inputs = [c for c in inputs if c is not None]
+        if not inputs:
+            return HypothesisConfidence.LOW
+        weakest = min(inputs, key=order.index)
+        return weakest if not signals else min(weakest, own, key=order.index)
+    if hypothesis.basis == HypothesisBasis.ARCHETYPE and not signals:
+        return HypothesisConfidence.LOW
+    return own

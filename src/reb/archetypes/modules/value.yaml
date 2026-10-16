@@ -1,0 +1,250 @@
+# Axis 1 — how the organization creates value.
+# Every statement is a TYPICAL pattern (basis: archetype, confidence: low) until a
+# signal about the specific organization supports it. Ranges are rules of thumb:
+# they vary by country, size and year, and are there to be tested, not quoted.
+modules:
+  - id: value.manufacturing
+    name: "Manufacturing"
+    name_ar: "تصنيع"
+    components:
+      operations:
+        - en: "Work flows order/forecast → material purchase → production steps → quality check → storage → dispatch."
+          ar: "يمر العمل من الطلب أو التوقع ← شراء المواد ← مراحل الإنتاج ← فحص الجودة ← التخزين ← الشحن."
+          impact: high
+          test: "Walk the floor once and list the stations in order; compare with this sequence."
+        - en: "One machine or station limits throughput (the bottleneck); work-in-progress piles up in front of it."
+          ar: "ماكينة أو محطة واحدة تحدّ من الطاقة (عنق الزجاجة) ويتكدس الإنتاج غير المكتمل أمامها."
+          impact: high
+          test: "Look for the largest pile of half-finished goods on a site visit."
+      assets:
+        - en: "Machines, a production space and a stock of raw materials are the main assets."
+          ar: "الأصول الرئيسية هي المكائن ومساحة الإنتاج ومخزون المواد الخام."
+          impact: medium
+          test: "Count machines on photos/videos and read nameplates where visible."
+      economics:
+        - en: "Materials are the largest cost line, followed by labour and energy."
+          ar: "المواد هي أكبر بند تكلفة، يليها العمل والطاقة."
+          impact: high
+          range: {low: 40, high: 65, unit: "% of cost of goods (materials)"}
+          test: "Ask a supplier for prices of the main inputs and rebuild one product's bill of materials."
+      team:
+        - en: "A production lead or master craftsman holds most setup and troubleshooting know-how."
+          ar: "مشرف إنتاج أو أسطى يحمل معظم معرفة الضبط وحل الأعطال."
+          impact: high
+          test: "Ask who is called when a machine stops; see if it is always the same person."
+      partners:
+        - en: "A few raw-material suppliers account for most purchases."
+          ar: "عدد قليل من موردي المواد الخام يشكّلون معظم المشتريات."
+          impact: medium
+          test: "Look at packaging/labels and trade-fair exhibitor lists for supplier names."
+    failure_points:
+      - {component: "operations", en: "Unplanned downtime and rework eat capacity.", ar: "الأعطال غير المخططة وإعادة العمل تأكل الطاقة الإنتاجية."}
+      - {component: "economics", en: "Material price swings squeeze margins when prices to customers are fixed.", ar: "تقلب أسعار المواد يضغط الهامش عندما تكون أسعار البيع ثابتة."}
+    signals:
+      - {component: "assets", signal: "Factory-tour or trade-fair videos", suggests: "Machine brands and rough line capacity"}
+      - {component: "team", signal: "Job ads for operators, quality or maintenance staff", suggests: "Shift pattern, growth and weak spots"}
+      - {component: "identity", signal: "Quality certificates (ISO 9001/22000, CE)", suggests: "Documented processes and audited scope"}
+
+  - id: value.trading
+    name: "Trading / distribution"
+    name_ar: "تجارة وتوزيع"
+    components:
+      operations:
+        - en: "Buy in volume → store → sell in smaller lots → deliver; working capital is tied up in stock and receivables."
+          ar: "الشراء بكميات ← التخزين ← البيع بكميات أصغر ← التوصيل، ورأس المال العامل محبوس في المخزون والذمم."
+          impact: high
+          test: "Ask payment terms as a would-be customer (cash, 30, 60 days) from public price lists or sales pages."
+      economics:
+        - en: "Gross margin is thin and volume drives profit."
+          ar: "الهامش الإجمالي رفيع والربح يأتي من الحجم."
+          impact: high
+          range: {low: 8, high: 30, unit: "% gross margin"}
+          test: "Compare their listed price with the manufacturer's or import price."
+      partners:
+        - en: "An exclusive or preferred agreement with one or few brands is the main asset."
+          ar: "اتفاقية حصرية أو مفضلة مع علامة أو علامات قليلة هي الأصل الرئيسي."
+          impact: high
+          test: "Check the brands' websites for an authorized distributor list."
+      systems:
+        - en: "Stock and orders run on an accounting/ERP package or spreadsheets."
+          ar: "المخزون والطلبات تُدار ببرنامج محاسبة/ERP أو جداول إكسل."
+          impact: low
+          test: "Look for ERP names in their job ads."
+    failure_points:
+      - {component: "economics", en: "Slow-moving stock and late-paying customers drain cash.", ar: "المخزون البطيء والعملاء المتأخرون في الدفع يستنزفون النقد."}
+      - {component: "partners", en: "Losing the main brand agreement removes most of the business.", ar: "خسارة اتفاقية العلامة الرئيسية تُذهب معظم العمل."}
+    signals:
+      - {component: "partners", signal: "Brand logos on the site", suggests: "Distributed brands (check each brand's distributor list)"}
+      - {component: "assets", signal: "Warehouse address / size on maps", suggests: "Stock scale"}
+
+  - id: value.professional_service
+    name: "Professional service"
+    name_ar: "خدمة مهنية"
+    components:
+      operations:
+        - en: "Lead → discovery call → proposal → engagement → delivery → follow-up/renewal."
+          ar: "عميل محتمل ← مكالمة استكشاف ← عرض ← تعاقد ← تنفيذ ← متابعة أو تجديد."
+          impact: high
+          test: "Go through their public contact/booking flow up to the first reply."
+      team:
+        - en: "Capacity is people's hours; the founder or senior partners sell and deliver the key work."
+          ar: "الطاقة هي ساعات الناس، والمؤسس أو الشركاء الكبار يبيعون وينفذون العمل الأهم."
+          impact: high
+          test: "Check who appears on calls, content and testimonials."
+      economics:
+        - en: "Salaries are the main cost; profit depends on utilization (billable share of hours) and price per hour or project."
+          ar: "الرواتب هي التكلفة الرئيسية، والربح يعتمد على نسبة الساعات المدفوعة وسعر الساعة أو المشروع."
+          impact: high
+          range: {low: 55, high: 80, unit: "% target utilization"}
+          test: "Count team size (site/LinkedIn) and public prices to estimate revenue capacity."
+      moat:
+        - en: "Reputation, referrals and specialist knowledge are the advantage."
+          ar: "السمعة والإحالات والمعرفة المتخصصة هي الميزة."
+          impact: medium
+          test: "Read reviews for repeated praise of a named person or skill."
+    failure_points:
+      - {component: "team", en: "Growth stalls when everything depends on the founder.", ar: "النمو يتوقف عندما يعتمد كل شيء على المؤسس."}
+      - {component: "economics", en: "Scope creep on fixed-price work erodes margin.", ar: "توسع النطاق في الأعمال بسعر ثابت يأكل الهامش."}
+    signals:
+      - {component: "team", signal: "Team page and LinkedIn headcount", suggests: "Capacity and seniority mix"}
+      - {component: "acquisition", signal: "Blog, webinars, free consultation offers", suggests: "Content-led lead generation"}
+
+  - id: value.brokerage
+    name: "Brokerage / commission"
+    name_ar: "وساطة وعمولة"
+    components:
+      revenue_model:
+        - en: "Revenue is a commission on each closed deal, paid by the seller/supplier side, the buyer, or both."
+          ar: "الإيراد عمولة على كل صفقة مغلقة يدفعها البائع/المورد أو المشتري أو الطرفان."
+          impact: high
+          test: "Ask one supplier/developer what commission they pay intermediaries."
+      operations:
+        - en: "Lead → qualification → matching to inventory → viewing/meeting → negotiation → closing → after-sale."
+          ar: "عميل محتمل ← تأهيل ← مطابقة مع المعروض ← معاينة/لقاء ← تفاوض ← إغلاق ← ما بعد البيع."
+          impact: high
+          test: "Follow their public enquiry flow up to the first offer."
+      economics:
+        - en: "Few large deals carry the year; cost is mainly marketing and the people who close."
+          ar: "صفقات قليلة كبيرة تحمل السنة، والتكلفة أساساً تسويق وأشخاص يغلقون الصفقات."
+          impact: high
+          test: "Estimate deals per month from case studies, reviews and listing turnover."
+      partners:
+        - en: "Access to inventory (sellers, developers, suppliers) is as important as access to buyers."
+          ar: "الوصول للمعروض (بائعون، مطورون، موردون) مهم بقدر الوصول للمشترين."
+          impact: high
+          test: "Check whether listed projects appear with other agents too (exclusive or shared)."
+      moat:
+        - en: "Trust and a network are the asset; an incentive conflict exists when the supply side pays."
+          ar: "الثقة والشبكة هما الأصل، ويوجد تعارض حوافز عندما يدفع طرف العرض."
+          impact: medium
+          test: "Compare their recommendations with the commission each option pays."
+    failure_points:
+      - {component: "acquisition", en: "Lead cost rises and conversion falls when trust is not proven publicly.", ar: "تكلفة العميل ترتفع والتحويل ينخفض حين لا تُثبت الثقة علناً."}
+      - {component: "revenue_model", en: "Revenue is lumpy; one bad quarter hurts.", ar: "الإيراد متقطع وربع سيئ واحد يؤلم."}
+    signals:
+      - {component: "revenue_model", signal: "Statements such as \"no fee to the buyer\"", suggests: "Supply-side commission"}
+      - {component: "acquisition", signal: "Ads in the ad library, Facebook groups, WhatsApp links", suggests: "Paid vs community acquisition"}
+
+  - id: value.platform
+    name: "Platform / marketplace"
+    name_ar: "منصة وسوق إلكتروني"
+    components:
+      revenue_model:
+        - en: "Revenue is a take rate on transactions, listing fees or subscriptions from one side."
+          ar: "الإيراد نسبة من المعاملات أو رسوم إدراج أو اشتراكات من أحد الطرفين."
+          impact: high
+          range: {low: 5, high: 25, unit: "% take rate"}
+          test: "Read the seller/provider sign-up or pricing page."
+      operations:
+        - en: "Supply onboarding, demand acquisition, matching, payment and dispute handling."
+          ar: "ضم مقدمي الخدمة، واستقطاب الطلب، والمطابقة، والدفع، وحل النزاعات."
+          impact: high
+          test: "Sign up publicly as a buyer and note each step."
+      systems:
+        - en: "The product (app/site) and its data are the core system; much is outsourced (payments, maps, messaging)."
+          ar: "المنتج (تطبيق/موقع) وبياناته هو النظام الأساسي، والكثير مُسند لأطراف أخرى (دفع، خرائط، رسائل)."
+          impact: medium
+          test: "Inspect the site's scripts and the app's listed SDKs."
+    failure_points:
+      - {component: "acquisition", en: "The chicken-and-egg problem — neither side comes without the other.", ar: "مشكلة الدجاجة والبيضة — لا يأتي طرف دون الآخر."}
+    signals:
+      - {component: "customers", signal: "App store reviews and download ranges", suggests: "Scale and pain points"}
+
+  - id: value.membership
+    name: "Membership / subscription"
+    name_ar: "عضوية واشتراك"
+    components:
+      revenue_model:
+        - en: "Recurring fees from members; retention drives revenue more than acquisition."
+          ar: "رسوم متكررة من الأعضاء، والاحتفاظ بهم يحرك الإيراد أكثر من جذب الجدد."
+          impact: high
+          test: "Read public membership tiers and cancellation terms."
+      operations:
+        - en: "Join → onboarding → regular use/attendance → renewal or churn."
+          ar: "الانضمام ← التهيئة ← الاستخدام/الحضور المنتظم ← التجديد أو المغادرة."
+          impact: high
+          test: "Ask about trial, joining fee and contract length as a prospective member."
+      economics:
+        - en: "Fixed costs (space, staff, licences) are high; margin appears once members exceed break-even."
+          ar: "التكاليف الثابتة (المكان، الطاقم، التراخيص) مرتفعة، والهامش يظهر حين يتجاوز الأعضاء نقطة التعادل."
+          impact: high
+          test: "Estimate members from class schedules, social followers and peak-hour visits."
+    failure_points:
+      - {component: "customers", en: "Churn after the first months hides behind new sign-ups.", ar: "مغادرة الأعضاء بعد الأشهر الأولى تختفي خلف المشتركين الجدد."}
+    signals:
+      - {component: "offer", signal: "Published tiers and promotions", suggests: "Price ladder and churn pressure (frequent discounts)"}
+
+  - id: value.nonprofit
+    name: "Non-profit / association"
+    name_ar: "جمعية وعمل غير ربحي"
+    components:
+      revenue_model:
+        - en: "Income comes from donations, grants, membership dues and sometimes paid services or events."
+          ar: "الدخل يأتي من التبرعات والمنح ورسوم العضوية وأحياناً خدمات أو فعاليات مدفوعة."
+          impact: high
+          test: "Read annual reports, donation pages and grant-maker lists."
+      operations:
+        - en: "Funding cycle (proposal → grant → reporting) runs alongside the program cycle (needs → delivery → impact measurement)."
+          ar: "دورة التمويل (مقترح ← منحة ← تقارير) تسير بجانب دورة البرامج (احتياج ← تنفيذ ← قياس أثر)."
+          impact: high
+          test: "Look for published program reports and their dates."
+      team:
+        - en: "A small paid core works with a board and volunteers; governance sits with the board/general assembly."
+          ar: "نواة صغيرة مدفوعة تعمل مع مجلس إدارة ومتطوعين، والحوكمة عند المجلس أو الجمعية العمومية."
+          impact: medium
+          test: "Check the registry/website for board members and statutes."
+      identity:
+        - en: "Registration with the associations authority and, where applicable, permission to collect donations are required."
+          ar: "يلزم التسجيل لدى جهة الجمعيات، وعند الحاجة إذن جمع التبرعات."
+          impact: medium
+          test: "Look the association up in the public associations registry."
+    failure_points:
+      - {component: "revenue_model", en: "Dependence on one donor or grant.", ar: "الاعتماد على مانح أو منحة واحدة."}
+      - {component: "operations", en: "Overhead is hard to fund because donors prefer program costs.", ar: "صعوبة تمويل المصاريف الإدارية لأن المانحين يفضلون تكاليف البرامج."}
+    signals:
+      - {component: "revenue_model", signal: "Donor logos and grant announcements", suggests: "Funding concentration"}
+
+  - id: value.hospitality_retail
+    name: "Hospitality / retail at a site"
+    name_ar: "ضيافة وتجزئة بموقع"
+    components:
+      operations:
+        - en: "Purchase → prep/stock → serve/sell at peak hours → close and cash-up; daily rhythm driven by footfall."
+          ar: "شراء ← تحضير/تخزين ← خدمة/بيع في أوقات الذروة ← إغلاق وجرد النقد، بإيقاع يومي يحكمه عدد الزوار."
+          impact: high
+          test: "Visit at peak and off-peak; count staff and customers."
+      economics:
+        - en: "Rent, staff and goods are the three big costs; location sets the ceiling on revenue."
+          ar: "الإيجار والطاقم والبضاعة هي أكبر ثلاث تكاليف، والموقع يحدد سقف الإيراد."
+          impact: high
+          test: "Look up rents for similar shops on the same street."
+      systems:
+        - en: "A POS system records sales; delivery apps add a second channel."
+          ar: "نظام نقاط بيع يسجل المبيعات، وتطبيقات التوصيل تضيف قناة ثانية."
+          impact: low
+          test: "Note the POS brand at the counter and the delivery apps listing them."
+    failure_points:
+      - {component: "economics", en: "Rent rises faster than prices.", ar: "الإيجار يرتفع أسرع من الأسعار."}
+      - {component: "team", en: "Staff turnover lowers service quality.", ar: "دوران الطاقم يخفض جودة الخدمة."}
+    signals:
+      - {component: "customers", signal: "Map reviews and busy-hours graph", suggests: "Footfall pattern and complaints"}

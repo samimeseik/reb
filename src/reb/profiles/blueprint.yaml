@@ -1,0 +1,21 @@
+id: blueprint
+name: Organization blueprint (how it works and how to rebuild it)
+name_ar: المخطط الهندسي للجهة (كيف تعمل وكيف تُبنى)
+description: >
+  The 12 components of any organization's operating model — company, ministry,
+  organization or factory. Public mode builds it from traces; self/engaged mode
+  adds internal evidence that turns hypotheses into facts.
+allowed_modes: [public, self, engaged]
+items:
+  - {id: bp.identity, layer: regulation, required_grade: B, question: "Who is it legally, how big, how old, where?", question_ar: "من هي قانونياً، وما حجمها وعمرها وموقعها؟"}
+  - {id: bp.customers, layer: customer, required_grade: C, question: "Who does it serve and who pays?", question_ar: "من تخدم ومن يدفع؟"}
+  - {id: bp.offer, layer: strategy, required_grade: D, question: "What does it offer and at what price?", question_ar: "ماذا تقدم وبأي سعر؟"}
+  - {id: bp.revenue_model, layer: revenue, required_grade: C, question: "How does money come in?", question_ar: "كيف يدخل المال؟"}
+  - {id: bp.acquisition, layer: customer, required_grade: D, question: "How does demand arrive and convert?", question_ar: "كيف يصل الطلب وكيف يتحول؟"}
+  - {id: bp.operations, layer: operations, required_grade: C, question: "What is the core process, step by step, and where is the bottleneck?", question_ar: "ما العملية الأساسية خطوة بخطوة، وأين عنق الزجاجة؟"}
+  - {id: bp.team, layer: people, required_grade: C, question: "Which roles exist, who decides, who is irreplaceable?", question_ar: "ما الأدوار الموجودة، ومن يقرر، ومن لا يمكن الاستغناء عنه؟"}
+  - {id: bp.systems, layer: systems, required_grade: D, question: "Which systems hold the data and where is work re-typed by hand?", question_ar: "أي الأنظمة تحفظ البيانات، وأين يُعاد الإدخال يدوياً؟"}
+  - {id: bp.partners, layer: supply, required_grade: C, question: "Which suppliers and partners does it depend on?", question_ar: "على أي موردين وشركاء تعتمد؟"}
+  - {id: bp.assets, layer: equipment, required_grade: C, question: "Which premises, equipment, tools and licences does it run on?", question_ar: "على أي مقرات ومعدات وأدوات وتراخيص تعمل؟"}
+  - {id: bp.economics, layer: finance, required_grade: C, question: "What does one unit cost and earn?", question_ar: "كم تكلّف الوحدة الواحدة وكم تكسب؟"}
+  - {id: bp.moat, layer: culture, required_grade: D, question: "What makes it hard to copy?", question_ar: "ما الذي يجعل نسخها صعباً؟"}
