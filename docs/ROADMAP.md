@@ -1,13 +1,28 @@
 # Roadmap
 
-## v0.1 (this release)
+## v0.1
 - **Engine:** evidence grading (authority × custody × confidence), source independence, stated vs enacted, unknowns with revisions, obligation ledger, coverage across 11 layers, banned vocabulary, pseudonymization.
 - **Providers:** text/MD/DOCX/PDF, image OCR, CSV/XLSX, WhatsApp exports, UBL e-invoices (e-Fatura), audio transcription.
 - **Analyses:** process discovery from tables and chats, invoice concentration.
 - **Profiles:** `sop-replication`, `dd-evidence`, `factory-capacity`, `hiring-system`, `it-systems`, `desk-scan`.
 - **Interfaces:** CLI, MCP server, agent skill, Arabic and English reports.
 
-## Next
+## v0.2
+- Blueprint layer: design kernel, families, equipment library, archetypes, hypotheses with computed
+  confidence, redesign items, consistency checks, web provider, Markdown/HTML/PDF blueprint.
+- Benchmarks on four organizations, with the lessons fed back into the library and tools
+  ([BENCHMARKS.md](BENCHMARKS.md)).
+
+## Next (from the benchmarks)
+- **Independent-trace collectors**: registry lookups, job-board search, procurement awards, map
+  listings, so that predictions can reach high confidence.
+- **Ingest linked report PDFs automatically** (with a size limit) and extract headcount, capacity and revenue
+  tables into evidence.
+- **Browser rendering** for JavaScript-only pages (store locators, team directories).
+- **Page dating**: prefer the newest page when two of the same site's pages contradict each other.
+- More benchmarks per family, until each confidence level has at least 30 graded predictions.
+
+## Later
 - **OCEL 2.0 / XES export**, plus an optional pm4py adapter for BPMN discovery and conformance (fitness as a `conformance` verifier).
 - **ERP extract templates:** Logo, Netsis, Mikro (MS SQL), Odoo, ERPNext, and common POS exports.
 - **Equipment:** nameplate field parser (maker, model, year, kW, serial); OEE from downtime and production logs; capacity vs utility consumption.

@@ -201,3 +201,58 @@ def test_fingerprints_match_hosts_not_words():
         url="https://x.example/", title="", text="politikası", generator=None,
         scripts=["https://x.example/bilgi-politikasi.js"], links=["https://x.example/politikasi"])])
     assert web.footprint(c)["tools"] == []
+
+
+def test_crawler_visits_organization_pages_first(tmp_path):
+    links = "".join(f"<a href='/product-{i}.html'>p{i}</a>" for i in range(10)) + "<a href='/hakkimizda.html'>About</a>"
+    (tmp_path / "index.html").write_text(f"<html><body>{links}</body></html>")
+    (tmp_path / "hakkimizda.html").write_text("<html><body>We were founded in 1990.</body></html>")
+    for i in range(10):
+        (tmp_path / f"product-{i}.html").write_text(f"<html><body>product {i}</body></html>")
+    handler = lambda *a, **k: http.server.SimpleHTTPRequestHandler(*a, directory=str(tmp_path), **k)  # noqa: E731
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        crawl = web.crawl(f"http://127.0.0.1:{server.server_port}/index.html", max_pages=2, delay=0)
+    finally:
+        server.shutdown()
+    assert any("founded in 1990" in p.text for p in crawl.pages)
+
+
+def test_suggest_uses_whole_words():
+    # "kurumsal" (corporate) must not trigger the regulator archetype, "bulunan" must not match "UN"
+    ids = [s["archetype"] for s in suggest("Kurumsal sayfa, bulunan ürünler, kahve ve çikolata, coffee chain")]
+    assert ids and ids[0] == "restaurant-cafe"
+    assert "regulatory-agency" not in ids and "international-org-office" not in ids
+
+
+def test_crawler_lists_report_pdfs_and_flags_js_pages(tmp_path):
+    scripts = "".join(f"<script src='/s{i}.js'></script>" for i in range(6))
+    (tmp_path / "index.html").write_text(
+        f"<html><head>{scripts}</head><body><a href='/files/annual-report-2025.pdf'>AR</a>"
+        f"<a href='/files/menu.pdf'>Menu</a><div id='app'></div>{'<!-- x -->' * 3000}</body></html>")
+    handler = lambda *a, **k: http.server.SimpleHTTPRequestHandler(*a, directory=str(tmp_path), **k)  # noqa: E731
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        crawl = web.crawl(f"http://127.0.0.1:{server.server_port}/index.html", max_pages=1, delay=0)
+    finally:
+        server.shutdown()
+    assert any(d.endswith("annual-report-2025.pdf") for d in crawl.documents)
+    assert not any(d.endswith("menu.pdf") for d in crawl.documents)
+    assert crawl.js_rendered
+
+
+def test_read_source_hides_site_boilerplate(tmp_path):
+    from reb.application.ingest import read_source
+
+    led = Ledger.init(tmp_path, name="t", subject="X", mode="public", profile="blueprint")
+    ids = []
+    for i in range(5):
+        text = f"MENU Home About Contact\nFOOTER (c) X\nPage {i} unique content line"
+        src, _ = led.add_source(content=text.encode(), kind="public_signal", custody="public", title=f"p{i}",
+                                origin_party="x.example", controller="x.example", legal_basis="https://x.example", text=text)
+        ids.append(src.id)
+    out = read_source(led, ids[2], skip_boilerplate=True)
+    assert [line["text"] for line in out["lines"]] == ["Page 2 unique content line"]
+    assert out["lines"][0]["line"] == 3 and out["boilerplate_lines_hidden"] == 2

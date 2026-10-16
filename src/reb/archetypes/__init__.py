@@ -102,10 +102,13 @@ def archetype(archetype_id: str) -> Archetype:
 
 def suggest(text: str) -> list[dict[str, Any]]:
     """Rank archetypes by keyword hits in a description (name, site title, about text)."""
+    import re
+
     low = text.casefold()
     scored = []
     for a in archetypes().values():
-        hits = [k for k in a.keywords if k.casefold() in low]
+        # whole words only: "un" must not match "bulunan", "kurum" must not match "kurumsal"
+        hits = [k for k in a.keywords if re.search(rf"(?<!\w){re.escape(k.casefold())}(?!\w)", low)]
         if hits:
             scored.append({"archetype": a.id, "name": a.name, "name_ar": a.name_ar, "hits": hits})
     return sorted(scored, key=lambda s: -len(s["hits"]))

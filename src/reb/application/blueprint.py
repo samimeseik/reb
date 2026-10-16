@@ -101,6 +101,13 @@ def ingest_website(ledger: Ledger, url: str, *, max_pages: int = 15, delay: floa
         "footprint_evidence": [e["id"] for e in obs["evidence"]] if obs else [],
         "skipped_by_robots": crawl.skipped_by_robots,
         "errors": crawl.errors,
+        "report_documents": crawl.documents,
+        "js_rendered_pages": crawl.js_rendered,
+        "next_steps": [
+            "Ingest the report PDFs above (kind financial_statement or document, custody public, URL as legal_basis): "
+            "annual and activity reports are usually the richest traces.",
+            "Open JavaScript-rendered pages in a browser; the crawler only sees their empty shell.",
+        ] if (crawl.documents or crawl.js_rendered) else [],
         "suggested_archetypes": suggest(" ".join(p.title + " " + p.text[:3000] for p in crawl.pages)),
     }
 

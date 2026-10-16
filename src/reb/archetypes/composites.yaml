@@ -4,364 +4,819 @@
 # Build-step costs are deliberately omitted: they depend on country and year and
 # must come from evidence (quotes, listings), not from this library.
 archetypes:
-  - id: real-estate-brokerage
-    family: business
-    name: "Real-estate brokerage / investment advisory"
-    name_ar: "وساطة واستشارات عقارية"
-    compose: [value.brokerage, delivery.remote_digital, delivery.fixed_site, payer.third_party, payer.consumer]
-    keywords: [real estate, property, عقار, emlak, citizenship by investment, broker]
-    processes:
-      - {en: "Lead capture", ar: "استقطاب العميل"}
-      - {en: "Qualification call", ar: "مكالمة التأهيل"}
-      - {en: "Property shortlist", ar: "ترشيح العقارات"}
-      - {en: "Viewing / virtual tour", ar: "المعاينة أو الجولة الافتراضية"}
-      - {en: "Reservation and due diligence", ar: "الحجز والتحقق القانوني"}
-      - {en: "Contract and payment", ar: "العقد والدفع"}
-      - {en: "Title transfer", ar: "نقل الملكية"}
-      - {en: "After-sale (rental, residence, resale)", ar: "ما بعد البيع (تأجير، إقامة، إعادة بيع)"}
-    roles:
-      - {en: "Founder / lead advisor", ar: "المؤسس أو المستشار الرئيسي"}
-      - {en: "Sales consultants", ar: "مستشارو المبيعات"}
-      - {en: "Marketing / content", ar: "التسويق والمحتوى"}
-      - {en: "Legal and title coordinator (often outsourced lawyer)", ar: "منسق قانوني ونقل ملكية (غالباً محامٍ خارجي)"}
-      - {en: "Property management team", ar: "فريق إدارة العقارات"}
-    build:
-      - {component: "identity", phase: "day 0-30", en: "Register the company and obtain the real-estate trading authorization required locally.", ar: "تسجيل الشركة واستخراج ترخيص الوساطة العقارية المطلوب محلياً."}
-      - {component: "partners", phase: "day 0-60", en: "Sign agreements with developers and a lawyer; build a verified inventory.", ar: "توقيع اتفاقيات مع المطورين ومحامٍ، وبناء قائمة عقارات متحقق منها."}
-      - {component: "acquisition", phase: "day 30-90", en: "Launch content + WhatsApp intake + CRM before paid ads.", ar: "إطلاق المحتوى واستقبال واتساب ونظام CRM قبل الإعلانات المدفوعة."}
-
-  - id: consulting-firm
-    family: business
-    name: "Consulting / professional services firm"
-    name_ar: "شركة استشارات وخدمات مهنية"
-    compose: [value.professional_service, delivery.project, delivery.remote_digital, payer.business]
-    keywords: [consulting, advisory, استشارات, danışmanlık, law firm, accounting]
-    processes:
-      - {en: "Lead", ar: "عميل محتمل"}
-      - {en: "Discovery", ar: "الاستكشاف"}
-      - {en: "Proposal", ar: "العرض"}
-      - {en: "Engagement letter", ar: "خطاب التكليف"}
-      - {en: "Delivery", ar: "التنفيذ"}
-      - {en: "Report / hand-over", ar: "التقرير أو التسليم"}
-      - {en: "Follow-on work", ar: "أعمال لاحقة"}
-    roles:
-      - {en: "Partners (sell and lead)", ar: "الشركاء (يبيعون ويقودون)"}
-      - {en: "Managers", ar: "المديرون"}
-      - {en: "Consultants / analysts", ar: "الاستشاريون والمحللون"}
-    build:
-      - {component: "offer", phase: "day 0-30", en: "Define 2–3 productized services with fixed scope and price.", ar: "تحديد 2–3 خدمات مُنتَجة بنطاق وسعر ثابتين."}
-
-  - id: marketing-agency
-    family: business
-    name: "Marketing / creative agency"
-    name_ar: "وكالة تسويق وإبداع"
-    compose: [value.professional_service, delivery.remote_digital, delivery.project, payer.business]
-    keywords: [agency, marketing, ajans, وكالة, social media, creative]
-    processes:
-      - {en: "Pitch", ar: "العرض التقديمي"}
-      - {en: "Brief", ar: "البريف"}
-      - {en: "Strategy and concept", ar: "الاستراتيجية والفكرة"}
-      - {en: "Production", ar: "الإنتاج"}
-      - {en: "Client approval rounds", ar: "جولات موافقة العميل"}
-      - {en: "Publishing / media buying", ar: "النشر وشراء الإعلانات"}
-      - {en: "Reporting", ar: "التقارير"}
-    roles:
-      - {en: "Account managers", ar: "مديرو الحسابات"}
-      - {en: "Strategists", ar: "الاستراتيجيون"}
-      - {en: "Designers / video editors", ar: "المصممون ومحررو الفيديو"}
-      - {en: "Media buyers", ar: "مشترو الإعلانات"}
-    build:
-      - {component: "revenue_model", phase: "day 0-30", en: "Move clients to monthly retainers with a capped number of revision rounds.", ar: "نقل العملاء لاشتراكات شهرية بعدد محدد من جولات التعديل."}
-
-  - id: recruitment-agency
-    family: business
-    name: "Recruitment / staffing agency"
-    name_ar: "وكالة توظيف"
-    compose: [value.brokerage, delivery.remote_digital, payer.business]
-    keywords: [recruitment, staffing, توظيف, işe alım, headhunting]
-    processes:
-      - {en: "Client mandate", ar: "تكليف العميل"}
-      - {en: "Job brief", ar: "وصف الوظيفة"}
-      - {en: "Sourcing", ar: "البحث عن المرشحين"}
-      - {en: "Screening", ar: "الفرز"}
-      - {en: "Submission", ar: "تقديم المرشحين"}
-      - {en: "Interviews", ar: "المقابلات"}
-      - {en: "Offer and placement", ar: "العرض والتعيين"}
-      - {en: "Guarantee period", ar: "فترة الضمان"}
-    roles:
-      - {en: "Business development", ar: "تطوير الأعمال"}
-      - {en: "Recruiters", ar: "مسؤولو التوظيف"}
-      - {en: "Sourcers / researchers", ar: "الباحثون عن المرشحين"}
-    build:
-      - {component: "systems", phase: "day 0-30", en: "Set up an applicant-tracking system; every candidate stage is timestamped.", ar: "إعداد نظام تتبع المرشحين مع توقيت كل مرحلة."}
-
-  - id: food-factory
-    family: industrial
-    name: "Food factory"
-    name_ar: "مصنع أغذية"
-    compose: [value.manufacturing, delivery.fixed_site, payer.business]
-    keywords: [food, gıda, أغذية, bakery, dairy, snacks, beverages]
-    processes:
-      - {en: "Raw-material receiving and inspection", ar: "استلام المواد الخام وفحصها"}
-      - {en: "Weighing and mixing", ar: "الوزن والخلط"}
-      - {en: "Processing (baking, cooking, pasteurizing)", ar: "المعالجة (خَبز، طهي، بسترة)"}
-      - {en: "Cooling", ar: "التبريد"}
-      - {en: "Filling / packaging", ar: "التعبئة والتغليف"}
-      - {en: "Final QC and lot release", ar: "الفحص النهائي وإطلاق الدفعة"}
-      - {en: "Cold or dry storage", ar: "التخزين المبرد أو الجاف"}
-      - {en: "Dispatch", ar: "الشحن"}
-    roles:
-      - {en: "Plant manager", ar: "مدير المصنع"}
-      - {en: "Production shift leads and operators", ar: "قادة الورديات والمشغلون"}
-      - {en: "Quality / food-safety team (HACCP)", ar: "فريق الجودة وسلامة الغذاء (HACCP)"}
-      - {en: "Maintenance technicians", ar: "فنيو الصيانة"}
-      - {en: "Warehouse and logistics", ar: "المستودع واللوجستيات"}
-      - {en: "Key-account sales (retail chains, distributors)", ar: "مبيعات الحسابات الكبرى (سلاسل التجزئة، الموزعون)"}
-    equipment: [mixer, tunnel_oven, pasteurizer, filling_machine, flow_wrapper, forklift, compressor]
-    build:
-      - {component: "identity", phase: "day 0-90", en: "Obtain food-business approval and plan for HACCP / ISO 22000 certification.", ar: "استخراج موافقة منشأة الأغذية والتخطيط لشهادة HACCP / ISO 22000."}
-      - {component: "assets", phase: "day 0-90", en: "Size the line from the bottleneck machine back to demand; allow for allergen changeovers.", ar: "تحجيم الخط من ماكينة عنق الزجاجة رجوعاً إلى الطلب مع حساب وقت تغيير المنتجات لمسببات الحساسية."}
-
-  - id: manufacturing-workshop
-    family: industrial
-    name: "Manufacturing workshop (furniture, metal, plastics, textile)"
-    name_ar: "ورشة تصنيع (أثاث، معادن، بلاستيك، نسيج)"
-    compose: [value.manufacturing, delivery.fixed_site, delivery.project, payer.consumer, payer.business]
-    keywords: [workshop, atölye, ورشة, furniture, mobilya, metal, textile, tekstil]
-    processes:
-      - {en: "Order and measurement", ar: "الطلب وأخذ المقاسات"}
-      - {en: "Design / drawing", ar: "التصميم والرسم"}
-      - {en: "Material purchase", ar: "شراء المواد"}
-      - {en: "Cutting", ar: "القص"}
-      - {en: "Forming / machining / edge work", ar: "التشكيل والتشغيل والحواف"}
-      - {en: "Assembly", ar: "التجميع"}
-      - {en: "Finishing (paint, coating)", ar: "التشطيب (دهان، طلاء)"}
-      - {en: "Delivery and installation", ar: "التوصيل والتركيب"}
-    roles:
-      - {en: "Owner / master craftsman", ar: "المالك أو الأسطى"}
-      - {en: "Machine operators", ar: "مشغلو المكائن"}
-      - {en: "Assemblers", ar: "المجمّعون"}
-      - {en: "Finisher / painter", ar: "عامل التشطيب أو الدهان"}
-      - {en: "Installer / driver", ar: "المركّب أو السائق"}
-    equipment: [panel_saw, cnc_router, edge_bander, spray_booth, laser_cutter, press_brake, welding_station, sewing_line, compressor]
-    build:
-      - {component: "operations", phase: "day 0-30", en: "Track every order with stage timestamps from day one (even in a WhatsApp group with order numbers).", ar: "تتبع كل طلب بتوقيت كل مرحلة من اليوم الأول (ولو في مجموعة واتساب بأرقام طلبات)."}
-      - {component: "team", phase: "day 30-90", en: "Train a second person on every machine setup.", ar: "تدريب شخص ثانٍ على ضبط كل ماكينة."}
-
-  - id: retail-ecommerce
-    family: business
-    name: "Retail shop / e-commerce"
-    name_ar: "متجر تجزئة أو تجارة إلكترونية"
-    compose: [value.trading, delivery.fixed_site, delivery.remote_digital, payer.consumer]
-    keywords: [shop, store, mağaza, متجر, e-commerce, online store, marketplace seller]
-    processes:
-      - {en: "Assortment and buying", ar: "اختيار التشكيلة والشراء"}
-      - {en: "Receiving and stock", ar: "الاستلام والمخزون"}
-      - {en: "Listing and pricing", ar: "العرض والتسعير"}
-      - {en: "Order", ar: "الطلب"}
-      - {en: "Picking and packing", ar: "التجهيز والتغليف"}
-      - {en: "Delivery", ar: "التوصيل"}
-      - {en: "Returns", ar: "المرتجعات"}
-    roles:
-      - {en: "Buyer / owner", ar: "المشتري أو المالك"}
-      - {en: "Store or warehouse staff", ar: "موظفو المتجر أو المستودع"}
-      - {en: "Online marketing", ar: "التسويق الإلكتروني"}
-      - {en: "Customer service", ar: "خدمة العملاء"}
-    build:
-      - {component: "economics", phase: "day 0-30", en: "Compute contribution margin per order after shipping and returns before scaling ads.", ar: "حساب هامش المساهمة لكل طلب بعد الشحن والمرتجعات قبل زيادة الإعلانات."}
-
-  - id: restaurant-cafe
-    family: business
-    name: "Restaurant / café"
-    name_ar: "مطعم أو مقهى"
-    compose: [value.hospitality_retail, delivery.fixed_site, payer.consumer]
-    keywords: [restaurant, cafe, coffee, مطعم, مقهى, lokanta, kafe]
-    processes:
-      - {en: "Purchasing", ar: "الشراء"}
-      - {en: "Prep (mise en place)", ar: "التحضير"}
-      - {en: "Order taking", ar: "أخذ الطلب"}
-      - {en: "Cooking / preparing", ar: "الطهي والتحضير"}
-      - {en: "Serving / delivery hand-off", ar: "التقديم أو التسليم للتوصيل"}
-      - {en: "Payment", ar: "الدفع"}
-      - {en: "Closing and cleaning", ar: "الإغلاق والتنظيف"}
-    roles:
-      - {en: "Owner / manager", ar: "المالك أو المدير"}
-      - {en: "Head chef / barista lead", ar: "رئيس الطهاة أو رئيس الباريستا"}
-      - {en: "Kitchen staff", ar: "طاقم المطبخ"}
-      - {en: "Service staff", ar: "طاقم الخدمة"}
-    components:
-      economics:
-        - en: "Food and beverage cost, staff and rent are the three largest cost lines."
-          ar: "تكلفة الطعام والشراب والطاقم والإيجار هي أكبر ثلاثة بنود."
-          impact: high
-          range: {low: 25, high: 38, unit: "% of sales (food & beverage cost)"}
-          test: "Price 5 menu items' ingredients and compare with menu prices."
-    build:
-      - {component: "economics", phase: "day 0-30", en: "Cost every menu item and remove items below target margin.", ar: "تسعير تكلفة كل صنف وحذف الأصناف تحت الهامش المستهدف."}
-
-  - id: clinic
-    family: business
-    name: "Clinic / health practice"
-    name_ar: "عيادة أو مركز صحي"
-    compose: [value.professional_service, delivery.fixed_site, payer.consumer, payer.third_party]
-    keywords: [clinic, klinik, عيادة, dental, medical center, physiotherapy]
-    processes:
-      - {en: "Booking", ar: "الحجز"}
-      - {en: "Registration and insurance check", ar: "التسجيل والتحقق من التأمين"}
-      - {en: "Consultation / treatment", ar: "الكشف أو العلاج"}
-      - {en: "Diagnostics", ar: "الفحوص"}
-      - {en: "Billing and insurance claim", ar: "الفوترة ومطالبة التأمين"}
-      - {en: "Follow-up", ar: "المتابعة"}
-    roles:
-      - {en: "Doctors / specialists", ar: "الأطباء والأخصائيون"}
-      - {en: "Nurses / assistants", ar: "الممرضون والمساعدون"}
-      - {en: "Reception and billing", ar: "الاستقبال والفوترة"}
-      - {en: "Clinic manager", ar: "مدير العيادة"}
-    build:
-      - {component: "identity", phase: "day 0-90", en: "Obtain the health licence and register each practitioner.", ar: "استخراج الترخيص الصحي وتسجيل كل ممارس."}
-
-  - id: charity
-    family: nonprofit
-    name: "Charity / association"
-    name_ar: "جمعية خيرية أو أهلية"
-    compose: [value.nonprofit, delivery.field, payer.donors]
-    keywords: [charity, association, foundation, جمعية, dernek, vakıf, NGO]
-    processes:
-      - {en: "Needs identification", ar: "تحديد الاحتياج"}
-      - {en: "Fundraising / grant proposal", ar: "جمع التبرعات أو مقترح المنحة"}
-      - {en: "Beneficiary selection", ar: "اختيار المستفيدين"}
-      - {en: "Distribution / service delivery", ar: "التوزيع أو تقديم الخدمة"}
-      - {en: "Monitoring", ar: "المتابعة"}
-      - {en: "Reporting to donors", ar: "التقارير للمانحين"}
-    roles:
-      - {en: "Board", ar: "مجلس الإدارة"}
-      - {en: "Executive director", ar: "المدير التنفيذي"}
-      - {en: "Programme officers", ar: "مسؤولو البرامج"}
-      - {en: "Fundraising / communications", ar: "جمع التبرعات والاتصال"}
-      - {en: "Volunteers", ar: "المتطوعون"}
-    build:
-      - {component: "identity", phase: "day 0-60", en: "Register the association and obtain permission to collect donations where required.", ar: "تسجيل الجمعية واستخراج إذن جمع التبرعات حيث يلزم."}
-
-  - id: sports-club
-    family: nonprofit
-    name: "Sports club"
-    name_ar: "نادٍ رياضي"
-    compose: [value.membership, delivery.fixed_site, payer.consumer, payer.business]
-    keywords: [club, kulüp, نادي, academy, gym, football]
-    processes:
-      - {en: "Membership / registration", ar: "العضوية والتسجيل"}
-      - {en: "Training sessions", ar: "التدريبات"}
-      - {en: "Competitions / matches", ar: "المسابقات والمباريات"}
-      - {en: "Events and sponsorship", ar: "الفعاليات والرعاية"}
-      - {en: "Renewal", ar: "التجديد"}
-    roles:
-      - {en: "Board / president", ar: "مجلس الإدارة أو الرئيس"}
-      - {en: "Coaches", ar: "المدربون"}
-      - {en: "Administration", ar: "الإدارة"}
-      - {en: "Facility staff", ar: "طاقم المنشأة"}
-    build:
-      - {component: "revenue_model", phase: "day 0-90", en: "Balance dues, sponsorship and events so no single source exceeds half of income.", ar: "موازنة الاشتراكات والرعاية والفعاليات بحيث لا يتجاوز مصدر واحد نصف الدخل."}
-
-  - id: school-training
-    family: business
-    name: "School / training centre"
-    name_ar: "مدرسة أو مركز تدريب"
-    compose: [value.membership, value.professional_service, delivery.fixed_site, delivery.remote_digital, payer.consumer]
-    keywords: [school, academy, training, مدرسة, مركز تدريب, kurs, education]
-    processes:
-      - {en: "Enrolment", ar: "التسجيل"}
-      - {en: "Placement / level test", ar: "تحديد المستوى"}
-      - {en: "Classes", ar: "الحصص"}
-      - {en: "Assessment", ar: "التقييم"}
-      - {en: "Certification", ar: "الشهادة"}
-      - {en: "Re-enrolment", ar: "إعادة التسجيل"}
-    roles:
-      - {en: "Director", ar: "المدير"}
-      - {en: "Teachers / trainers", ar: "المعلمون والمدربون"}
-      - {en: "Admissions", ar: "القبول والتسجيل"}
-      - {en: "Administration", ar: "الإدارة"}
-    build:
-      - {component: "identity", phase: "day 0-90", en: "Obtain the education licence that matches the certificates offered.", ar: "استخراج ترخيص التعليم المطابق للشهادات المقدمة."}
-
-  - id: ministry
-    family: public_body
-    name: "Ministry"
-    name_ar: "وزارة"
-    compose: []
-    keywords: [ministry, وزارة, bakanlık, ministère]
-    processes:
-      - {en: "Policy and legislation drafting", ar: "صياغة السياسات والتشريعات"}
-      - {en: "Budget preparation and allocation", ar: "إعداد الموازنة وتوزيعها"}
-      - {en: "Service delivery through directorates / field offices", ar: "تقديم الخدمات عبر المديريات والمكاتب الميدانية"}
-      - {en: "Licensing and inspection", ar: "الترخيص والتفتيش"}
-      - {en: "Monitoring and performance reporting", ar: "المتابعة وتقارير الأداء"}
-    roles:
-      - {en: "Minister (political)", ar: "الوزير (سياسي)"}
-      - {en: "Deputy ministers / undersecretary (administrative)", ar: "وكلاء الوزارة أو المستشار (إداري)"}
-      - {en: "General directorates per sector", ar: "مديريات عامة لكل قطاع"}
-      - {en: "Support directorates (HR, finance, legal, IT, procurement)", ar: "مديريات مساندة (موارد بشرية، مالية، قانونية، تقنية، مشتريات)"}
-      - {en: "Provincial directorates", ar: "المديريات الإقليمية"}
-    components:
-      team:
-        - en: "The organization chart has one minister, a deputy layer, sector general directorates and support directorates, set by the organizational regulation."
-          ar: "الهيكل فيه وزير وطبقة وكلاء ومديريات عامة قطاعية ومديريات مساندة، تحددها اللائحة التنظيمية."
-          impact: high
-          test: "Find the organizational regulation or chart in the official gazette or on the ministry site."
-      revenue_model:
-        - en: "Funding is the budget-law allocation by programme; fees collected go mostly to the treasury."
-          ar: "التمويل مخصصات قانون الموازنة حسب البرنامج، والرسوم المحصلة تذهب غالباً للخزينة."
-          impact: high
-          test: "Read the ministry's lines in the latest budget law."
-    build:
-      - {component: "identity", phase: "design", en: "Write the mandate into a founding law before designing units.", ar: "كتابة التفويض في قانون إنشاء قبل تصميم الوحدات."}
-      - {component: "team", phase: "design", en: "Design units around services delivered to citizens, then add support directorates.", ar: "تصميم الوحدات حول الخدمات المقدمة للمواطن، ثم إضافة المديريات المساندة."}
-
-  - id: regulatory-agency
-    family: public_body
-    name: "Regulatory authority / agency"
-    name_ar: "هيئة أو جهة رقابية"
-    compose: []
-    keywords: [authority, agency, هيئة, kurum, regulator, kurulu]
-    processes:
-      - {en: "Rule-making and consultation", ar: "إصدار اللوائح والتشاور"}
-      - {en: "Application intake", ar: "استقبال الطلبات"}
-      - {en: "Completeness check", ar: "فحص الاكتمال"}
-      - {en: "Technical review / inspection", ar: "المراجعة الفنية أو التفتيش"}
-      - {en: "Decision (licence, approval, sanction)", ar: "القرار (ترخيص، موافقة، عقوبة)"}
-      - {en: "Appeal", ar: "التظلم"}
-      - {en: "Publication of decisions", ar: "نشر القرارات"}
-    roles:
-      - {en: "Board / president", ar: "المجلس أو الرئيس"}
-      - {en: "Technical departments", ar: "الإدارات الفنية"}
-      - {en: "Inspectors", ar: "المفتشون"}
-      - {en: "Legal / enforcement", ar: "الشؤون القانونية والإنفاذ"}
-    components:
-      revenue_model:
-        - en: "Funded by budget allocation and/or fees from regulated entities."
-          ar: "تُموَّل من مخصصات الموازنة و/أو رسوم الجهات الخاضعة للرقابة."
-          impact: medium
-          test: "Read the founding law's financing article and the fee schedule."
-    build:
-      - {component: "operations", phase: "design", en: "Publish service times per application type and measure them.", ar: "نشر أزمنة الخدمة لكل نوع طلب وقياسها."}
-
-  - id: international-org-office
-    family: nonprofit
-    name: "International organization (country office / secretariat)"
-    name_ar: "منظمة دولية (مكتب قُطري أو أمانة)"
-    compose: [value.nonprofit, delivery.field, delivery.project, payer.donors, payer.government]
-    keywords: [UN, international organization, منظمة دولية, country office, secretariat, mission]
-    processes:
-      - {en: "Country programme planning", ar: "تخطيط البرنامج القُطري"}
-      - {en: "Resource mobilization", ar: "حشد الموارد"}
-      - {en: "Project design and approval", ar: "تصميم المشاريع واعتمادها"}
-      - {en: "Implementation via partners", ar: "التنفيذ عبر الشركاء"}
-      - {en: "Monitoring and evaluation", ar: "المتابعة والتقييم"}
-      - {en: "Reporting to donors / HQ", ar: "التقارير للمانحين والمقر"}
-    roles:
-      - {en: "Head of office / representative", ar: "رئيس المكتب أو الممثل"}
-      - {en: "Programme units", ar: "وحدات البرامج"}
-      - {en: "Operations (finance, HR, procurement, logistics)", ar: "العمليات (مالية، موارد بشرية، مشتريات، لوجستيات)"}
-      - {en: "M&E", ar: "المتابعة والتقييم"}
-      - {en: "Implementing partners", ar: "الشركاء المنفذون"}
-    build:
-      - {component: "partners", phase: "design", en: "Select and assess implementing partners before funds flow.", ar: "اختيار الشركاء المنفذين وتقييمهم قبل تدفق الأموال."}
+- id: real-estate-brokerage
+  family: business
+  name: Real-estate brokerage / investment advisory
+  name_ar: وساطة واستشارات عقارية
+  compose:
+  - value.brokerage
+  - delivery.remote_digital
+  - delivery.fixed_site
+  - payer.third_party
+  - payer.consumer
+  keywords:
+  - real estate
+  - property
+  - عقار
+  - emlak
+  - citizenship by investment
+  - broker
+  processes:
+  - en: Lead capture
+    ar: استقطاب العميل
+  - en: Qualification call
+    ar: مكالمة التأهيل
+  - en: Property shortlist
+    ar: ترشيح العقارات
+  - en: Viewing / virtual tour
+    ar: المعاينة أو الجولة الافتراضية
+  - en: Reservation and due diligence
+    ar: الحجز والتحقق القانوني
+  - en: Contract and payment
+    ar: العقد والدفع
+  - en: Title transfer
+    ar: نقل الملكية
+  - en: After-sale (rental, residence, resale)
+    ar: ما بعد البيع (تأجير، إقامة، إعادة بيع)
+  roles:
+  - en: Founder / lead advisor
+    ar: المؤسس أو المستشار الرئيسي
+  - en: Sales consultants
+    ar: مستشارو المبيعات
+  - en: Marketing / content
+    ar: التسويق والمحتوى
+  - en: Legal and title coordinator (often outsourced lawyer)
+    ar: منسق قانوني ونقل ملكية (غالباً محامٍ خارجي)
+  - en: Property management team
+    ar: فريق إدارة العقارات
+  build:
+  - component: identity
+    phase: day 0-30
+    en: Register the company and obtain the real-estate trading authorization required locally.
+    ar: تسجيل الشركة واستخراج ترخيص الوساطة العقارية المطلوب محلياً.
+  - component: partners
+    phase: day 0-60
+    en: Sign agreements with developers and a lawyer; build a verified inventory.
+    ar: توقيع اتفاقيات مع المطورين ومحامٍ، وبناء قائمة عقارات متحقق منها.
+  - component: acquisition
+    phase: day 30-90
+    en: Launch content + WhatsApp intake + CRM before paid ads.
+    ar: إطلاق المحتوى واستقبال واتساب ونظام CRM قبل الإعلانات المدفوعة.
+- id: consulting-firm
+  family: business
+  name: Consulting / professional services firm
+  name_ar: شركة استشارات وخدمات مهنية
+  compose:
+  - value.professional_service
+  - delivery.project
+  - delivery.remote_digital
+  - payer.business
+  keywords:
+  - consulting
+  - advisory
+  - استشارات
+  - danışmanlık
+  - law firm
+  - accounting
+  processes:
+  - en: Lead
+    ar: عميل محتمل
+  - en: Discovery
+    ar: الاستكشاف
+  - en: Proposal
+    ar: العرض
+  - en: Engagement letter
+    ar: خطاب التكليف
+  - en: Delivery
+    ar: التنفيذ
+  - en: Report / hand-over
+    ar: التقرير أو التسليم
+  - en: Follow-on work
+    ar: أعمال لاحقة
+  roles:
+  - en: Partners (sell and lead)
+    ar: الشركاء (يبيعون ويقودون)
+  - en: Managers
+    ar: المديرون
+  - en: Consultants / analysts
+    ar: الاستشاريون والمحللون
+  build:
+  - component: offer
+    phase: day 0-30
+    en: Define 2–3 productized services with fixed scope and price.
+    ar: تحديد 2–3 خدمات مُنتَجة بنطاق وسعر ثابتين.
+- id: marketing-agency
+  family: business
+  name: Marketing / creative agency
+  name_ar: وكالة تسويق وإبداع
+  compose:
+  - value.professional_service
+  - delivery.remote_digital
+  - delivery.project
+  - payer.business
+  keywords:
+  - agency
+  - marketing
+  - ajans
+  - وكالة
+  - social media
+  - creative
+  processes:
+  - en: Pitch
+    ar: العرض التقديمي
+  - en: Brief
+    ar: البريف
+  - en: Strategy and concept
+    ar: الاستراتيجية والفكرة
+  - en: Production
+    ar: الإنتاج
+  - en: Client approval rounds
+    ar: جولات موافقة العميل
+  - en: Publishing / media buying
+    ar: النشر وشراء الإعلانات
+  - en: Reporting
+    ar: التقارير
+  roles:
+  - en: Account managers
+    ar: مديرو الحسابات
+  - en: Strategists
+    ar: الاستراتيجيون
+  - en: Designers / video editors
+    ar: المصممون ومحررو الفيديو
+  - en: Media buyers
+    ar: مشترو الإعلانات
+  build:
+  - component: revenue_model
+    phase: day 0-30
+    en: Move clients to monthly retainers with a capped number of revision rounds.
+    ar: نقل العملاء لاشتراكات شهرية بعدد محدد من جولات التعديل.
+- id: recruitment-agency
+  family: business
+  name: Recruitment / staffing agency
+  name_ar: وكالة توظيف
+  compose:
+  - value.brokerage
+  - delivery.remote_digital
+  - payer.business
+  keywords:
+  - recruitment
+  - staffing
+  - توظيف
+  - işe alım
+  - headhunting
+  processes:
+  - en: Client mandate
+    ar: تكليف العميل
+  - en: Job brief
+    ar: وصف الوظيفة
+  - en: Sourcing
+    ar: البحث عن المرشحين
+  - en: Screening
+    ar: الفرز
+  - en: Submission
+    ar: تقديم المرشحين
+  - en: Interviews
+    ar: المقابلات
+  - en: Offer and placement
+    ar: العرض والتعيين
+  - en: Guarantee period
+    ar: فترة الضمان
+  roles:
+  - en: Business development
+    ar: تطوير الأعمال
+  - en: Recruiters
+    ar: مسؤولو التوظيف
+  - en: Sourcers / researchers
+    ar: الباحثون عن المرشحين
+  build:
+  - component: systems
+    phase: day 0-30
+    en: Set up an applicant-tracking system; every candidate stage is timestamped.
+    ar: إعداد نظام تتبع المرشحين مع توقيت كل مرحلة.
+- id: food-factory
+  family: industrial
+  name: Food factory
+  name_ar: مصنع أغذية
+  compose:
+  - value.manufacturing
+  - delivery.fixed_site
+  - payer.business
+  keywords:
+  - food
+  - gıda
+  - أغذية
+  - bakery
+  - dairy
+  - snacks
+  - beverages
+  processes:
+  - en: Raw-material receiving and inspection
+    ar: استلام المواد الخام وفحصها
+  - en: Weighing and mixing
+    ar: الوزن والخلط
+  - en: Processing (baking, cooking, pasteurizing)
+    ar: المعالجة (خَبز، طهي، بسترة)
+  - en: Cooling
+    ar: التبريد
+  - en: Filling / packaging
+    ar: التعبئة والتغليف
+  - en: Final QC and lot release
+    ar: الفحص النهائي وإطلاق الدفعة
+  - en: Cold or dry storage
+    ar: التخزين المبرد أو الجاف
+  - en: Dispatch
+    ar: الشحن
+  roles:
+  - en: Plant manager
+    ar: مدير المصنع
+  - en: Production shift leads and operators
+    ar: قادة الورديات والمشغلون
+  - en: Quality / food-safety team (HACCP)
+    ar: فريق الجودة وسلامة الغذاء (HACCP)
+  - en: Maintenance technicians
+    ar: فنيو الصيانة
+  - en: Warehouse and logistics
+    ar: المستودع واللوجستيات
+  - en: Key-account sales (retail chains, distributors)
+    ar: مبيعات الحسابات الكبرى (سلاسل التجزئة، الموزعون)
+  equipment:
+  - mixer
+  - tunnel_oven
+  - pasteurizer
+  - filling_machine
+  - flow_wrapper
+  - forklift
+  - compressor
+  - evaporator
+  - aseptic_filler
+  - retort
+  build:
+  - component: identity
+    phase: day 0-90
+    en: Obtain food-business approval and plan for HACCP / ISO 22000 certification.
+    ar: استخراج موافقة منشأة الأغذية والتخطيط لشهادة HACCP / ISO 22000.
+  - component: assets
+    phase: day 0-90
+    en: Size the line from the bottleneck machine back to demand; allow for allergen changeovers.
+    ar: تحجيم الخط من ماكينة عنق الزجاجة رجوعاً إلى الطلب مع حساب وقت تغيير المنتجات لمسببات الحساسية.
+  components:
+    partners:
+    - en: Raw materials of agricultural origin come through contract farming with seasonal advances to farmers.
+      ar: المواد الزراعية تأتي عبر الزراعة التعاقدية مع سلف موسمية للمزارعين.
+      impact: high
+      test: Look for contract-farming pages or farmer programmes.
+    team:
+    - en: The workforce has a permanent core plus seasonal workers at harvest peaks.
+      ar: القوى العاملة نواة دائمة مع عمال موسميين في ذروة الحصاد.
+      impact: medium
+      test: Compare year-end headcount with seasonal job ads.
+    assets:
+    - en: 'Several plants usually specialize: seasonal processing lines vs year-round lines (sauces, ready meals).'
+      ar: 'تتخصص المصانع المتعددة غالباً: خطوط معالجة موسمية مقابل خطوط تعمل طوال العام (صلصات، وجبات جاهزة).'
+      impact: medium
+      test: Read plant descriptions in the annual report.
+- id: manufacturing-workshop
+  family: industrial
+  name: Manufacturing workshop (furniture, metal, plastics, textile)
+  name_ar: ورشة تصنيع (أثاث، معادن، بلاستيك، نسيج)
+  compose:
+  - value.manufacturing
+  - delivery.fixed_site
+  - delivery.project
+  - payer.consumer
+  - payer.business
+  keywords:
+  - workshop
+  - atölye
+  - ورشة
+  - furniture
+  - mobilya
+  - metal
+  - textile
+  - tekstil
+  processes:
+  - en: Order and measurement
+    ar: الطلب وأخذ المقاسات
+  - en: Design / drawing
+    ar: التصميم والرسم
+  - en: Material purchase
+    ar: شراء المواد
+  - en: Cutting
+    ar: القص
+  - en: Forming / machining / edge work
+    ar: التشكيل والتشغيل والحواف
+  - en: Assembly
+    ar: التجميع
+  - en: Finishing (paint, coating)
+    ar: التشطيب (دهان، طلاء)
+  - en: Delivery and installation
+    ar: التوصيل والتركيب
+  roles:
+  - en: Owner / master craftsman
+    ar: المالك أو الأسطى
+  - en: Machine operators
+    ar: مشغلو المكائن
+  - en: Assemblers
+    ar: المجمّعون
+  - en: Finisher / painter
+    ar: عامل التشطيب أو الدهان
+  - en: Installer / driver
+    ar: المركّب أو السائق
+  equipment:
+  - panel_saw
+  - cnc_router
+  - edge_bander
+  - spray_booth
+  - laser_cutter
+  - press_brake
+  - welding_station
+  - sewing_line
+  - compressor
+  build:
+  - component: operations
+    phase: day 0-30
+    en: Track every order with stage timestamps from day one (even in a WhatsApp group with order numbers).
+    ar: تتبع كل طلب بتوقيت كل مرحلة من اليوم الأول (ولو في مجموعة واتساب بأرقام طلبات).
+  - component: team
+    phase: day 30-90
+    en: Train a second person on every machine setup.
+    ar: تدريب شخص ثانٍ على ضبط كل ماكينة.
+- id: retail-ecommerce
+  family: business
+  name: Retail shop / e-commerce
+  name_ar: متجر تجزئة أو تجارة إلكترونية
+  compose:
+  - value.trading
+  - delivery.fixed_site
+  - delivery.remote_digital
+  - payer.consumer
+  keywords:
+  - shop
+  - store
+  - mağaza
+  - متجر
+  - e-commerce
+  - online store
+  - marketplace seller
+  processes:
+  - en: Assortment and buying
+    ar: اختيار التشكيلة والشراء
+  - en: Receiving and stock
+    ar: الاستلام والمخزون
+  - en: Listing and pricing
+    ar: العرض والتسعير
+  - en: Order
+    ar: الطلب
+  - en: Picking and packing
+    ar: التجهيز والتغليف
+  - en: Delivery
+    ar: التوصيل
+  - en: Returns
+    ar: المرتجعات
+  roles:
+  - en: Buyer / owner
+    ar: المشتري أو المالك
+  - en: Store or warehouse staff
+    ar: موظفو المتجر أو المستودع
+  - en: Online marketing
+    ar: التسويق الإلكتروني
+  - en: Customer service
+    ar: خدمة العملاء
+  build:
+  - component: economics
+    phase: day 0-30
+    en: Compute contribution margin per order after shipping and returns before scaling ads.
+    ar: حساب هامش المساهمة لكل طلب بعد الشحن والمرتجعات قبل زيادة الإعلانات.
+- id: restaurant-cafe
+  family: business
+  name: Restaurant / café
+  name_ar: مطعم أو مقهى
+  compose:
+  - value.hospitality_retail
+  - delivery.fixed_site
+  - payer.consumer
+  keywords:
+  - restaurant
+  - cafe
+  - coffee
+  - مطعم
+  - مقهى
+  - lokanta
+  - kafe
+  - kahve
+  - café
+  - coffee shop
+  - coffee chain
+  - kahve zinciri
+  - kafe zinciri
+  processes:
+  - en: Purchasing
+    ar: الشراء
+  - en: Prep (mise en place)
+    ar: التحضير
+  - en: Order taking
+    ar: أخذ الطلب
+  - en: Cooking / preparing
+    ar: الطهي والتحضير
+  - en: Serving / delivery hand-off
+    ar: التقديم أو التسليم للتوصيل
+  - en: Payment
+    ar: الدفع
+  - en: Closing and cleaning
+    ar: الإغلاق والتنظيف
+  roles:
+  - en: Owner / manager
+    ar: المالك أو المدير
+  - en: Head chef / barista lead
+    ar: رئيس الطهاة أو رئيس الباريستا
+  - en: Kitchen staff
+    ar: طاقم المطبخ
+  - en: Service staff
+    ar: طاقم الخدمة
+  components:
+    economics:
+    - en: Food and beverage cost, staff and rent are the three largest cost lines.
+      ar: تكلفة الطعام والشراب والطاقم والإيجار هي أكبر ثلاثة بنود.
+      impact: high
+      range:
+        low: 25
+        high: 38
+        unit: '% of sales (food & beverage cost)'
+      test: Price 5 menu items' ingredients and compare with menu prices.
+    assets:
+    - en: Larger chains often own central production (roasting, chocolate, pastry, ice cream) that supplies the stores and a packaged-retail line.
+      ar: السلاسل الكبيرة تملك غالباً إنتاجاً مركزياً (تحميص، شوكولاتة، معجنات، آيس كريم) يزوّد الفروع وخط منتجات معبأة للبيع.
+      impact: high
+      test: Look for a production / factory page and packaged products sold online.
+    operations:
+    - en: Some items are produced centrally while others (bread, sandwiches) are finished in store.
+      ar: بعض الأصناف تُنتَج مركزياً وأخرى (خبز، ساندويتشات) تُجهَّز في الفرع.
+      impact: medium
+      test: Read the production page; visit a store at opening time.
+    revenue_model:
+    - en: Franchising may be used only for expansion abroad (master franchise per country) while home-market stores stay company-operated.
+      ar: قد يُستخدم الامتياز للتوسع الخارجي فقط (امتياز رئيسي لكل دولة)، بينما تبقى فروع البلد الأم مملوكة للشركة.
+      impact: high
+      test: Read the franchise page and its FAQ.
+    offer:
+    - en: Several store formats exist (full café, grab-and-go, drive-through, flagship).
+      ar: توجد عدة أشكال للفروع (مقهى كامل، استلام سريع، خدمة السيارات، فرع رئيسي).
+      impact: medium
+      test: Check the store-concept or franchise page.
+  build:
+  - component: economics
+    phase: day 0-30
+    en: Cost every menu item and remove items below target margin.
+    ar: تسعير تكلفة كل صنف وحذف الأصناف تحت الهامش المستهدف.
+- id: clinic
+  family: business
+  name: Clinic / health practice
+  name_ar: عيادة أو مركز صحي
+  compose:
+  - value.professional_service
+  - delivery.fixed_site
+  - payer.consumer
+  - payer.third_party
+  keywords:
+  - clinic
+  - klinik
+  - عيادة
+  - dental
+  - medical center
+  - physiotherapy
+  processes:
+  - en: Booking
+    ar: الحجز
+  - en: Registration and insurance check
+    ar: التسجيل والتحقق من التأمين
+  - en: Consultation / treatment
+    ar: الكشف أو العلاج
+  - en: Diagnostics
+    ar: الفحوص
+  - en: Billing and insurance claim
+    ar: الفوترة ومطالبة التأمين
+  - en: Follow-up
+    ar: المتابعة
+  roles:
+  - en: Doctors / specialists
+    ar: الأطباء والأخصائيون
+  - en: Nurses / assistants
+    ar: الممرضون والمساعدون
+  - en: Reception and billing
+    ar: الاستقبال والفوترة
+  - en: Clinic manager
+    ar: مدير العيادة
+  build:
+  - component: identity
+    phase: day 0-90
+    en: Obtain the health licence and register each practitioner.
+    ar: استخراج الترخيص الصحي وتسجيل كل ممارس.
+- id: charity
+  family: nonprofit
+  name: Charity / association
+  name_ar: جمعية خيرية أو أهلية
+  compose:
+  - value.nonprofit
+  - delivery.field
+  - payer.donors
+  keywords:
+  - charity
+  - association
+  - foundation
+  - جمعية
+  - dernek
+  - vakıf
+  - NGO
+  processes:
+  - en: Needs identification
+    ar: تحديد الاحتياج
+  - en: Fundraising / grant proposal
+    ar: جمع التبرعات أو مقترح المنحة
+  - en: Beneficiary selection
+    ar: اختيار المستفيدين
+  - en: Distribution / service delivery
+    ar: التوزيع أو تقديم الخدمة
+  - en: Monitoring
+    ar: المتابعة
+  - en: Reporting to donors
+    ar: التقارير للمانحين
+  roles:
+  - en: Board
+    ar: مجلس الإدارة
+  - en: Executive director
+    ar: المدير التنفيذي
+  - en: Programme officers
+    ar: مسؤولو البرامج
+  - en: Fundraising / communications
+    ar: جمع التبرعات والاتصال
+  - en: Volunteers
+    ar: المتطوعون
+  build:
+  - component: identity
+    phase: day 0-60
+    en: Register the association and obtain permission to collect donations where required.
+    ar: تسجيل الجمعية واستخراج إذن جمع التبرعات حيث يلزم.
+  components:
+    revenue_model:
+    - en: A commercial arm (economic enterprise) sells services or products to fund the mission.
+      ar: ذراع تجارية (منشأة اقتصادية) تبيع خدمات أو منتجات لتمويل الرسالة.
+      impact: high
+      test: Look for an economic-enterprise page and its services.
+    team:
+    - en: Legal action is often handled by external or volunteer lawyers rather than an in-house legal unit.
+      ar: القضايا تُدار غالباً عبر محامين خارجيين أو متطوعين بدل وحدة قانونية داخلية.
+      impact: medium
+      test: Check the HQ team for a legal unit; read the activity report.
+    identity:
+    - en: Governance has a board of trustees, a smaller board of directors and often a science/advisory board.
+      ar: 'الحوكمة: مجلس أمناء، ومجلس إدارة أصغر، وغالباً مجلس علمي أو استشاري.'
+      impact: medium
+      test: Read the organization pages / foundation deed.
+- id: sports-club
+  family: nonprofit
+  name: Sports club
+  name_ar: نادٍ رياضي
+  compose:
+  - value.membership
+  - delivery.fixed_site
+  - payer.consumer
+  - payer.business
+  keywords:
+  - club
+  - kulüp
+  - نادي
+  - academy
+  - gym
+  - football
+  processes:
+  - en: Membership / registration
+    ar: العضوية والتسجيل
+  - en: Training sessions
+    ar: التدريبات
+  - en: Competitions / matches
+    ar: المسابقات والمباريات
+  - en: Events and sponsorship
+    ar: الفعاليات والرعاية
+  - en: Renewal
+    ar: التجديد
+  roles:
+  - en: Board / president
+    ar: مجلس الإدارة أو الرئيس
+  - en: Coaches
+    ar: المدربون
+  - en: Administration
+    ar: الإدارة
+  - en: Facility staff
+    ar: طاقم المنشأة
+  build:
+  - component: revenue_model
+    phase: day 0-90
+    en: Balance dues, sponsorship and events so no single source exceeds half of income.
+    ar: موازنة الاشتراكات والرعاية والفعاليات بحيث لا يتجاوز مصدر واحد نصف الدخل.
+- id: school-training
+  family: business
+  name: School / training centre
+  name_ar: مدرسة أو مركز تدريب
+  compose:
+  - value.membership
+  - value.professional_service
+  - delivery.fixed_site
+  - delivery.remote_digital
+  - payer.consumer
+  keywords:
+  - school
+  - academy
+  - training
+  - مدرسة
+  - مركز تدريب
+  - kurs
+  - education
+  processes:
+  - en: Enrolment
+    ar: التسجيل
+  - en: Placement / level test
+    ar: تحديد المستوى
+  - en: Classes
+    ar: الحصص
+  - en: Assessment
+    ar: التقييم
+  - en: Certification
+    ar: الشهادة
+  - en: Re-enrolment
+    ar: إعادة التسجيل
+  roles:
+  - en: Director
+    ar: المدير
+  - en: Teachers / trainers
+    ar: المعلمون والمدربون
+  - en: Admissions
+    ar: القبول والتسجيل
+  - en: Administration
+    ar: الإدارة
+  build:
+  - component: identity
+    phase: day 0-90
+    en: Obtain the education licence that matches the certificates offered.
+    ar: استخراج ترخيص التعليم المطابق للشهادات المقدمة.
+- id: ministry
+  family: public_body
+  name: Ministry
+  name_ar: وزارة
+  compose: []
+  keywords:
+  - ministry
+  - وزارة
+  - bakanlık
+  - ministère
+  processes:
+  - en: Policy and legislation drafting
+    ar: صياغة السياسات والتشريعات
+  - en: Budget preparation and allocation
+    ar: إعداد الموازنة وتوزيعها
+  - en: Service delivery through directorates / field offices
+    ar: تقديم الخدمات عبر المديريات والمكاتب الميدانية
+  - en: Licensing and inspection
+    ar: الترخيص والتفتيش
+  - en: Monitoring and performance reporting
+    ar: المتابعة وتقارير الأداء
+  roles:
+  - en: Minister (political)
+    ar: الوزير (سياسي)
+  - en: Deputy ministers / undersecretary (administrative)
+    ar: وكلاء الوزارة أو المستشار (إداري)
+  - en: General directorates per sector
+    ar: مديريات عامة لكل قطاع
+  - en: Support directorates (HR, finance, legal, IT, procurement)
+    ar: مديريات مساندة (موارد بشرية، مالية، قانونية، تقنية، مشتريات)
+  - en: Provincial directorates
+    ar: المديريات الإقليمية
+  components:
+    team:
+    - en: The organization chart has one minister, a deputy layer, sector general directorates and support directorates, set by the organizational
+        regulation.
+      ar: الهيكل فيه وزير وطبقة وكلاء ومديريات عامة قطاعية ومديريات مساندة، تحددها اللائحة التنظيمية.
+      impact: high
+      test: Find the organizational regulation or chart in the official gazette or on the ministry site.
+    - en: Ministries can include law-enforcement arms (for example customs enforcement) and administrations for special zones (free zones).
+      ar: قد تضم الوزارات أذرعاً للإنفاذ (مثل إنفاذ الجمارك) وإدارات لمناطق خاصة (المناطق الحرة).
+      impact: medium
+      test: Read the full list of general directorates.
+    revenue_model:
+    - en: Funding is the budget-law allocation by programme; fees collected go mostly to the treasury.
+      ar: التمويل مخصصات قانون الموازنة حسب البرنامج، والرسوم المحصلة تذهب غالباً للخزينة.
+      impact: high
+      test: Read the ministry's lines in the latest budget law.
+    - en: A revolving fund may finance part of operations next to the budget.
+      ar: قد يموّل صندوق دوّار جزءاً من العمليات بجانب الموازنة.
+      impact: medium
+      test: Look for a revolving-fund unit or line in the budget.
+    operations:
+    - en: Field delivery may run through regional directorates covering several provinces rather than one office per province.
+      ar: قد يتم التنفيذ الميداني عبر مديريات إقليمية تغطي عدة محافظات بدل مكتب في كل محافظة.
+      impact: medium
+      test: Count field units and their seats.
+  build:
+  - component: identity
+    phase: design
+    en: Write the mandate into a founding law before designing units.
+    ar: كتابة التفويض في قانون إنشاء قبل تصميم الوحدات.
+  - component: team
+    phase: design
+    en: Design units around services delivered to citizens, then add support directorates.
+    ar: تصميم الوحدات حول الخدمات المقدمة للمواطن، ثم إضافة المديريات المساندة.
+- id: regulatory-agency
+  family: public_body
+  name: Regulatory authority / agency
+  name_ar: هيئة أو جهة رقابية
+  compose: []
+  keywords:
+  - regulatory authority
+  - regulator
+  - regulatory agency
+  - هيئة تنظيمية
+  - düzenleyici kurum
+  - denetleme kurumu
+  processes:
+  - en: Rule-making and consultation
+    ar: إصدار اللوائح والتشاور
+  - en: Application intake
+    ar: استقبال الطلبات
+  - en: Completeness check
+    ar: فحص الاكتمال
+  - en: Technical review / inspection
+    ar: المراجعة الفنية أو التفتيش
+  - en: Decision (licence, approval, sanction)
+    ar: القرار (ترخيص، موافقة، عقوبة)
+  - en: Appeal
+    ar: التظلم
+  - en: Publication of decisions
+    ar: نشر القرارات
+  roles:
+  - en: Board / president
+    ar: المجلس أو الرئيس
+  - en: Technical departments
+    ar: الإدارات الفنية
+  - en: Inspectors
+    ar: المفتشون
+  - en: Legal / enforcement
+    ar: الشؤون القانونية والإنفاذ
+  components:
+    revenue_model:
+    - en: Funded by budget allocation and/or fees from regulated entities.
+      ar: تُموَّل من مخصصات الموازنة و/أو رسوم الجهات الخاضعة للرقابة.
+      impact: medium
+      test: Read the founding law's financing article and the fee schedule.
+  build:
+  - component: operations
+    phase: design
+    en: Publish service times per application type and measure them.
+    ar: نشر أزمنة الخدمة لكل نوع طلب وقياسها.
+- id: international-org-office
+  family: nonprofit
+  name: International organization (country office / secretariat)
+  name_ar: منظمة دولية (مكتب قُطري أو أمانة)
+  compose:
+  - value.nonprofit
+  - delivery.field
+  - delivery.project
+  - payer.donors
+  - payer.government
+  keywords:
+  - united nations
+  - international organization
+  - منظمة دولية
+  - country office
+  - secretariat
+  - UNDP
+  - UNICEF
+  - UNHCR
+  - WFP
+  processes:
+  - en: Country programme planning
+    ar: تخطيط البرنامج القُطري
+  - en: Resource mobilization
+    ar: حشد الموارد
+  - en: Project design and approval
+    ar: تصميم المشاريع واعتمادها
+  - en: Implementation via partners
+    ar: التنفيذ عبر الشركاء
+  - en: Monitoring and evaluation
+    ar: المتابعة والتقييم
+  - en: Reporting to donors / HQ
+    ar: التقارير للمانحين والمقر
+  roles:
+  - en: Head of office / representative
+    ar: رئيس المكتب أو الممثل
+  - en: Programme units
+    ar: وحدات البرامج
+  - en: Operations (finance, HR, procurement, logistics)
+    ar: العمليات (مالية، موارد بشرية، مشتريات، لوجستيات)
+  - en: M&E
+    ar: المتابعة والتقييم
+  - en: Implementing partners
+    ar: الشركاء المنفذون
+  build:
+  - component: partners
+    phase: design
+    en: Select and assess implementing partners before funds flow.
+    ar: اختيار الشركاء المنفذين وتقييمهم قبل تدفق الأموال.

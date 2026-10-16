@@ -14,9 +14,15 @@
 
 REB is a sibling of [REA — Reverse Engineer Anything](https://github.com/morluto/rea),
 which reverse-engineers software. REB applies the same discipline to
-**factories, workshops, companies, clinics, agencies — any organization**:
-processes, machines, hiring, suppliers, systems, unit economics and the
-know-how that lives only in people's heads.
+**companies, factories with their equipment, workshops, ministries, agencies,
+NGOs, clubs, schools — any organization**: processes, machines, hiring,
+suppliers, systems, unit economics and the know-how that lives only in people's heads.
+
+Give it whatever is available — a website, a name, social accounts, documents,
+exports — and it produces the organization's **blueprint**: how it is built,
+what is **known**, what is **inferred** (with computed confidence) and what is
+**unknown**, how to rebuild it better, and the cheapest tests that would turn
+inferences into facts.
 
 The hard part of analysing a business is not producing a convincing story.
 Consultants and language models do that too easily. A plausible but invented
@@ -29,6 +35,35 @@ REB exists to stop that:
 - **Quotes are checked.** Evidence that quotes a source must match the source text verbatim.
 - **Reconstructions close only when proven.** A rebuilt process or SOP item is `ready` only with an owner, evidence for every required case, and a strong enough verifier. These are REA's reconstruction obligation ledgers, applied to organizations.
 - **Copying has limits.** Each finding can be tagged as codifiable, needs a capability, needs an asset, or non-transferable (relationships, licences, location, timing, founder).
+
+## How it works: forward engineering, used in reverse
+
+REB first knows how organizations are **built**, then reads their traces backwards.
+
+| Layer | What it holds |
+|---|---|
+| **Design kernel** (`src/reb/kernel/`) | 10 building blocks every organization has — direction, demand, delivery, people, money, assets & equipment, information, control, support, improvement — each with its elements, design rules and the **traces it leaves** (strong / moderate / weak) |
+| **Families** | how a business, a government body, a non-profit or international organization, and an industrial plant each build those blocks, and their specific traces (founding law, budget law, procurement awards, equipment nameplates…) |
+| **Archetypes** (`src/reb/archetypes/`) | 17 composable modules on three axes (how value is created, how it is delivered, who pays) and 15 ready-made models: real-estate brokerage, consulting, marketing agency, recruitment, food factory, manufacturing workshop, retail/e-commerce, restaurant, clinic, charity, sports club, school, ministry, regulatory agency, international-organization office |
+| **Equipment library** | 20 machine types with function, typical rate, inputs/outputs, operator skill and maintenance; plus an equipment register with routing and line capacity |
+
+Applying an archetype seeds the full blueprint with **low-confidence hypotheses**.
+Traces then raise, refute or promote them:
+
+```
+archetype pattern only        → low
+one source (or one controller) → medium
+two independent sources        → high
+supported by stronger evidence → promoted to a graded claim
+```
+
+Consistency checks test that the parts fit together (revenue vs volume × price,
+Little's law, headcount vs workload, stated output vs the slowest station's
+capacity). The blueprint report has 7 sections — identity, the 12-component
+operating model (with how each is built and the traces to look for), process
+map, organization, numbers, redesign (copy / improve / cannot copy / build
+recipe) and verification plan — as Markdown, an interactive HTML page (AR/EN)
+and PDF.
 
 ## Three modes, enforced by the engine
 
@@ -72,7 +107,22 @@ Analyses:
 
 Profiles are YAML. Add your own with `reb coverage --profile path/to/profile.yaml`.
 
-## Quick start
+## Quick start: a blueprint
+
+```bash
+pip install "reb-agents[mcp,excel,pdf]"
+
+mkdir acme && cd acme
+reb init --name "Acme blueprint" --subject "Acme" --mode public --profile blueprint --language ar
+reb blueprint start --url https://acme.example        # crawl + footprint + archetype suggestion + seed
+reb archetypes                                        # or choose one: reb blueprint apply food-factory
+reb hypothesis add --component team --basis signal --signal ev_… \
+    --statement "Three shifts run the oven line." --test "Count cars at shift change" --impact high
+reb consistency
+reb blueprint render --md blueprint.md --html blueprint.html --pdf blueprint.pdf
+```
+
+## Quick start: documenting your own business
 
 ```bash
 pip install "reb-agents[mcp,excel,pdf]"     # or: uv pip install -e ".[mcp,excel,pdf]"
@@ -113,16 +163,26 @@ claude mcp add reb -e REB_WORKSPACE=/absolute/path/to/engagement -- reb mcp
 Then install the agent skill in [skills/reverse-engineer-business](skills/reverse-engineer-business) and ask:
 
 ```text
+Build the blueprint of https://acme.example in public mode: how it works,
+what we know, what we infer, what we don't know, and how to build a stronger one.
+```
+
+```text
 Open a self-mode engagement for my workshop with the sop-replication profile,
 ingest the files in ~/exports, map the order-to-delivery process from the
 WhatsApp group, and tell me what is still unknown.
 ```
 
-Tools: `list_profiles`, `open_engagement`, `ingest_source`, `read_source`,
+30 tools: evidence (`open_engagement`, `ingest_source`, `read_source`,
 `record_observation`, `record_evidence`, `record_claim`, `record_unknown`,
-`update_unknown`, `search_evidence`, `analyze_event_log`, `analyze_invoices`,
-`compare_stated_vs_enacted`, `inspect_coverage`, `record_obligation`,
-`build_obligation_ledger`, `render_report`. See [docs/TOOLS.md](docs/TOOLS.md).
+`update_unknown`, `search_evidence`), analyses (`analyze_event_log`,
+`analyze_invoices`, `compare_stated_vs_enacted`, `check_consistency`),
+blueprint (`show_kernel`, `list_archetypes`, `start_blueprint`,
+`apply_archetype`, `add_hypothesis`, `update_hypothesis`, `promote_hypothesis`,
+`grade_hypothesis`, `add_design_item`, `add_equipment`, `build_blueprint`,
+`render_blueprint`) and reports (`list_profiles`, `inspect_coverage`,
+`record_obligation`, `build_obligation_ledger`, `render_report`).
+See [docs/TOOLS.md](docs/TOOLS.md).
 
 ## Evidence grades
 
@@ -149,7 +209,11 @@ if they share no controller and no derivation ancestry. See
 
 ## Status
 
-v0.1: engine, core providers, six profiles, CLI, MCP server and agent skill.
+- **v0.2:** blueprint layer — design kernel, families, equipment library,
+  archetypes, hypotheses with computed confidence, redesign, consistency
+  checks, web provider, Markdown/HTML/PDF blueprint. Benchmarks in
+  [docs/BENCHMARKS.md](docs/BENCHMARKS.md).
+- **v0.1:** evidence engine, core providers, six profiles, CLI, MCP server, agent skill.
 
 Planned:
 - OCEL 2.0 / pm4py export

@@ -156,3 +156,11 @@ def test_quoted_warranty_words_are_reported_speech(ledger):
     assert c.status.value == "conjecture"
     with pytest.raises(RebError):
         ledger.record_claim(statement="Returns are guaranteed by the developer.", layer="strategy")
+
+
+def test_public_mode_accepts_published_reports_but_not_chats(public_ledger):
+    rep = add_text_source(public_ledger, "annual report", kind="financial_statement", custody="public",
+                          legal_basis="https://example.com/annual-report.pdf")
+    assert rep.kind.value == "financial_statement"
+    with pytest.raises(RebError):
+        add_text_source(public_ledger, "chat", kind="chat_export", custody="public", legal_basis="https://x")

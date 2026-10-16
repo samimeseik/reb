@@ -19,6 +19,16 @@ from dataclasses import dataclass, field
 from html.parser import HTMLParser
 
 USER_AGENT = "REB-desk-scan/0.2 (+https://github.com/samimeseik/reb)"
+# Pages that describe the organization itself are visited before catalogue pages.
+PRIORITY = re.compile(
+    r"about|hakkimizda|hakkinda|kurumsal|corporate|company|who-we-are|من-نحن|عن|"
+    r"franchise|bayilik|franchising|career|kariyer|jobs|insan-kaynaklari|human-resources|"
+    r"team|ekibimiz|yonetim|management|board|organiz|teskilat|structure|"
+    r"investor|yatirimci|report|rapor|annual|faaliyet|"
+    r"contact|iletisim|location|lokasyon|subeler|branches|magazalar|stores|"
+    r"history|tarihce|services|hizmetler|production|uretim|facilit|tesis|factory|fabrika",
+    re.I,
+)
 SKIP_EXT = re.compile(r"\.(pdf|jpe?g|png|gif|webp|svg|zip|rar|mp4|mp3|docx?|xlsx?|pptx?|css|js|ico|xml|json)$", re.I)
 
 FINGERPRINTS = {
@@ -106,6 +116,12 @@ class Crawl:
     pages: list[Page] = field(default_factory=list)
     skipped_by_robots: list[str] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
+    documents: list[str] = field(default_factory=list)  # report-like PDFs linked from the site
+    js_rendered: list[str] = field(default_factory=list)  # pages whose content needs a browser
+
+
+REPORT_PDF = re.compile(r"(annual|report|rapor|faaliyet|entegre|integrated|sustainab|surdurulebilir|financial|mali|"
+                        r"budget|butce|activity|تقرير|presentation|sunum)[^/]*\.pdf$", re.I)
 
 
 def _normalize(url: str) -> str:
@@ -135,9 +151,10 @@ def crawl(start_url: str, *, max_pages: int = 15, delay: float = 0.5, timeout: f
     except Exception:  # unreachable robots.txt: treat as allow-all, like browsers and most crawlers
         robots = None
     result = Crawl(start=start)
+    priority: list[str] = []
     queue, seen = [start], {start}
-    while queue and len(result.pages) < max_pages:
-        url = queue.pop(0)
+    while (priority or queue) and len(result.pages) < max_pages:
+        url = priority.pop(0) if priority else queue.pop(0)
         if robots is not None and not robots.can_fetch(USER_AGENT, url):
             result.skipped_by_robots.append(url)
             continue
@@ -148,15 +165,22 @@ def crawl(start_url: str, *, max_pages: int = 15, delay: float = 0.5, timeout: f
             continue
         parser = _Page()
         parser.feed(html)
+        text = parser.text()
+        if len(html) > 20_000 and len(text) < 1_500 and len(parser.scripts) >= 5:
+            result.js_rendered.append(final)
         links = []
         for href in parser.links:
             absolute = _normalize(urllib.parse.urljoin(final, href.split("#")[0])) if not href.startswith(("mailto:", "tel:", "javascript:")) else href
             links.append(absolute)
+            if absolute.lower().endswith(".pdf") and REPORT_PDF.search(urllib.parse.unquote(absolute)) \
+                    and absolute not in result.documents:
+                result.documents.append(absolute)
             if (absolute.startswith("http") and urllib.parse.urlsplit(absolute).netloc == host
                     and absolute not in seen and not SKIP_EXT.search(absolute)):
                 seen.add(absolute)
-                queue.append(absolute)
-        result.pages.append(Page(final, parser.title.strip(), parser.text(), parser.meta.get("generator"),
+                path = urllib.parse.urlsplit(absolute).path
+                (priority if PRIORITY.search(urllib.parse.unquote(path)) else queue).append(absolute)
+        result.pages.append(Page(final, parser.title.strip(), text, parser.meta.get("generator"),
                                  parser.scripts, links))
         time.sleep(delay)
     return result
@@ -194,7 +218,9 @@ def mail_provider(domain: str) -> str | None:
     except (OSError, subprocess.SubprocessError):
         return None
     for marker, name in [("google", "Google Workspace"), ("outlook", "Microsoft 365"), ("zoho", "Zoho Mail"),
-                         ("yandex", "Yandex")]:
+                         ("yandex", "Yandex"),
+                         ("pphosted", "Proofpoint (mail security gateway)"), ("ppe-hosted", "Proofpoint (mail security gateway)"),
+                         ("mimecast", "Mimecast (mail security gateway)")]:
         if marker in out:
             return name
     hosts = [line.split()[-1].rstrip(".") for line in out.strip().splitlines() if line.strip()]

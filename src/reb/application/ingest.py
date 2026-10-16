@@ -157,11 +157,36 @@ def record_observation(
     return {"source": source.model_dump(mode="json"), "evidence": evidence}
 
 
-def read_source(ledger: Ledger, source_id: str, *, start_line: int = 1, max_lines: int = 200) -> dict[str, Any]:
+def _boilerplate(ledger: Ledger, source_id: str) -> set[str]:
+    """Lines repeated on many pages from the same controller (menus, footers)."""
+    from collections import Counter
+
+    me = ledger.source(source_id)
+    peers = [s for s in ledger.data.sources.values() if s.controller == me.controller and s.text_path]
+    if len(peers) < 4:
+        return set()
+    counts: Counter[str] = Counter()
+    for s in peers:
+        counts.update(set((ledger.source_text(s.id) or "").splitlines()))
+    return {line for line, n in counts.items() if n > max(2, 0.3 * len(peers))}
+
+
+def read_source(ledger: Ledger, source_id: str, *, start_line: int = 1, max_lines: int = 200,
+                skip_boilerplate: bool = False) -> dict[str, Any]:
     text = ledger.source_text(source_id)
     if text is None:
         return {"source_id": source_id, "text_available": False, "lines": []}
     lines = text.splitlines()
+    if skip_boilerplate:
+        common = _boilerplate(ledger, source_id)
+        numbered = [(i + 1, t) for i, t in enumerate(lines) if t not in common]
+        window = [n for n in numbered if n[0] >= start_line][:max_lines]
+        return {
+            "source_id": source_id, "text_available": True, "total_lines": len(lines),
+            "lines": [{"line": n, "text": t} for n, t in window],
+            "boilerplate_lines_hidden": len(lines) - len(numbered),
+            "note": "Menus and footers repeated across this site's pages are hidden; line numbers are the originals.",
+        }
     start = max(1, start_line)
     window = lines[start - 1 : start - 1 + max_lines]
     return {
