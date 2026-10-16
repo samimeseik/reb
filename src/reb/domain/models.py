@@ -143,6 +143,7 @@ class Engagement(BaseModel):
     id: str
     name: str
     subject: str  # organization name or pseudonym
+    aliases: list[str] = Field(default_factory=list)  # other names and web domains of the subject
     mode: Mode
     authorization: str | None = None  # mandate / ownership basis; required unless public
     profile: str | None = None

@@ -111,6 +111,7 @@ class Ledger:
         profile: str | None = None,
         analyst: str | None = None,
         language: str = "ar",
+        aliases: list[str] | None = None,
     ) -> "Ledger":
         workspace = Path(workspace)
         if (workspace / REB_DIR / "ledger.json").exists():
@@ -125,6 +126,7 @@ class Ledger:
             id="eng_" + digest([name, subject, utc_now()])[:12],
             name=name,
             subject=subject,
+            aliases=[a.strip() for a in aliases or [] if a.strip()],
             mode=mode,
             authorization=authorization,
             profile=profile,

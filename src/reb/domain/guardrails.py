@@ -78,15 +78,41 @@ def check_authority(source: Source, authority: Authority) -> None:
         )
 
 
+def _fold(value: str) -> str:
+    return re.sub(r"[\s._-]+", "", value).casefold()
+
+
+def _url_host(value: str | None) -> str | None:
+    match = re.match(r"^[a-z][a-z0-9+.-]*://([^/:?#\s]+)", (value or "").strip(), re.IGNORECASE)
+    return match.group(1).casefold().removeprefix("www.") if match else None
+
+
+def is_subject_party(engagement: Engagement, source: Source) -> bool:
+    """True when the source was produced or published by the subject itself:
+    its origin or controller is the subject's name or a declared alias, or its URL
+    is on one of the subject's declared domains."""
+    names = {_fold(n) for n in [engagement.subject, *engagement.aliases] if n}
+    if {_fold(source.origin_party), _fold(source.controller)} & names:
+        return True
+    host = _url_host(source.legal_basis)
+    domains = {a.casefold().removeprefix("www.") for a in engagement.aliases if "." in a and " " not in a}
+    return bool(host) and any(host == d or host.endswith("." + d) for d in domains)
+
+
 def normalize_controller(engagement: Engagement, source: Source) -> None:
-    """The organization's owner, staff, documents and systems share ONE controller.
-    Only third parties, observers and public sources can be independent of it."""
+    """The organization's owner, staff, documents, systems, website and press releases
+    share ONE controller, in every mode. Only third parties, observers and public sources
+    published by others can be independent of it."""
+    subject = f"subject:{engagement.subject}"
+    if is_subject_party(engagement, source):
+        source.controller = subject
+        return
     if engagement.mode == Mode.PUBLIC:
         return
     if source.custody in (Custody.SUBJECT_HELD,) or (
         source.kind == SourceKind.INTERVIEW and source.custody != Custody.THIRD_PARTY
     ):
-        source.controller = f"subject:{engagement.subject}"
+        source.controller = subject
 
 
 def check_source_admissible(engagement: Engagement, source: Source, known_sources: set[str] | None = None) -> None:

@@ -164,3 +164,19 @@ def test_public_mode_accepts_published_reports_but_not_chats(public_ledger):
     assert rep.kind.value == "financial_statement"
     with pytest.raises(RebError):
         add_text_source(public_ledger, "chat", kind="chat_export", custody="public", legal_basis="https://x")
+
+
+@pytest.mark.parametrize("mode", ["engaged", "public"])
+def test_subject_own_publications_share_its_controller(tmp_path, mode):
+    led = Ledger.init(tmp_path, name="t", subject="Hope Bridge", mode=mode,
+                      authorization=None if mode == "public" else "m", aliases=["HB Foundation", "hopebridge.org"])
+    by_name = add_text_source(led, "site", controller="hope-bridge", kind="public_signal", custody="public",
+                              legal_basis="https://example.net/a")
+    by_alias = add_text_source(led, "press", controller="HB foundation", kind="public_signal", custody="public",
+                               legal_basis="https://example.net/b")
+    by_domain = add_text_source(led, "blog", controller="comms team", kind="public_signal", custody="public",
+                                legal_basis="https://www.blog.hopebridge.org/post")
+    other = add_text_source(led, "news", controller="newsco", kind="public_signal", custody="public",
+                            legal_basis="https://news.example/x")
+    assert {by_name.controller, by_alias.controller, by_domain.controller} == {"subject:Hope Bridge"}
+    assert other.controller == "newsco"
