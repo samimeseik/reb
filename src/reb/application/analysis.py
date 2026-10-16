@@ -195,7 +195,7 @@ def analyze_invoices(ledger: Ledger, source_ids: list[str], *, direction: str = 
         src = ledger.source(sid)
         if src.kind != SourceKind.EINVOICE:
             raise RebError("not_einvoice", f"{sid} is not an e-invoice source.")
-        parsed = [e for e in ledger.data.evidence.values() if e.source_id == sid and e.operation == "parse_invoice"]
+        parsed = [e for e in ledger.live_evidence.values() if e.source_id == sid and e.operation == "parse_invoice"]
         if not parsed:
             raise RebError("no_invoices", f"No invoices were parsed from {sid}.")
         for ev in parsed:

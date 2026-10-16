@@ -173,8 +173,8 @@ ingest the files in ~/exports, map the order-to-delivery process from the
 WhatsApp group, and tell me what is still unknown.
 ```
 
-31 tools: evidence (`open_engagement`, `ingest_source`, `read_source`,
-`record_observation`, `record_evidence`, `record_claim`, `record_unknown`,
+32 tools: evidence (`open_engagement`, `ingest_source`, `read_source`,
+`record_observation`, `record_evidence`, `retract_evidence`, `record_claim`, `record_unknown`,
 `update_unknown`, `search_evidence`), analyses (`analyze_event_log`,
 `analyze_invoices`, `compare_stated_vs_enacted`, `check_consistency`),
 blueprint (`show_kernel`, `list_archetypes`, `start_blueprint`,

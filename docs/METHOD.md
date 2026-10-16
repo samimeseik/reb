@@ -120,6 +120,14 @@ A profile item marked `obligation: true` becomes an obligation. Its status is
 If a recorded verification failed, the status is `failed`. If no evidence exists, it is
 `unknown`. Every other case is `open`, and the reasons are listed.
 
+## Retraction
+
+Evidence found wrong (a bad extraction, a forged or superseded document) is retracted with a
+reason (`retract_evidence` / `reb retract`), one item or a whole source at a time. It stays in
+the ledger and in the report, marked, but every computation ignores it: claims, hypotheses and
+obligations are re-evaluated, a resolved unknown that rested only on it is reopened, and it can
+no longer be cited.
+
 ## Unknowns
 
 Unknowns carry a revision; updates must name the current revision. Resolving needs evidence

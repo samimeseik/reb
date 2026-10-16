@@ -117,6 +117,14 @@ def _run_engagement(led: Ledger, args: argparse.Namespace) -> Any:
             location=args.location, quote=args.quote, entity=args.entity, layer=args.layer, as_of=args.as_of,
         )
         return ev.model_dump(mode="json")
+    if cmd == "retract":
+        if args.source:
+            items = led.retract_source(args.source, reason=args.reason)
+        elif args.evidence:
+            items = led.retract_evidence(args.evidence, reason=args.reason)
+        else:
+            raise RebError("nothing_to_retract", "Pass --evidence (repeatable) or --source.")
+        return [e.model_dump(mode="json") for e in items]
     if cmd == "claim":
         c = led.record_claim(
             statement=args.statement, layer=args.layer, evidence_ids=args.evidence,
@@ -308,6 +316,11 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--public-premises", action="store_true")
     s.add_argument("--artifact", action="append",
                    help="id of a captured_live source backing it (photo, count sheet); without one the grade is capped at B")
+
+    s = sub.add_parser("retract", help="withdraw evidence found wrong; everything citing it is re-evaluated")
+    s.add_argument("--evidence", action="append", help="evidence id (repeatable)")
+    s.add_argument("--source", help="retract every live piece of evidence from this source")
+    s.add_argument("--reason", required=True)
 
     s = sub.add_parser("evidence", help="record a fact from a source (quote is checked against the text)")
     s.add_argument("--source", required=True)

@@ -64,6 +64,10 @@ L = {
         "open_unknowns": "Open unknowns",
         "probe": "next probe",
         "resolved": "Resolved unknowns",
+        "retractions": "Retracted evidence",
+        "retracted": "retracted",
+        "affected": "claims affected",
+        "reopened": "unknowns reopened",
         "needs": "needs",
         "conjecture": "Conjecture — not supported by recorded evidence",
         "industry_prior": "relies on industry norms, not this organization",
@@ -129,6 +133,10 @@ L = {
         "open_unknowns": "المجهولات المفتوحة",
         "probe": "الخطوة التالية",
         "resolved": "مجهولات حُسمت",
+        "retractions": "أدلة سُحبت",
+        "retracted": "مسحوب",
+        "affected": "ادعاءات تأثرت",
+        "reopened": "مجهولات أُعيد فتحها",
         "needs": "يحتاج",
         "conjecture": "تخمين: غير مدعوم بأدلة مسجّلة",
         "industry_prior": "يعتمد على أعراف القطاع لا على هذه المنشأة",
@@ -268,6 +276,20 @@ def render_report(ledger: Ledger, *, language: str | None = None, profile: str |
             w(f"- {u.question} → **{u.resolution.kind}** {refs}{note}")
         w("")
 
+    retracted = sorted((e for e in ledger.data.evidence.values() if e.retracted), key=lambda e: e.retracted.at)
+    if retracted:
+        w(f"## {t['retractions']}\n")
+        for ev in retracted:
+            r = ev.retracted
+            extra = []
+            if r.affected_claims:
+                extra.append(f"{t['affected']}: " + ", ".join(f"`{c}`" for c in r.affected_claims))
+            if r.reopened_unknowns:
+                extra.append(f"{t['reopened']}: " + ", ".join(f"`{u}`" for u in r.reopened_unknowns))
+            tail = f" · {' · '.join(extra)}" if extra else ""
+            w(f"- `{ev.id}` ~~{ev.fact}~~ — {r.reason} ({r.at[:10]}){tail}")
+        w("")
+
     conj = [c for c in claims if c.status == ClaimStatus.CONJECTURE]
     if conj:
         w(f"## {t['conjecture']}\n")
@@ -310,7 +332,8 @@ def render_report(ledger: Ledger, *, language: str | None = None, profile: str |
         loc = f" · {t['location']}: {ev.location}" if ev.location else ""
         lim = f" · {t['limits']}: {'; '.join(ev.limitations)}" if ev.limitations else ""
         src_txt = f"{src.title} ({t['custody']}: {src.custody.value})" if src else ev.source_id
-        w(f"- `{ev.id}` **[{ev.grade.value}]** {ev.fact} — {t['source']}: {src_txt}, {ev.authority.value}{loc}{lim}")
+        mark = f" **({t['retracted']})**" if ev.retracted else ""
+        w(f"- `{ev.id}` **[{ev.grade.value}]**{mark} {ev.fact} — {t['source']}: {src_txt}, {ev.authority.value}{loc}{lim}")
     w("")
     body = "\n".join(out)
     # GitHub and most Markdown viewers honour dir="rtl" on a wrapping block.

@@ -12,6 +12,7 @@ On failure a tool returns `{"error": "<code>", "message": "<remedy>"}`.
 | `read_source` | `reb read SRC` | inspect | Stored text with line numbers, for quoting |
 | `record_observation` | `reb observe` | observe | Site walk, time study or nameplate reading as direct observation |
 | `record_evidence` | `reb evidence` | record | One fact from a source. The quote is checked and the grade computed |
+| `retract_evidence` | `reb retract` | record | Withdraw evidence found wrong (by id or whole source); everything citing it is re-evaluated and the report lists it |
 | `record_claim` | `reb claim` | record | Statement plus evidence. Status and grade are computed |
 | `record_unknown` / `update_unknown` | `reb unknown add/update` | record | Open questions with revisions. Resolving one needs evidence of the required authority |
 | `search_evidence` | `reb export` + jq | search | Filter evidence by text, layer, entity or minimum grade |

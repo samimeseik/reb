@@ -59,6 +59,7 @@ from .models import (
     ObservationContext,
     Replicability,
     Resolution,
+    Retraction,
     Sensitivity,
     Source,
     SourceKind,
@@ -355,10 +356,63 @@ class Ledger:
         return self.data.evidence[ev.id]
 
     def evidence(self, evidence_id: str) -> Evidence:
+        """Evidence that may be cited. Retracted evidence stays in the ledger but cannot be cited."""
         try:
-            return self.data.evidence[evidence_id]
+            ev = self.data.evidence[evidence_id]
         except KeyError:
             raise RebError("unknown_evidence", f"Evidence {evidence_id} is not in the ledger.") from None
+        if ev.retracted:
+            raise RebError(
+                "retracted_evidence",
+                f"Evidence {evidence_id} was retracted ({ev.retracted.reason}); it cannot be cited.",
+            )
+        return ev
+
+    @property
+    def live_evidence(self) -> dict[str, Evidence]:
+        """All evidence except retracted items: what every computation reads."""
+        return {k: e for k, e in self.data.evidence.items() if not e.retracted}
+
+    def retract_evidence(self, evidence_ids: list[str] | str, *, reason: str) -> list[Evidence]:
+        """Withdraw evidence found wrong (bad extraction, forged or superseded document).
+        It stays in the ledger and the report, but claims, unknowns, hypotheses and
+        obligations are re-evaluated without it. A resolved unknown whose resolution rested
+        only on retracted evidence is reopened."""
+        reason = self.scrub(reason) or ""
+        if not reason.strip():
+            raise RebError("reason_required", "Say why the evidence is retracted.")
+        check_vocabulary(reason)
+        ids = list(dict.fromkeys([evidence_ids] if isinstance(evidence_ids, str) else evidence_ids))
+        items = [self.evidence(e) for e in ids]
+        for ev in items:
+            ev.retracted = Retraction(reason=reason)
+        self.reevaluate()
+        self.reevaluate_hypotheses()
+        live = self.live_evidence
+        reopened = []
+        for u in self.data.unknowns.values():
+            if (
+                u.status == UnknownStatus.RESOLVED
+                and u.resolution
+                and u.resolution.evidence_ids
+                and not any(e in live for e in u.resolution.evidence_ids)
+            ):
+                self.reopen_unknown(u, UnknownStatus.OPEN)
+                reopened.append(u.id)
+        for ev in items:
+            ev.retracted.affected_claims = [
+                c.id for c in self.data.claims.values() if ev.id in (*c.evidence_ids, *c.contradicting_evidence_ids)
+            ]
+            ev.retracted.reopened_unknowns = reopened
+        return items
+
+    def retract_source(self, source_id: str, *, reason: str) -> list[Evidence]:
+        """Retract every live piece of evidence drawn from one source."""
+        self.source(source_id)
+        ids = [e.id for e in self.live_evidence.values() if e.source_id == source_id]
+        if not ids:
+            raise RebError("nothing_to_retract", f"Source {source_id} has no live evidence.")
+        return self.retract_evidence(ids, reason=reason)
 
     # ---- claims --------------------------------------------------------
     def record_claim(
@@ -424,7 +478,7 @@ class Ledger:
             raise RebError("unknown_claim", f"Claim {claim_id} is not in the ledger.") from None
 
     def reevaluate_claim(self, claim: Claim) -> None:
-        claim.status, claim.grade = evaluate_claim(claim, self.data.evidence, self.data.sources)
+        claim.status, claim.grade = evaluate_claim(claim, self.live_evidence, self.data.sources)
 
     def reevaluate(self) -> None:
         for claim in self.data.claims.values():
@@ -651,7 +705,7 @@ class Ledger:
             progressed = False
             for hid, hyp in list(pending.items()):
                 if all(d in conf for d in hyp.derived_from):
-                    hyp.confidence = hypothesis_confidence(hyp, self.data.evidence, self.data.sources, conf)
+                    hyp.confidence = hypothesis_confidence(hyp, self.live_evidence, self.data.sources, conf)
                     conf[hid] = hyp.confidence
                     del pending[hid]
                     progressed = True

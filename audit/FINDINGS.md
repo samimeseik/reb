@@ -18,7 +18,7 @@ Type: CODE (bug) · METHOD (design weakness) · DATA (needs external data) · US
 | F-03 | Medium | METHOD | Derived copy (news reprinting a press release) counts as independent corroboration unless the analyst declares `upstream_ids` | Reproduced |
 | F-05 | Medium | USE | Public mode admits any file relabelled `kind=document custody=public` with any text in `legal_basis` | Reproduced |
 | F-07 | Medium | METHOD | One E-grade contradicting item flips a triangulated A claim to `contradicted` (grade-blind) | Reproduced |
-| F-08 | Medium | CODE | No retraction/supersession of evidence; claims keep citing evidence later found wrong | Reproduced (API absent) |
+| F-08 | Medium | CODE | No retraction/supersession of evidence; claims keep citing evidence later found wrong | **Fixed**: `retract_evidence` / `retract_source` re-evaluate claims, unknowns, hypotheses, obligations; report lists retractions |
 | F-09 | Medium | CODE | Names in plain documents are not pseudonymized (only chat senders + regex identifiers) | Reproduced |
 | F-10 | Low | DESIGN | `pseudonyms.json` (re-identification table) stored in clear next to ledger | Reproduced; documented as local-only |
 | S-01 | — | suspicion | Crawler accepts http(s) to private/link-local IPs (SSRF via MCP `start_blueprint`) | Not tested |

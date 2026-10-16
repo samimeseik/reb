@@ -145,6 +145,24 @@ def build_server():
 
     @server.tool()
     @_safe
+    def retract_evidence(
+        reason: str, evidence_ids: list[str] | None = None, source_id: str | None = None,
+        workspace: str | None = None,
+    ) -> dict:
+        """Withdraw evidence found wrong (bad extraction, forged or superseded document): pass
+        evidence_ids, or source_id to retract all of a source's evidence. It stays in the ledger
+        and the report; claims, unknowns, hypotheses and obligations are re-evaluated without it."""
+        with Ledger.open(_ws(workspace), write=True) as led:
+            if source_id:
+                items = led.retract_source(source_id, reason=reason)
+            elif evidence_ids:
+                items = led.retract_evidence(evidence_ids, reason=reason)
+            else:
+                raise RebError("nothing_to_retract", "Pass evidence_ids or source_id.")
+            return {"retracted": [_dump(e) for e in items]}
+
+    @server.tool()
+    @_safe
     def record_evidence(
         source_id: str, fact: str, authority: str, location: str | None = None,
         quote: str | None = None, confidence: str = "observed", entity: str | None = None,

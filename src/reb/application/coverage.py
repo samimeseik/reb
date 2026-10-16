@@ -198,9 +198,10 @@ def _recorded_results(ledger: Ledger, ob: Obligation) -> tuple[list, list]:
     """Verifier evidence that records a verification of this item, split by result."""
     if not ob.verifier:
         return [], []
+    live = ledger.live_evidence
     recorded = [
         ev for eid in ob.verifier.evidence_ids
-        if (ev := ledger.data.evidence.get(eid)) and ev.operation == verify_operation(ob.item)
+        if (ev := live.get(eid)) and ev.operation == verify_operation(ob.item)
     ]
     return ([e for e in recorded if e.normalized.get("result") == "pass"],
             [e for e in recorded if e.normalized.get("result") == "fail"])
@@ -221,7 +222,8 @@ def _blocking_unknowns(ledger: Ledger, ob: Obligation) -> list[str]:
 
 def evaluate_obligation(ledger: Ledger, ob: Obligation) -> None:
     reasons: list[str] = []
-    case_ev = [ledger.data.evidence[e] for ids in ob.case_evidence.values() for e in ids if e in ledger.data.evidence]
+    live = ledger.live_evidence
+    case_ev = [live[e] for ids in ob.case_evidence.values() for e in ids if e in live]
     claims = [c for c in ledger.data.claims.values() if c.item == ob.item]
     if not case_ev and not claims:
         ob.status, ob.reasons = ObligationStatus.UNKNOWN, ["no evidence recorded for this item"]
@@ -239,7 +241,7 @@ def evaluate_obligation(ledger: Ledger, ob: Obligation) -> None:
         c
         for c, ids in ob.case_evidence.items()
         if ids and not any(
-            grade_at_least(ledger.data.evidence[e].grade, ob.required_grade) for e in ids if e in ledger.data.evidence
+            grade_at_least(live[e].grade, ob.required_grade) for e in ids if e in live
         )
     ]
     if weak:

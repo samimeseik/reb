@@ -371,3 +371,27 @@ def test_obligation_needs_recorded_verifier_distinct_cases_and_no_blocking_unkno
     coverage.record_verification(ledger, item="ops.bottleneck", source_id=audit.id, kind="reconciliation",
                                  result="fail", fact="case 12 did not reconcile")
     assert ledger.data.obligations["ops.bottleneck"].status.value == "failed"
+
+
+def test_retraction_reevaluates_claims_unknowns_and_report(ledger):
+    a = add_text_source(ledger, "rows", controller="workshop", kind="system_export", custody="captured_live")
+    b = add_text_source(ledger, "bank", controller="Bank", kind="system_export", custody="third_party",
+                        independent_channel=True)
+    ea = ledger.add_evidence(source_id=a.id, fact="sales 100", authority="system_record")
+    eb = ledger.add_evidence(source_id=b.id, fact="deposits 100", authority="system_record")
+    c = ledger.record_claim(statement="Sales were about 100.", layer="revenue", evidence_ids=[ea.id, eb.id])
+    assert c.status.value == "triangulated"
+    u = ledger.record_unknown(question="Were deposits complete?", layer="revenue")
+    ledger.update_unknown(u.id, revision=u.revision, status="resolved",
+                          resolution={"kind": "verified", "evidence_ids": [eb.id]})
+    (ev,) = ledger.retract_evidence(eb.id, reason="bank statement was for another account")
+    assert ledger.claim(c.id).status.value == "single_source"
+    assert ledger.data.unknowns[u.id].status.value == "open"
+    assert ev.retracted.affected_claims == [c.id] and ev.retracted.reopened_unknowns == [u.id]
+    with pytest.raises(RebError) as err:
+        ledger.record_claim(statement="Deposits were 100.", layer="revenue", evidence_ids=[eb.id])
+    assert err.value.code == "retracted_evidence"
+    text = report.render_report(ledger, language="en")
+    assert "Retracted evidence" in text and "another account" in text
+    ledger.retract_source(a.id, reason="export was from a test system")
+    assert ledger.claim(c.id).status.value == "conjecture"

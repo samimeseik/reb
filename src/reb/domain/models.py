@@ -176,6 +176,13 @@ class Source(BaseModel):
     notes: str | None = None
 
 
+class Retraction(BaseModel):
+    reason: str
+    at: str = Field(default_factory=utc_now)
+    affected_claims: list[str] = Field(default_factory=list)
+    reopened_unknowns: list[str] = Field(default_factory=list)
+
+
 class Evidence(BaseModel):
     id: str
     source_id: str
@@ -193,6 +200,7 @@ class Evidence(BaseModel):
     limitations: list[str] = Field(default_factory=list)
     as_of: str | None = None
     recorded_at: str = Field(default_factory=utc_now)
+    retracted: Retraction | None = None  # kept for the audit trail; ignored by every computation
 
 
 class Claim(BaseModel):
