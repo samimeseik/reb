@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from ..domain.grading import GRADE_ORDER
+from ..domain.grading import GRADE_ORDER, best
 from ..domain.ledger import Ledger
 from ..domain.models import ClaimStatus, Layer, Replicability, UnknownStatus
 from .coverage import inspect_coverage, obligation_ledger
@@ -41,6 +41,7 @@ L = {
             "triangulated": "triangulated (2+ independent sources)",
             "single_source": "single source (or sources under one control)",
             "contradicted": "contradicted",
+            "disputed_weak": "disputed by weak evidence (still to resolve)",
             "conjecture": "conjecture (no evidence)",
         },
         "coverage": "Coverage by layer",
@@ -57,6 +58,7 @@ L = {
             "met": "met",
             "below_required": "below required grade",
             "contradicted": "contradicted",
+            "disputed": "disputed by weak evidence",
             "not_covered": "not covered",
         },
         "findings": "Findings",
@@ -110,6 +112,7 @@ L = {
             "triangulated": "مثلَّث (مصدران مستقلان أو أكثر)",
             "single_source": "مصدر واحد (أو مصادر تحت جهة واحدة)",
             "contradicted": "متعارض",
+            "disputed_weak": "معترَض عليه بدليل ضعيف (يحتاج حسماً)",
             "conjecture": "تخمين (بلا دليل)",
         },
         "coverage": "التغطية حسب الطبقة",
@@ -126,6 +129,7 @@ L = {
             "met": "مستوفى",
             "below_required": "أقل من الدرجة المطلوبة",
             "contradicted": "متعارض",
+            "disputed": "معترَض عليه بدليل ضعيف",
             "not_covered": "غير مغطّى",
         },
         "findings": "النتائج",
@@ -238,17 +242,20 @@ def render_report(ledger: Ledger, *, language: str | None = None, profile: str |
         w("")
 
     w(f"## {t['contradictions']}\n")
-    contra = [c for c in claims if c.status == ClaimStatus.CONTRADICTED]
+    contra = [c for c in claims if c.status in (ClaimStatus.CONTRADICTED, ClaimStatus.DISPUTED_WEAK)]
     contra_unk = [u for u in ledger.data.unknowns.values() if u.status == UnknownStatus.CONTRADICTED]
     if not contra and not contra_unk:
         w(t["none"] + "\n")
+    live = ledger.live_evidence
+
+    def _side(ids: list[str]) -> str:
+        grades = [live[e].grade for e in ids if e in live]
+        top = f"[{best(grades).value}] " if grades else ""
+        return top + ", ".join(f"`{e}`" for e in ids)
+
     for c in contra:
-        w(
-            f"- {c.statement} — "
-            + ", ".join(f"`{e}`" for e in c.evidence_ids)
-            + " ⟂ "
-            + ", ".join(f"`{e}`" for e in c.contradicting_evidence_ids)
-        )
+        w(f"- {c.statement} — {_side(c.evidence_ids)} ⟂ {_side(c.contradicting_evidence_ids)}"
+          f" · {t['status'][c.status.value]}")
     for u in contra_unk:
         w(f"- {u.question} (`{u.id}`)")
     w("")
@@ -333,7 +340,8 @@ def render_report(ledger: Ledger, *, language: str | None = None, profile: str |
         lim = f" · {t['limits']}: {'; '.join(ev.limitations)}" if ev.limitations else ""
         src_txt = f"{src.title} ({t['custody']}: {src.custody.value})" if src else ev.source_id
         mark = f" **({t['retracted']})**" if ev.retracted else ""
-        w(f"- `{ev.id}` **[{ev.grade.value}]**{mark} {ev.fact} — {t['source']}: {src_txt}, {ev.authority.value}{loc}{lim}")
+        quoted = f" · «{ev.quote}»" if ev.quote else ""
+        w(f"- `{ev.id}` **[{ev.grade.value}]**{mark} {ev.fact}{quoted} — {t['source']}: {src_txt}, {ev.authority.value}{loc}{lim}")
     w("")
     body = "\n".join(out)
     # GitHub and most Markdown viewers honour dir="rtl" on a wrapping block.

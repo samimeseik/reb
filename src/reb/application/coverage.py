@@ -62,12 +62,15 @@ def item_coverage(ledger: Ledger, profile: Profile) -> list[dict[str, Any]]:
     for item in profile.items:
         claims = [c for c in ledger.data.claims.values() if c.item == item.id]
         contradicted = [c.id for c in claims if c.status == ClaimStatus.CONTRADICTED]
+        disputed = [c.id for c in claims if c.status == ClaimStatus.DISPUTED_WEAK]
         grades = [c.grade for c in claims if c.grade and c.status != ClaimStatus.CONTRADICTED]
         top = best(grades)
         item_unknowns = [u for u in ledger.data.unknowns.values() if u.item == item.id and u.status in OPEN_UNKNOWN]
         unknowns = [u.id for u in item_unknowns]
         if contradicted or any(u.status == UnknownStatus.CONTRADICTED for u in item_unknowns):
             state = "contradicted"
+        elif disputed:
+            state = "disputed"
         elif top is None:
             state = "not_covered"
         elif grade_at_least(top, item.required_grade):
@@ -272,6 +275,8 @@ def evaluate_obligation(ledger: Ledger, ob: Obligation) -> None:
         reasons.append("verifier cites no evidence independent of the case evidence (circular)")
     if any(c.status == ClaimStatus.CONTRADICTED for c in claims):
         reasons.append("contradicted claims on this item")
+    elif any(c.status == ClaimStatus.DISPUTED_WEAK for c in claims):
+        reasons.append("claims on this item are disputed by weak evidence; resolve the dispute")
     blocking = _blocking_unknowns(ledger, ob)
     if blocking:
         reasons.append(f"open unknowns on this item, or blocking/contradicted on its layer: {', '.join(blocking)}")

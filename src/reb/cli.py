@@ -100,6 +100,8 @@ def _run_engagement(led: Ledger, args: argparse.Namespace) -> Any:
             independent_channel=args.independent_channel,
             context={"site": args.site, "period_start": args.period_start, "period_end": args.period_end},
             notes=args.notes,
+            names=args.name,
+            kind_reason=args.kind_reason,
         )
     if cmd == "read":
         return ingest.read_source(led, args.source_id, start_line=args.start, max_lines=args.max,
@@ -117,6 +119,8 @@ def _run_engagement(led: Ledger, args: argparse.Namespace) -> Any:
             location=args.location, quote=args.quote, entity=args.entity, layer=args.layer, as_of=args.as_of,
         )
         return ev.model_dump(mode="json")
+    if cmd == "independent":
+        return led.declare_independent(args.source, args.other, reason=args.reason).model_dump(mode="json")
     if cmd == "retract":
         if args.source:
             items = led.retract_source(args.source, reason=args.reason)
@@ -297,6 +301,8 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--site")
     s.add_argument("--period-start")
     s.add_argument("--period-end")
+    s.add_argument("--name", action="append", help="a person to pseudonymize in this source (repeatable)")
+    s.add_argument("--kind-reason", help="why --kind differs from the detected kind (kept on the source)")
 
     s = sub.add_parser("read", help="read a source's stored text with line numbers")
     s.add_argument("source_id")
@@ -316,6 +322,11 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--public-premises", action="store_true")
     s.add_argument("--artifact", action="append",
                    help="id of a captured_live source backing it (photo, count sheet); without one the grade is capped at B")
+
+    s = sub.add_parser("independent", help="clear a near-duplicate flag after checking the sources are independent")
+    s.add_argument("--source", required=True)
+    s.add_argument("--other", required=True)
+    s.add_argument("--reason", required=True)
 
     s = sub.add_parser("retract", help="withdraw evidence found wrong; everything citing it is re-evaluated")
     s.add_argument("--evidence", action="append", help="evidence id (repeatable)")

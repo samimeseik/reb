@@ -59,8 +59,10 @@ it is capped at **B**, because a single walk-through can be staged, misread or r
   - Only observations, and photos you took yourself, can be `direct_observation`.
 - **`captured_live`** is accepted only for exports pulled live, chats, photos, observations and interviews. It is never accepted for a typed document.
 - **`issuer_verifiable`** needs `verification_ids`. Ingest the issuer check itself first (for example a screenshot of the e-invoice UUID lookup), then cite it.
-- **`public`** sources need their URL or registry reference in `legal_basis`.
-- **The controller is forced** in `self` and `engaged` modes. Anything the organization handed over, and every interview with its people, gets the controller `subject:<organization>`.
+- **`public`** sources need their URL (`https://…`) or a registry reference with its number (`MERSIS 0123456789`) in `legal_basis`. Placeholders such as `n/a` are refused.
+- **A declared kind must fit the file.** It may refine the detected kind within its family (a `.md` page as `public_signal`, a `.csv` as `event_log`). Crossing families (a spreadsheet declared a `document`) needs a `kind_reason`, which is kept on the source.
+- **The controller is forced.** Anything the organization handed over, every interview with its people, and anything published by the subject, its declared `aliases` or its domains, gets the controller `subject:<organization>`, in every mode.
+- **A fact cannot outrun its quote.** A quote proves the words are in the source, not that they support the fact. Numbers in the fact that the quote lacks cap the evidence at D. A fact that shares no word, number or code with a quote in the same script is capped at C. Record the inference separately (`confidence=inferred`) or as a claim. The report shows each quote next to its fact.
 - **Consent**: interviews, chat exports and non-public observations need a `legal_basis`. A renamed chat export is still detected from its content.
 
 ## Claim status
@@ -68,7 +70,8 @@ it is capped at **B**, because a single walk-through can be staged, misread or r
 - `conjecture`: no supporting evidence. It is rendered only in a separate, clearly marked section.
 - `single_source`: the evidence comes from one source, or from several sources under one controller.
 - `triangulated`: the claim has evidence from at least two **independent** sources, and at least one of them is not testimony, a public signal or an inference. Several people saying the same thing is still testimony.
-- `contradicted`: the claim has contradicting evidence attached.
+- `contradicted`: the claim has contradicting evidence of grade C or better, or its own support is weaker than B.
+- `disputed_weak`: support of grade A or B against only weak contradiction (D or E). It still has to be resolved, but it is not shown as two strong records disagreeing. The report shows the strongest grade on each side.
 
 ### Independence
 
@@ -77,6 +80,12 @@ Two sources are independent only when **all three** conditions hold:
 1. Their derivation ancestries do not intersect. A summary of an export is not independent of the export.
 2. No source in either ancestry shares a `controller` with the other. **An organization's owner, staff, documents and systems share one controller.** Interviewing three employees gives you three testimonies from the same controller. It is not triangulation.
 3. If both declare an observation period, the periods overlap.
+
+**Copies.** When most of one source's text (3-word shingles, 60% of the shorter text) appears in
+a source under a different controller, the new source is flagged as possibly derived from the
+older one and an unknown is opened. Until the analyst records the real `upstream_ids` or runs
+`declare_independent` with a reason, the two are not independent. A news article that reprints
+a press release is one source, not two.
 
 An observation without an artifact corroborates another source only when the claim also has
 artifact-less observations from **at least two different days** (`as_of`). One staged day is
@@ -103,6 +112,7 @@ and culture. It is also computed per profile checklist item:
 | `met` | Best grade ≥ required grade |
 | `below_required` | Covered, but the best grade is under the required grade |
 | `contradicted` | A contradicted claim or a contradicted unknown exists on the item |
+| `disputed` | A claim on the item is disputed by weak evidence only |
 | `not_covered` | No evidence. This is **unknown, not absent** |
 
 ## Reconstruction obligations

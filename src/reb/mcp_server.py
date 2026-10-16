@@ -96,7 +96,8 @@ def build_server():
         sensitivity: str = "internal", language: str | None = None,
         upstream_ids: list[str] | None = None, verification_ids: list[str] | None = None,
         independent_channel: bool = False, site: str | None = None, period_start: str | None = None,
-        period_end: str | None = None, notes: str | None = None, workspace: str | None = None,
+        period_end: str | None = None, notes: str | None = None, names: list[str] | None = None,
+        kind_reason: str | None = None, workspace: str | None = None,
     ) -> dict:
         """Register a source file (PDF, DOCX, TXT, CSV/XLSX, e-invoice XML, WhatsApp export,
         image, interview audio/transcript) and extract its inventory facts.
@@ -104,7 +105,9 @@ def build_server():
         Interviews and chat exports need legal_basis (consent reference); public sources need
         their URL in legal_basis; issuer_verifiable needs verification_ids (the ingested issuer check).
         controller: who controls the content. The organization's own staff/documents/systems are
-        forced to one controller. period_start/period_end (YYYY-MM-DD) bound what the source covers."""
+        forced to one controller. period_start/period_end (YYYY-MM-DD) bound what the source covers.
+        names: people to pseudonymize beyond those detected automatically. kind_reason: required
+        when kind crosses families with the detected kind (e.g. a spreadsheet declared a document)."""
         with Ledger.open(_ws(workspace), write=True) as led:
             return ingest.ingest_file(
                 led, path, custody=custody, origin_party=origin_party,
@@ -112,6 +115,7 @@ def build_server():
                 sensitivity=sensitivity, language=language, upstream_ids=upstream_ids,
                 verification_ids=verification_ids, independent_channel=independent_channel,
                 context={"site": site, "period_start": period_start, "period_end": period_end}, notes=notes,
+                names=names, kind_reason=kind_reason,
             )
 
     @server.tool()
@@ -142,6 +146,14 @@ def build_server():
                 site=site, when=when, shift=shift, facts=facts, public_premises=public_premises,
                 artifact_ids=artifact_ids,
             )
+
+    @server.tool()
+    @_safe
+    def declare_independent(source_id: str, other_id: str, reason: str, workspace: str | None = None) -> dict:
+        """Clear a near-duplicate flag (ingest flags a source whose text largely repeats another
+        source under a different controller) after checking the two reached the facts separately."""
+        with Ledger.open(_ws(workspace), write=True) as led:
+            return _dump(led.declare_independent(source_id, other_id, reason=reason))
 
     @server.tool()
     @_safe

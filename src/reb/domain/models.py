@@ -106,6 +106,9 @@ class ClaimStatus(str, Enum):
     SINGLE_SOURCE = "single_source"
     TRIANGULATED = "triangulated"
     CONTRADICTED = "contradicted"
+    # Strong support (A/B) against only weak contradiction (D/E): still to be resolved,
+    # but not the same as two strong records disagreeing.
+    DISPUTED_WEAK = "disputed_weak"
 
 
 class Replicability(str, Enum):
@@ -144,6 +147,7 @@ class Engagement(BaseModel):
     name: str
     subject: str  # organization name or pseudonym
     aliases: list[str] = Field(default_factory=list)  # other names and web domains of the subject
+    salt: str = ""  # per-engagement salt for pseudonym tokens ("" in ledgers made before it existed)
     mode: Mode
     authorization: str | None = None  # mandate / ownership basis; required unless public
     profile: str | None = None
@@ -166,6 +170,9 @@ class Source(BaseModel):
     upstream_ids: list[str] = Field(default_factory=list)  # sources it was derived from
     verification_ids: list[str] = Field(default_factory=list)  # issuer checks backing issuer_verifiable
     artifact_ids: list[str] = Field(default_factory=list)  # captured photos/count sheets backing an observation
+    # Sources whose text this one largely repeats: treated as upstream until the analyst
+    # declares the two independent (declare_independent) or records the real upstream.
+    possible_upstream_ids: list[str] = Field(default_factory=list)
     legal_basis: str | None = None  # consent id, mandate id or public URL
     sensitivity: Sensitivity = Sensitivity.INTERNAL
     language: str | None = None

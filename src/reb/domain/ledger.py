@@ -14,6 +14,7 @@ import hashlib
 import json
 import os
 import re
+import secrets
 import unicodedata
 from collections.abc import Iterator
 from pathlib import Path
@@ -25,6 +26,8 @@ from .grading import (
     WEAK_AUTHORITIES,
     compute_grade,
     evaluate_claim,
+    fact_beyond_quote,
+    worst,
     hypothesis_confidence,
     independent,
 )
@@ -82,6 +85,14 @@ def digest(payload: Any) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+NEAR_DUPLICATE = 0.6  # share of the shorter text's 3-word shingles found in the other
+
+
+def shingles(text: str, size: int = 3) -> set[tuple[str, ...]]:
+    words = re.findall(r"\w+", unicodedata.normalize("NFKC", text).casefold())
+    return {tuple(words[i : i + size]) for i in range(len(words) - size + 1)}
+
+
 def normalize_text(text: str) -> str:
     text = unicodedata.normalize("NFKC", text)
     # drop Arabic diacritics (tashkeel) and tatweel so quotes match regardless of vocalization
@@ -128,6 +139,7 @@ class Ledger:
             name=name,
             subject=subject,
             aliases=[a.strip() for a in aliases or [] if a.strip()],
+            salt=secrets.token_hex(8),
             mode=mode,
             authorization=authorization,
             profile=profile,
@@ -177,16 +189,27 @@ class Ledger:
         tmp.write_text(self.data.model_dump_json(indent=2), encoding="utf-8")
         tmp.replace(self.root / "ledger.json")
         if self._pseudo is not None:
-            ptmp = self.root / f"pseudonyms.json.{os.getpid()}.tmp"
-            ptmp.write_text(json.dumps(self._pseudo.mapping, ensure_ascii=False, indent=2), encoding="utf-8")
-            ptmp.replace(self.root / "pseudonyms.json")
+            path = self.pseudonym_map_path
+            path.parent.mkdir(parents=True, exist_ok=True)
+            ptmp = path.with_name(f"{path.name}.{os.getpid()}.tmp")
+            ptmp.write_text(json.dumps(self._pseudo.persisted(), ensure_ascii=False, indent=2), encoding="utf-8")
+            ptmp.replace(path)
+
+    @property
+    def pseudonym_map_path(self) -> Path:
+        """`.reb/pseudonyms.json`, or `$REB_PSEUDONYM_DIR/<engagement id>.json` to keep the
+        re-identification map off the workspace (and out of any copy or zip of it)."""
+        outside = os.environ.get("REB_PSEUDONYM_DIR")
+        if outside:
+            return Path(outside).expanduser() / f"{self.engagement.id}.json"
+        return self.root / "pseudonyms.json"
 
     @property
     def pseudonymizer(self) -> Pseudonymizer:
         if self._pseudo is None:
-            path = self.root / "pseudonyms.json"
+            path = self.pseudonym_map_path
             mapping = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
-            self._pseudo = Pseudonymizer(mapping)
+            self._pseudo = Pseudonymizer(mapping, salt=self.engagement.salt)
         return self._pseudo
 
     def scrub(self, text: str | None) -> str | None:
@@ -266,7 +289,60 @@ class Ledger:
             text_file.write_text(self.pseudonymizer.scrub(text), encoding="utf-8")
             source.text_path = str(text_file.relative_to(self.workspace))
         self.data.sources[source.id] = source
+        if text is not None:
+            self._flag_near_duplicates(source)
         return source, True
+
+    def _flag_near_duplicates(self, source: Source) -> None:
+        """A news article that reprints a press release is not independent of it. When most
+        of one source's text appears in another source under a different controller, mark
+        the older one as a possible upstream and open an unknown to settle it."""
+        mine = shingles(self.source_text(source.id) or "")
+        if len(mine) < 2:
+            return
+        for other in list(self.data.sources.values()):
+            if other.id == source.id or not other.text_path or other.id in source.upstream_ids:
+                continue
+            if other.controller.strip().lower() == source.controller.strip().lower():
+                continue
+            theirs = shingles(self.source_text(other.id) or "")
+            if len(theirs) < 2 or len(mine & theirs) / min(len(mine), len(theirs)) < NEAR_DUPLICATE:
+                continue
+            source.possible_upstream_ids.append(other.id)
+            self.record_unknown(
+                question=f"Is source {source.id} copied from source {other.id}? "
+                "Most of the text of one appears in the other.",
+                entity=f"upstream:{source.id}:{other.id}",
+                recommended_probes=[
+                    f"If it is a copy, re-ingest {source.id} with upstream_ids=[{other.id}].",
+                    f"If both reached the facts separately, run declare_independent({source.id}, {other.id}, reason).",
+                ],
+            )
+
+    def declare_independent(self, source_id: str, other_id: str, *, reason: str) -> Source:
+        """Clear a near-duplicate flag after checking that the two sources reached the facts
+        separately (e.g. both quote the same law, or the reporter checked independently)."""
+        source, other = self.source(source_id), self.source(other_id)
+        if other.id not in source.possible_upstream_ids:
+            source, other = other, source
+        if other.id not in source.possible_upstream_ids:
+            raise RebError("not_flagged", f"{source_id} and {other_id} are not flagged as near-duplicates.")
+        reason = self.scrub(reason) or ""
+        if not reason.strip():
+            raise RebError("reason_required", "Say how you checked that the two sources are independent.")
+        check_vocabulary(reason)
+        source.possible_upstream_ids.remove(other.id)
+        note = f"declared independent of {other.id}: {reason.strip()}"
+        source.notes = f"{source.notes}\n{note}" if source.notes else note
+        for u in self.data.unknowns.values():
+            if u.entity == f"upstream:{source.id}:{other.id}" and u.status != UnknownStatus.RESOLVED:
+                u.status = UnknownStatus.RESOLVED
+                u.resolution = Resolution(kind="out_of_scope", note=note)
+                u.revision += 1
+                u.updated_at = utc_now()
+        self.reevaluate()
+        self.reevaluate_hypotheses()
+        return source
 
     def source(self, source_id: str) -> Source:
         try:
@@ -333,6 +409,10 @@ class Ledger:
                     "(read_source shows the stored text) or omit the quote and lower the confidence.",
                 )
         grade = compute_grade(authority, confidence, source)
+        if quote is not None and (beyond := fact_beyond_quote(fact, quote)):
+            cap, why = beyond
+            grade = worst(grade, cap)
+            limitations.append(why)
         payload = [source_id, operation, fact, location, quote, authority.value, confidence.value, entity,
                    layer.value if layer else None]
         ev = Evidence(

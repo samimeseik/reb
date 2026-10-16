@@ -8,6 +8,7 @@ sources that share no controller and no derivation ancestry.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable, Mapping
 
 from .models import (
@@ -92,6 +93,43 @@ def unbacked_observation(source: Source | None) -> bool:
     return bool(source) and source.kind == SourceKind.OBSERVATION and not source.artifact_ids
 
 
+_STOP = {"the", "and", "for", "are", "was", "were", "with", "that", "this", "from", "has", "have", "its",
+         "not", "but", "all", "can", "says", "said", "shows", "ve", "bir", "bu", "da", "de", "ile",
+         "في", "من", "على", "إلى", "عن", "أن", "هذا", "هذه"}
+
+
+def _numbers(text: str, *, parts: bool = False) -> set[str]:
+    """Numbers with thousands separators removed. With parts, each separator-delimited
+    piece counts too (a CSV row '1,100' may hold the numbers 1 and 100)."""
+    found = re.findall(r"\d[\d.,]*\d|\d", text)
+    out = {re.sub(r"[.,]", "", n) for n in found}
+    if parts:
+        out |= {p for n in found for p in re.split(r"[.,]", n) if p}
+    return out
+
+
+def _script(text: str) -> str:
+    return "arabic" if re.search(r"[\u0600-\u06FF]", text) else "latin"
+
+
+def fact_beyond_quote(fact: str, quote: str) -> tuple[Grade, str] | None:
+    """A quote proves the words are in the source, not that they support the fact.
+    Numbers in the fact that the quote lacks cap the evidence at D; a fact in the quote's
+    script that shares not one word, number or code with it caps it at C."""
+    missing = _numbers(fact) - _numbers(quote, parts=True)
+    if missing:
+        return Grade.D, f"fact states numbers not in its quote ({', '.join(sorted(missing))}); record the inference separately"
+    if _script(fact) != _script(quote):
+        return None  # a translation into another script cannot be compared word by word
+    words = {w for w in re.findall(r"\w{2,}", fact.casefold()) if w not in _STOP}
+    if len(words) < 3:
+        return None
+    quoted = {w[:5] for w in re.findall(r"\w{2,}", quote.casefold())}
+    if not any(w[:5] in quoted for w in words):
+        return Grade.C, "fact shares no words, numbers or codes with its quote; record the inference separately"
+    return None
+
+
 def compute_grade(authority: Authority, confidence: Confidence, source: Source) -> Grade:
     # A typed note of a single walk-through is not as strong as a record captured live:
     # without an artifact it can be mistaken, staged or recalled wrongly.
@@ -111,6 +149,7 @@ def ancestry(source_id: str, sources: Mapping[str, Source]) -> set[str]:
         src = sources.get(current)
         if src:
             stack.extend(src.upstream_ids)
+            stack.extend(src.possible_upstream_ids)
     return seen
 
 
@@ -143,7 +182,11 @@ def evaluate_claim(
 ) -> tuple[ClaimStatus, Grade | None]:
     supporting = [evidence[e] for e in claim.evidence_ids if e in evidence]
     grade = best(e.grade for e in supporting)
-    if claim.contradicting_evidence_ids:
+    contradicting = [evidence[e] for e in claim.contradicting_evidence_ids if e in evidence]
+    if contradicting:
+        against = best(e.grade for e in contradicting)
+        if grade_at_least(grade, Grade.B) and not grade_at_least(against, Grade.C):
+            return ClaimStatus.DISPUTED_WEAK, grade
         return ClaimStatus.CONTRADICTED, grade
     if not supporting:
         return ClaimStatus.CONJECTURE, None

@@ -14,13 +14,13 @@ Type: CODE (bug) · METHOD (design weakness) · DATA (needs external data) · US
 | F-11 | High | CODE | In `engaged`/`self` mode the subject's own public website/press is a separate controller → "independent" of its internal records | **Fixed**: subject name, aliases and domains map to `subject:<name>` in every mode |
 | F-06 | High | METHOD+CODE | `ready` reachable with a self-declared verifier, reused case evidence and an open material unknown | **Fixed**: recorded verification run, distinct case evidence, blocking layer unknowns, README wording |
 | F-02 | High | METHOD | Analyst-typed observation note = grade A and an independent source → triangulates alone | **Fixed**: artifact-less observation capped at B; corroborates only with a second day |
-| F-01 | Medium | METHOD | Quote check proves presence, not entailment; grade belongs to the source, not the inference | Reproduced |
-| F-03 | Medium | METHOD | Derived copy (news reprinting a press release) counts as independent corroboration unless the analyst declares `upstream_ids` | Reproduced |
-| F-05 | Medium | USE | Public mode admits any file relabelled `kind=document custody=public` with any text in `legal_basis` | Reproduced |
-| F-07 | Medium | METHOD | One E-grade contradicting item flips a triangulated A claim to `contradicted` (grade-blind) | Reproduced |
+| F-01 | Medium | METHOD | Quote check proves presence, not entailment; grade belongs to the source, not the inference | **Fixed**: numbers missing from the quote cap at D; no shared word/number/code caps at C; report shows quote beside fact |
+| F-03 | Medium | METHOD | Derived copy (news reprinting a press release) counts as independent corroboration unless the analyst declares `upstream_ids` | **Fixed**: near-duplicate text flags a possible upstream and opens an unknown; `declare_independent` clears it |
+| F-05 | Medium | USE | Public mode admits any file relabelled `kind=document custody=public` with any text in `legal_basis` | **Fixed**: public custody needs a URL or numbered registry reference; cross-family kind override needs `kind_reason` |
+| F-07 | Medium | METHOD | One E-grade contradicting item flips a triangulated A claim to `contradicted` (grade-blind) | **Fixed**: A/B support vs only D/E contradiction is `disputed_weak`; report shows strongest grade per side |
 | F-08 | Medium | CODE | No retraction/supersession of evidence; claims keep citing evidence later found wrong | **Fixed**: `retract_evidence` / `retract_source` re-evaluate claims, unknowns, hypotheses, obligations; report lists retractions |
-| F-09 | Medium | CODE | Names in plain documents are not pseudonymized (only chat senders + regex identifiers) | Reproduced |
-| F-10 | Low | DESIGN | `pseudonyms.json` (re-identification table) stored in clear next to ledger | Reproduced; documented as local-only |
+| F-09 | Medium | CODE | Names in plain documents are not pseudonymized (only chat senders + regex identifiers) | **Fixed**: given-name + surname, honorific and Bey/Hanım detection in all text; explicit `names` |
+| F-10 | Low | DESIGN | `pseudonyms.json` (re-identification table) stored in clear next to ledger | **Fixed**: salted tokens; only names persisted; `REB_PSEUDONYM_DIR` moves the map off the workspace |
 | S-01 | — | suspicion | Crawler accepts http(s) to private/link-local IPs (SSRF via MCP `start_blueprint`) | Not tested |
 | S-02 | — | suspicion | Prompt injection in ingested text steering the agent to record evidence | Engine is passive; agent-level, not tested |
 | R-01 | — | refuted | `file://` URLs in crawler | `_normalize` forces https — no local file read |

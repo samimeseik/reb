@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from ..domain.errors import RebError
-from ..domain.guardrails import check_vocabulary
+from ..domain.guardrails import check_kind_override, check_vocabulary, detect_person_names
 from ..domain.ledger import Ledger
 from ..domain.models import Confidence, Custody, SourceKind
 from ..providers import default_authority, detect_kind, extract
@@ -30,7 +30,11 @@ def ingest_file(
     verification_ids: list[str] | None = None,
     independent_channel: bool = False,
     notes: str | None = None,
+    names: list[str] | None = None,
+    kind_reason: str | None = None,
 ) -> dict[str, Any]:
+    """names: people to pseudonymize in this source beyond those found automatically
+    (chat senders, a given name followed by a surname, honorifics)."""
     path = Path(path).expanduser()
     if not path.is_file():
         raise RebError("file_not_found", f"No file at {path}.")
@@ -41,6 +45,9 @@ def ingest_file(
             "kind_mismatch",
             "This file looks like a chat export. Ingest it as kind 'chat_export' (it needs a legal_basis).",
         )
+    override = check_kind_override(detected, kind, kind_reason)
+    if override:
+        notes = f"{notes}\n{override}" if notes else override
     content = path.read_bytes()
     spec = dict(
         content=content,
@@ -68,7 +75,9 @@ def ingest_file(
     except ImportError as exc:
         raise RebError("missing_extra", str(exc)) from exc
     pseudo = ledger.pseudonymizer
-    for name in extraction.names:
+    people = [*extraction.names, *(n.strip() for n in names or [] if n.strip()),
+              *detect_person_names(extraction.text)]
+    for name in dict.fromkeys(people):
         token = pseudo.person(name)
         # "Ahmet Usta" also appears as plain "Ahmet" inside messages: map the first
         # name to the same token. Only capitalized first names of 3+ letters.
